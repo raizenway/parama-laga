@@ -9,7 +9,14 @@ export default {
   ],
   theme: {
   	extend: {
+		fontFamily: {
+			poppins: ["Poppins", "sans-serif"]
+		},
   		colors: {
+			primary: "#271956",
+			secondary: "#A7EFC6",
+			tersier: "#D3CDE8",
+			danger: "#E45143",
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -19,14 +26,6 @@ export default {
   			popover: {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
-  			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
   			},
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
