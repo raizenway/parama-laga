@@ -20,7 +20,7 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
                 </ul>
                 <div className="border-t flex p-3">
                     <img
-                        src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
+                        src="person.png"
                         alt=""
                         className="w-10 h-10 rounded-md"
                     />

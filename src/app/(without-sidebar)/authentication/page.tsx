@@ -1,10 +1,14 @@
+"use client"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
-
+import { useRouter } from "next/navigation";
 
 export default function Authentication() {
+
+  const router = useRouter();
+
   return (
     <main className= "h-screen flex items-center justify-center">
       <div className="grid w-full h-full grid-cols-1 bg-white box-anim md:grid-cols-2">
@@ -41,13 +45,16 @@ export default function Authentication() {
             <p className="text-right text-sm text-blue-950 underline cursor-pointer hover:text-blue-800">
               Forgot Password?
             </p>
-
-            <Button
-              type="submit"
-              className="w-full mt-6 bg-blue-950 rounded-full hover:bg-indigo-700"
-            >
-              Login
-            </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              router.push("/dashboard");
+            }}
+            type="submit"
+            className="w-full mt-6 bg-blue-950 rounded-full hover:bg-indigo-700"
+          >
+            Login
+          </Button>
           </form>
         </div>
         
