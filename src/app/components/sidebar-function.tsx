@@ -1,8 +1,18 @@
+"use client";
+
 import { ChevronDown, ChevronFirst, LogOut, MoreHorizontal, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export default function SidebarFunction({ children }: { children: React.ReactNode }) {
     const router = useRouter();
+    const { data: session, status } = useSession();
+    
+    const handleLogout = async () => {
+        await signOut({ redirect: false });
+        router.push("/authentication");
+    };
     
     return (
         <aside className="h-screen w-full">
@@ -20,25 +30,24 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
                 </ul>
                 <div className="border-t flex p-3">
                     <img
-                        src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
-                        alt=""
-                        className="w-10 h-10 rounded-md"
+                        src={session?.user?.photoUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
+                        alt="User Avatar"
+                        className="w-10 h-10 rounded-md object-cover"
                     />
                     <div className={`
                         flex justify-between items-center
                         w-64 ml-3
                     `}>
                         <div className="leading-4">
-                            <h4 className="font-semibold">Jono Murjono</h4>
-                            <span className="text-xs text-gray-600">jonomurjono@gmail.com</span>
+                            <h4 className="font-semibold">{session?.user?.name || "Loading..."}</h4>
+                            <span className="text-xs text-gray-600">{session?.user?.email || ""}</span>
                         </div>
                         <div className="inline-flex">
                             <button
-                                onClick={() => router.push("/authentication")}
+                                onClick={handleLogout}
                                 className="hover:bg-gray-200 p-2 w-10 h-10 rounded-md">
                                 <LogOut />
                             </button>
-                            
                         </div>
                     </div>
                 </div>
