@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PARAMA LAGA
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white)
 
-First, run the development server:
+> Sistem manajemen proyek berbasis web yang dikembangkan dengan Next.js.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📑 Daftar Isi
+- [Tentang Aplikasi](#tentang-aplikasi)
+- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+- [Cara Memulai](#cara-memulai)
+- [Struktur Aplikasi](#struktur-aplikasi)
+- [Autentikasi](#autentikasi)
+- [Pengembangan Lanjutan](#pengembangan-lanjutan)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Tentang Aplikasi
+Parama Laga adalah aplikasi manajemen proyek yang memungkinkan pengguna untuk mengelola proyek, anggota tim, dan status proyek dengan antarmuka yang intuitif. Aplikasi ini dikembangkan menggunakan Next.js, Prisma, dan PostgreSQL.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Teknologi yang Digunakan
+- **Frontend:** Next.js, React, Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Autentikasi:** NextAuth.js
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏁 Cara Memulai
 
-## Learn More
+### Prasyarat
+- Node.js (versi 16.x atau lebih tinggi)
+- PostgreSQL
+- npm atau yarn
 
-To learn more about Next.js, take a look at the following resources:
+### Langkah Instalasi
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Kloning repositori**
+    ```bash
+    git clone https://github.com/yourusername/parama-laga.git
+    cd parama-laga
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Instalasi Dependensi**
+    ```bash
+    npm install
+    # atau
+    yarn install
+    ```
 
-## Deploy on Vercel
+3. **Konfigurasi Lingkungan**
+    ```bash
+    cp .env.example .env
+    ```
+    Sesuaikan konfigurasi database pada file `.env`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Inisialisasi Database dan Pengisian Data Awal**
+    ```bash
+    npx prisma db seed
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Menjalankan Aplikasi**
+    ```bash
+    npm run dev
+    # atau
+    yarn dev
+    ```
+
+6. **Mengakses Aplikasi**
+    Buka [http://localhost:3000](http://localhost:3000) di browser Anda untuk melihat aplikasi.
+
+## 📂 Struktur Aplikasi
+- `prisma/`: Berisi konfigurasi database dan model Prisma
+- `app/`: Komponen dan halaman React
+- `api/`: API endpoints
+- `public/`: Asset publik seperti gambar dan favicon
+
+## 🔐 Autentikasi
+Aplikasi ini menggunakan NextAuth.js untuk autentikasi. Setelah menjalankan seed, Anda dapat login menggunakan kredensial berikut:
+
+### Admin:
+- **Email:** admin@example.com
+- **Password:** password
+
+## 📚 Pengembangan Lanjutan
+Untuk informasi lebih lanjut tentang pengembangan menggunakan Next.js:
+
+- [Dokumentasi Next.js](https://nextjs.org/docs)
+- [Dokumentasi Prisma](https://www.prisma.io/docs)
+- [Dokumentasi NextAuth.js](https://next-auth.js.org)
+
+## 📝 Lisensi
+[MIT](LICENSE)
+
+---
+
+Dibuat dengan ❤️ oleh Tim Parama Laga
