@@ -78,9 +78,9 @@ Parama Laga adalah aplikasi manajemen proyek yang memungkinkan pengguna untuk me
 ## 🔐 Autentikasi
 Aplikasi ini menggunakan NextAuth.js untuk autentikasi. Setelah menjalankan seed, Anda dapat login menggunakan kredensial berikut:
 
-### Admin:
-- **Email:** admin@example.com
-- **Password:** password
+### PM:
+- **Email:** pm@paramalaga.com
+- **Password:** Manager123!
 
 ## 📚 Pengembangan Lanjutan
 Untuk informasi lebih lanjut tentang pengembangan menggunakan Next.js:
