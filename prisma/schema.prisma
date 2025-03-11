@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        Int       @id @default(autoincrement()) @map("role_id")
+  roleName  String    @unique @map("role_name")
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  users     User[]
+
+  @@map("role")
+}
+
+model User {
+  id              Int             @id @default(autoincrement()) @map("user_id")
+  personnelId     String?         @unique @map("personnel_id")
+  name            String?
+  password        String
+  email           String          @unique
+  emailVerifiedAt DateTime?       @map("email_verified_at")
+  photoUrl        String?         @map("photo_url")
+  roleId          Int             @map("role_id")
+  createdAt       DateTime?       @map("created_at")
+  updatedAt       DateTime?       @map("updated_at")
+  role            Role            @relation(fields: [roleId], references: [id])
+  projectUsers    ProjectUser[]
+  sessions        Session[]
+
+  @@map("users")
+}
+
+model ProjectStatus {
+  id         Int       @id @default(autoincrement()) @map("status_id")
+  statusName String    @unique @map("status_name")
+  projects   Project[]
+
+  @@map("project_status")
+}
+
+model Project {
+  id           Int           @id @default(autoincrement()) @map("project_id")
+  projectCode  String        @unique @map("project_code")
+  projectName  String        @map("project_name")
+  projectOwner String        @map("project_owner")
+  statusId     Int           @map("status_id")
+  startDate    DateTime?     @map("start_date") @db.Date
+  endDate      DateTime?     @map("end_date") @db.Date
+  createdAt    DateTime?     @map("created_at")
+  updatedAt    DateTime?     @map("updated_at")
+  status       ProjectStatus @relation(fields: [statusId], references: [id])
+  projectUsers ProjectUser[]
+
+  @@map("project")
+}
+
+model ProjectUser {
+  projectId Int     @map("project_id")
+  userId    Int     @map("user_id")
+  position  String?
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@id([projectId, userId])
+  @@map("project_users")
+}
+
+model Session {
+  id           String    @id
+  sessionToken String    @unique @map("session_token")
+  userId       Int       @map("user_id")
+  expires      DateTime?
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  token      String    @id
+  identifier String
+  expires    DateTime?
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
