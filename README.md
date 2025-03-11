@@ -54,19 +54,36 @@ Parama Laga adalah aplikasi manajemen proyek yang memungkinkan pengguna untuk me
     ```
     Sesuaikan konfigurasi database pada file `.env`
 
-4. **Inisialisasi Database dan Pengisian Data Awal**
+    Ubah username, password, serta nama data base pada kode:
+    ```bash
+    DATABASE_URL="postgresql://username:password@localhost:5432/database_name?schema=public"
+    ```
+
+    Jangan lupa untuk membuat database Postgres terlebih dahulu di perangkatn Anda.
+
+4. **Install ts-node**
+   ```
+   npm install --save-dev ts-node
+   ```
+
+6. **Inisialisasi Database**
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+
+7. **Pengisian Data Awal**
     ```bash
     npx prisma db seed
     ```
 
-5. **Menjalankan Aplikasi**
+8. **Menjalankan Aplikasi**
     ```bash
     npm run dev
     # atau
     yarn dev
     ```
 
-6. **Mengakses Aplikasi**
+9. **Mengakses Aplikasi**
     Buka [http://localhost:3000](http://localhost:3000) di browser Anda untuk melihat aplikasi.
 
 ## 📂 Struktur Aplikasi
@@ -93,5 +110,3 @@ Untuk informasi lebih lanjut tentang pengembangan menggunakan Next.js:
 [MIT](LICENSE)
 
 ---
-
-Dibuat dengan ❤️ oleh Tim Parama Laga
