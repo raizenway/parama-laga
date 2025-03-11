@@ -34,7 +34,7 @@ const Sidebar = () => {
       router.push(path);
     };
     const pathname = usePathname();
-    const isAuthenticationPage = pathname.startsWith("/authentication");
+    const isAuthenticationPage = pathname?.startsWith("/authentication");
 
     return (
         <div className="md: w-72 bg-white h-screen flex-1 fixed border-r">
@@ -74,7 +74,7 @@ const Sidebar = () => {
                   icon={<ChartSpline size={20} />}
                   text="Performance Report"
                   active={activeItem === "Performance Report"}
-                  onClick={() => handleItemClick("Performance Report", "/dashboard")}
+                  onClick={() => handleItemClick("Performance Report", "#")}
                 />
                 <SidebarItem
                   icon={<Settings2 size={20} />}
