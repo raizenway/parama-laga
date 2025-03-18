@@ -2,14 +2,16 @@
 import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import StatusDropdown from "../status-dropdown";
-import ProjectAssigning from "../project-assigning";
+import ProjectAssigning from "../dropdown-multiple-selection";
 import { Button } from "@/components/ui/button";
+
+const projects = ["KAI", "Apple", "PLN", "Telkomsel"];
 
 export default function EmployeeForm({ onClose }: { onClose: () => void }) {
   const [position, setPosition] = useState("Status");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [image, setImage] = useState("person.png"); // Gambar default
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [multipleProjects, setMultipleProjects] = useState<string[]>([]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,8 +64,9 @@ export default function EmployeeForm({ onClose }: { onClose: () => void }) {
 
             {/* EMPLOYEE PROJECTS */}
             <ProjectAssigning
-              selectedItems={selectedItems}
-              setSelectedItems={setSelectedItems}
+              options={projects}
+              selectedItems={multipleProjects}
+              setSelectedItems={setMultipleProjects}
             />
 
             <Button className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900">
