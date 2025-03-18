@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import StatusDropdown from "../status-dropdown";
-import ProjectAssigning from "../project-assigning";
+import ProjectAssigning from "../dropdown-multiple-selection";
 import { Button } from "@/components/ui/button";
 import EmployeeAssigning from "../button/employee-assigning";
 
@@ -30,8 +30,6 @@ export default function ProjectForm({onClose} : {onClose: () => void}) {
               <Input placeholder="Date Started"/>
               <Input placeholder="Date Ended"/>
               <StatusDropdown position={position} setPosition={setPosition}/>
-
-            
             {/*EMPLOYEES ASSIGNED*/}
             <h1 className="my-1">Employees</h1>
             <EmployeeAssigning selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
