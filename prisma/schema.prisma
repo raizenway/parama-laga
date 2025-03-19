@@ -17,11 +17,17 @@ model Role {
   @@map("role")
 }
 
+enum Status {
+  active
+  inactive
+}
+
 model User {
   id              Int             @id @default(autoincrement()) @map("user_id")
   personnelId     String?         @unique @map("personnel_id")
   name            String?
   password        String
+  status          Status          
   email           String          @unique
   emailVerifiedAt DateTime?       @map("email_verified_at")
   photoUrl        String?         @map("photo_url")

@@ -8,12 +8,16 @@ CREATE TABLE "role" (
     CONSTRAINT "role_pkey" PRIMARY KEY ("role_id")
 );
 
+-- Create custom enum type for user status
+CREATE TYPE user_status AS ENUM ('active', 'inactive');
+
 -- CreateTable
 CREATE TABLE "users" (
     "user_id" SERIAL NOT NULL,
     "personnel_id" TEXT,
     "name" TEXT,
     "password" TEXT NOT NULL,
+    "status" user_status NOT NULL DEFAULT 'active',
     "email" TEXT NOT NULL,
     "email_verified_at" TIMESTAMP(3),
     "photo_url" TEXT,

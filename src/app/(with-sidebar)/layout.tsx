@@ -5,6 +5,7 @@ import Sidebar from "../components/sidebar";
 import PageWrapper from "../components/page-wrapper";
 import MarginWidthWrapper from "../components/margin-width-wrapper";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,7 @@ export default function WithSidebarLayout({ children }: { children: React.ReactN
           <MarginWidthWrapper>
             <PageWrapper>
               {children}
+              <Toaster position="top-right" />
             </PageWrapper>
           </MarginWidthWrapper>
         </main>
