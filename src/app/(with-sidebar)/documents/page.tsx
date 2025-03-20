@@ -3,8 +3,8 @@
 import { Input } from "@/components/ui/input"
 import AddButton from "@/app/components/button/button";
 import { useState } from "react";
-import TaskTable from "@/app/components/table/task-table";
-import TaskModal from "@/app/components/modal/task-modal";
+import DocumentTable from "@/app/components/table/task-table";
+import DocumentModal from "@/app/components/modal/task-modal";
 
   export default function Page() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -14,18 +14,18 @@ import TaskModal from "@/app/components/modal/task-modal";
         
         {/* Baris 2 */}
         <div className="mt-12 grow">
-          <div className="font-poppins font-bold text-2xl">Tasks</div>
+          <div className="font-poppins font-bold text-2xl">Documents</div>
           <div className="flex justify-end items-center gap-3">
           <Input className="w-72" type="email" placeholder="Search" />
-            <AddButton text="+ Add Task" onClick={() => setIsDetailOpen(true)}/>
+            <AddButton text="+ Add Document" onClick={() => setIsDetailOpen(true)}/>
           </div>
                 <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
                   <div className= "max-h-full w-full ">
-                      <TaskTable />
+                      <DocumentTable />
                   </div>
                 </div>
         </div>
-        <TaskModal open={isDetailOpen} onClose={() => setIsDetailOpen(false)} />
+        <DocumentModal open={isDetailOpen} onClose={() => setIsDetailOpen(false)} />
         
       </div>
       

@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, Trash2, Zap } from "lucide-react"
+import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, TrafficCone, Trash2, Zap } from "lucide-react"
 import React from "react"
 
 export default function ProjectTable(){
@@ -10,7 +10,7 @@ export default function ProjectTable(){
               <div className="flex items-center gap-1">Logo</div>
             </th>
             <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><MoveDown /> Project</div>
+              <div className="flex items-center gap-1"><TrafficCone /> Project</div>
             </th>
             <th className="px-4 py-2 text-left">
               <div className="flex items-center gap-1"><Building2 /> Company </div>
