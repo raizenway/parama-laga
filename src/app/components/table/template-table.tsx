@@ -20,7 +20,7 @@ export default function TemplateTable(){
         <tbody>
           {[...Array(5)].map((_, i) => (
             <tr key={i} className="border-b-2 border-tersier">
-              <td className="px-4 py-3">Cek Proposal</td>
+              <td className="px-4 py-3">Template Name</td>
               <td className="px-4 py-3">1 Jan 2025</td>
               <td className="px-4 py-3 flex gap-5 ">
                 <button>

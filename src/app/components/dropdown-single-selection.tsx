@@ -19,9 +19,11 @@ export default function DropdownSingleSelection({
     <div className="space-y-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            {selectedItem ? `${selectedItem}` : "Click to Select"}
-            <ChevronDown className="ml-2 h-4 w-4" />
+          <Button variant="outline" className="w-full border-slate-500 justify-between">
+              <span className={selectedItem ? "" : "text-opacity-40 text-black"}>
+                {selectedItem ? `${selectedItem}` : "Click to Select"}
+              </span>
+            <ChevronDown className="text-slate-500 ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">

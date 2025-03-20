@@ -1,7 +1,7 @@
 "use client"
 import { Input } from "@/components/ui/input"
 import ProjectTable from "@/app/components/table/project-table";
-import AddButton from "@/app/components/button/add-button";
+import AddButton from "@/app/components/button/button";
 import { useState } from "react";
 import ProjectModal from "@/app/components/modal/project-modal";
 

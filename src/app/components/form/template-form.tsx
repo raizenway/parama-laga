@@ -22,9 +22,10 @@ export default function TemplateForm({onClose} : {onClose: () => void}) {
             
             {/*CHECK LIST */}
             <h1 className="my-1">Check List</h1>
-            <CheckList selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
+            <div className="">
+              <CheckList selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
+            </div>
             <Button className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900"> Submit </Button>
-
           </div>
 
         </div> 
