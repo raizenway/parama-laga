@@ -18,8 +18,8 @@ export default function TaskCard() {
             <div className="flex items-center gap-4">
                 <ClipboardList size={36}/>
                 <div className="text-left">
-                    <div className="font-poppins font-bold text-primary mb-2">Task</div>
-                    <div className="flex gap-1 text-sm text-gray-600">Deskripsi singkat task</div>
+                    <div className="font-poppins font-bold text-primary mb-2">Template Task</div>
+                    <div className="flex gap-1 text-sm text-gray-600">Template description</div>
                 </div>  
             </div>
         </button>

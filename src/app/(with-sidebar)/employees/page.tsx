@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import EmployeeModal from "@/app/components/modal/employee-modal";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { useState, useEffect } from "react";
-import AddButton from "@/app/components/button/add-button";
+import AddButton from "@/app/components/button/button";
 import EmployeeTable from "@/app/components/table/employee-table";
 
 // Tipe data untuk karyawan

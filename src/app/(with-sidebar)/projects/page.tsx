@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import ProjectTable from "@/app/components/table/project-table";
-import AddButton from "@/app/components/button/add-button";
+// import AddButton from "@/app/components/button/add-button";
+import AddButton from "@/app/components/button/button";
 import ProjectModal from "@/app/components/modal/project-modal";
 import { Loader2 } from "lucide-react";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";

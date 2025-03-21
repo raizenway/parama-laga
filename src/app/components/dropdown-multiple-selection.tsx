@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 
 export default function DropdownMultipleSelection({
   options,
@@ -23,8 +23,11 @@ export default function DropdownMultipleSelection({
     <div className="space-y-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            {selectedItems.length > 0 ? `${selectedItems.length} Assigned` : "Select projects"}
+          <Button variant="outline" className="w-full border-slate-500 justify-between">
+              <span className={selectedItems.length > 0 ? "" : "text-opacity-40 text-black"}>
+                {selectedItems.length > 0 ? selectedItems.join(", ") : "Click to Select"}
+              </span>
+            <ChevronDown className="text-slate-500 ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">
