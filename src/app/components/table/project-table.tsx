@@ -1,57 +1,95 @@
 import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, Trash2, Zap } from "lucide-react"
-import React from "react"
 
-export default function ProjectTable(){
-    return (
-        <table className="font-poppins w-full table-auto justify-start">
-        <thead className="bg-tersier">
-          <tr>
-            <th className="px-4 py-2 rounded-tl-lg text-left">
-              <div className="flex items-center gap-1">Logo</div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><MoveDown /> Project</div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><Building2 /> Company </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CreditCard /> ID Project </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CalendarCheck2 /> Date Added </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CalendarClock /> Due Date </div>
-            </th>
-            <th className="px-4 py-2 rounded-tr-lg text-left">
-              <div className="flex items-center gap-1"><Zap /> Act </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...Array(5)].map((_, i) => (
-            <tr key={i} className="border-b-2 border-tersier">
-              <td className="px-4 py-3 justify-items-center"><div className="justify-center h-10 w-10 bg-green-300 rounded-full "></div></td>
-              <td className="px-4 py-3">Project KAI</td>
-              <td className="px-4 py-3">KAI</td>
-              <td className="px-4 py-3">DT 1452780</td>
-              <td className="px-4 py-3">1 Jan 2025</td>
-              <td className="px-4 py-3">1 Dec 2025</td>
-              <td className="px-4 py-3 flex justify-center gap-5 ">
-                <button>
+type Project = {
+  id: string;
+  projectName: string;
+  projectCode: string;
+  projectOwner: string;
+  startDate: string;
+  endDate: string;
+  status: {
+    statusName: string;
+  };
+  employees: string[];
+};
+
+type ProjectTableProps = {
+  projects: Project[];
+  onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
+};
+
+export default function ProjectTable({ projects, onEdit, onDelete }: ProjectTableProps) {
+  return (
+    <table className="font-poppins w-full table-auto justify-start">
+      <thead className="bg-tersier">
+        <tr>
+          <th className="px-4 py-2 rounded-tl-lg text-left">
+            <div className="flex items-center gap-1">Logo</div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1"><MoveDown /> Project</div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1"><Building2 /> Company </div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1"><CreditCard /> ID Project </div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1"><CalendarCheck2 /> Start Date </div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1"><CalendarClock /> End Date </div>
+          </th>
+          <th className="px-4 py-2 text-left">
+            <div className="flex items-center gap-1">Status</div>
+          </th>
+          <th className="px-4 py-2 rounded-tr-lg text-left">
+            <div className="flex items-center gap-1"><Zap /> Actions </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {projects.length > 0 ? (
+          projects.map((project) => (
+            <tr key={project.id} className="border-b-2 border-tersier">
+              <td className="px-4 py-3 justify-items-center">
+                <div className="justify-center h-10 w-10 bg-green-300 rounded-full"></div>
+              </td>
+              <td className="px-4 py-3">{project.projectName}</td>
+              <td className="px-4 py-3">{project.projectOwner}</td>
+              <td className="px-4 py-3">{project.projectCode}</td>
+              <td className="px-4 py-3">{new Date(project.startDate).toLocaleDateString()}</td>
+              <td className="px-4 py-3">{new Date(project.endDate).toLocaleDateString()}</td>
+              <td className="px-4 py-3">
+                <span className={`px-2 py-1 rounded-full text-sm ${
+                  project.status.statusName === "Completed" ? "bg-green-100 text-green-800" :
+                  project.status.statusName === "Ongoing" ? "bg-blue-100 text-blue-800" :
+                  project.status.statusName === "Delayed" ? "bg-red-100 text-red-800" :
+                  "bg-yellow-100 text-yellow-800"
+                }`}>
+                  {project.status.statusName}
+                </span>
+              </td>
+              <td className="px-4 py-3 flex justify-start gap-3">
+                <button onClick={() => onEdit(project)}>
                   <PencilLine className="text-green-600 hover:text-green-700"/>
                 </button>
-                <button>
+                <button onClick={() => onDelete(project)}>
                   <Trash2 className="text-red-500 hover:text-red-700"/>
-                </button>
-                <button>
-                  <Eye className="text-slate-800 hover:text-slate-950"/>
                 </button>
               </td>
             </tr>
-          ))}
-        </tbody>
-        </table>
-    )
+          ))
+        ) : (
+          <tr>
+            <td colSpan={8} className="text-center py-8">
+              No projects found.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
 }

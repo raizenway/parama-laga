@@ -192,6 +192,11 @@ export default function EmployeeForm({
     }
   };
 
+  const userStatusOptions = [
+    { value: "active", label: "Active", color: "text-emerald-500 hover:text-emerald-600 border-green-300" },
+    { value: "inactive", label: "Inactive", color: "text-red-500 hover:text-red-600 border-red-300" }
+  ];
+
   return (
     <div className="w-full bg-white">
       {isLoading ? (
@@ -248,7 +253,12 @@ export default function EmployeeForm({
                 onChange={handleChange}
                 required
               />
-              <StatusDropdown status={status} setStatus={setStatus} />
+              <StatusDropdown 
+                status={status} 
+                setStatus={setStatus} 
+                options={userStatusOptions} 
+                label="Employee Status" 
+              />
 
               <h1 className="my-1">Employee Account</h1>
               <Input 
