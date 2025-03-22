@@ -3,7 +3,7 @@ import Modal from "./modal";
 
 export default function EmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Employee Detail">
+    <Modal closeType="cross" open={open} onClose={onClose} title="Employee Detail">
       <EmployeeForm onClose={onClose} />
     </Modal>
   );

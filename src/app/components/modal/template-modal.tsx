@@ -4,7 +4,7 @@ import Modal from "./modal";
 
 export default function TemplateModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Template Detail">
+    <Modal closeType="cross" open={open} onClose={onClose} title="Template Detail">
       <TemplateForm onClose={onClose} />
     </Modal>
   );

@@ -10,7 +10,7 @@ import DocumentModal from "@/app/components/modal/task-modal";
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     return (
       <div className="mx-8 h-screen flex-wrap space-y-5 ">
-        
+
         
         {/* Baris 2 */}
         <div className="mt-12 grow">

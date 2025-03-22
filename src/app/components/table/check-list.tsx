@@ -4,6 +4,7 @@ import { Check, CircleCheckBig, ListChecks, NotebookPen, PlusCircle } from "luci
 const initialRows = [
   { task: "Cek kop surat", note: "Revisi nomor kop", checked: false },
   { task: "Cek tanda tangan", note: "Perbaiki posisi", checked: false },
+  { task: "Cek nomor surat", note: "Perbaiki posisi", checked: false },
 ];
 
 export default function ChecklistTable() {
@@ -77,19 +78,19 @@ export default function ChecklistTable() {
       </table>
 
       {/* Input baru dan tombol add */}
-      <div className="w-full  mt-4 flex gap-2">
+      <div className="w-full mt-4 flex gap-2">
         <input
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          className="w-4/5 p-2 border border-gray-300 rounded-md outline-none focus:border-primary"
+          className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
           placeholder="Add a new checklist..."
         />
         <button
           onClick={handleAddTask}
-          className="flex w-1/5 justify-center items-center gap-1 px-4 py-2 bg-secondary text-black font-bold rounded-md hover:bg-emerald-400"
+          className=""
         >
-          <PlusCircle size={20} /> Add Checklist
+          <PlusCircle size={30} className="text-tersier hover:text-indigo-400"/>
         </button>
       </div>
     </div>
