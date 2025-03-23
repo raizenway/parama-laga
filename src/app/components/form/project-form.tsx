@@ -122,6 +122,16 @@ export default function ProjectForm({
       });
       return;
     }
+    // Validate date range: end date must not be earlier than start date
+    const startDate = new Date(formData.startDate);
+    const endDate = new Date(formData.endDate);
+    
+    if (endDate < startDate) {
+      toast.error("Invalid date range", {
+        description: "End date cannot be earlier than start date"
+      });
+      return;
+    }
     
     // Collect all form data
     const projectData = {
