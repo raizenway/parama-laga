@@ -4,7 +4,7 @@ import Modal from "./modal";
 
 export default function TaskModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Task Detail">
+    <Modal open={open} closeType="cross" onClose={onClose} title="Task Detail">
       <TaskForm onClose={onClose} />
     </Modal>
   );

@@ -3,34 +3,37 @@
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import Button from "../button/button";
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
+  closeType: "cross" | "button";
+  closeText?: string;
+  width?: string;
+  height?: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
-export default function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
-  // Calculate width based on size prop
-  const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-2xl",
-    xl: "max-w-4xl"
-  };
-
+export default function Modal({ open, onClose, title, closeType, closeText="Okay", width="w-1/2", height="", children }: ModalProps) {
   return (
     <Dialog open={open} modal>
-      <DialogOverlay className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" />
-      <DialogContent className={`bg-white p-6 rounded-lg shadow-lg ${sizeClasses[size]} w-full mx-4 z-50 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`}>
-        {/* Header Modal */}
+      <DialogOverlay className="fixed inset-0 flex bg-opacity items-center justify-center" />
+      <DialogContent className={`bg-white rounded-lg shadow-lg ${width} ${height} max-w-full min-w-[300px]`}>
         <div className="flex justify-between items-center mb-4">
-          <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-          <X className="text-red-500 hover:text-red-700 cursor-pointer" onClick={onClose} />
+            <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+            {closeType === "cross" && (
+              <X className="text-red-500 hover:text-red-700 cursor-pointer" onClick={onClose} />
+            )}
         </div>
-        {/* Konten */}
-        {children}
+
+          {children}
+        <div className="mt-3 flex justify-center">
+          {closeType === "button" && (
+              <Button text={`${closeText}`} color="bg-sky-500" hoverColor="hover:bg-sky-600" textColor="text-white" onClick={onClose} />
+            )}
+        </div>
       </DialogContent>
     </Dialog>
   );

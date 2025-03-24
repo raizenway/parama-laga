@@ -151,7 +151,6 @@ const handleConfirmDelete = async () => {
 };
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
-      {/* Baris 2 */}
       <div className="mt-12 grow">
         <div className="font-poppins font-bold text-2xl">Employees</div>
           <div className="flex justify-end items-center gap-3">
@@ -162,7 +161,7 @@ const handleConfirmDelete = async () => {
               value={searchTerm}
               onChange={handleSearchChange}
             />
-            <AddButton text="+ Add Employee" onClick={handleAdd} />
+            <AddButton text="+ Add Employee" onClick={() => setIsDetailOpen(true)} />
           </div>
 
           <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
