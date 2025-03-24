@@ -22,12 +22,16 @@ export default function DropdownMultipleSelection({
   return (
     <div className="space-y-2">
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full border-slate-500 justify-between">
-              <span className={selectedItems.length > 0 ? "" : "text-opacity-40 text-black"}>
-                {selectedItems.length > 0 ? selectedItems.join(", ") : "Click to Select"}
-              </span>
-            <ChevronDown className="text-slate-500 ml-2 h-4 w-4" />
+            <span className={`truncate ${selectedItems.length > 0 ? "" : "text-opacity-40 text-black"}`}>
+              {selectedItems.length > 0 
+                ? (selectedItems.length > 2 
+                    ? `${selectedItems.slice(0, 2).join(", ")} + ${selectedItems.length - 2} more` 
+                    : selectedItems.join(", "))
+                : "Click to Select"}
+            </span>
+            <ChevronDown className="text-slate-500 ml-2 h-4 w-4 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">

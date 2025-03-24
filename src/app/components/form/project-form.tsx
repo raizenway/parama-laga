@@ -138,9 +138,7 @@ export default function ProjectForm({
       ...formData,
       status,
       employees: assignedEmployees.map(employeeName => ({
-        employeeName,
-        position: "Member" // Default position, can be customized if needed
-      }))
+        employeeName      }))
     };
   
     console.log("Submitting project data:", projectData);

@@ -81,10 +81,10 @@ export default function EmployeeTable({ employees, isLoading, error,onEdit, onDe
                   </div>
                 </td>
                 <td className="px-4 py-3">{employee.name}</td>
-                <td className="px-4 py-3">{employee.position}</td>
+                <td className="px-4 py-3">{employee.role}</td>
                 <td className="px-4 py-3">{employee.personnelId}</td>
                 <td className="px-4 py-3">{new Date(employee.dateAdded).toLocaleDateString()}</td>
-                <td className="px-4 py-3">{employee.projects.length > 0 ? employee.projects.join(', ') : '-'}</td>
+                <td className="px-4 py-3">  {employee.projects && employee.projects.length > 0 ? employee.projects.join(', ') : '-'}</td>
                 <td className="px-4 py-3 flex justify-center gap-3">
                 <button 
                     onClick={() => onEdit(employee)} 

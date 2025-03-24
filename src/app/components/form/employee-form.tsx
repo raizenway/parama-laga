@@ -21,7 +21,10 @@ export default function EmployeeForm({
   mode?: "add" | "edit";
   onSuccess?: () => void; // Add type for the new prop
 }){  
-  const [position, setPosition] = useState("");  // Changed from "Status" to empty string
+  // Project-specific positions
+  const [projectPositions, setProjectPositions] = useState<Record<string, string>>({});
+  // This will be stored in User.role field
+  const [defaultRole, setDefaultRole] = useState("");
   const [status, setStatus] = useState<UserStatus>("active");
   const [image, setImage] = useState("/person.png");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -34,6 +37,27 @@ export default function EmployeeForm({
     personnelId: "",
     password: ""
   });
+
+  // Update project positions when projects change
+  useEffect(() => {
+    const newPositions = { ...projectPositions };
+    
+    // Add positions for new projects
+    multipleProjects.forEach(project => {
+      if (!newPositions[project]) {
+        newPositions[project] = defaultRole; // Use default role as initial position
+      }
+    });
+    
+    // Remove positions for removed projects
+    Object.keys(newPositions).forEach(project => {
+      if (!multipleProjects.includes(project)) {
+        delete newPositions[project];
+      }
+    });
+    
+    setProjectPositions(newPositions);
+  }, [multipleProjects, defaultRole]);
 
   // Fetch projects from the database
   useEffect(() => {
@@ -60,8 +84,27 @@ export default function EmployeeForm({
   useEffect(() => {
     if (employee) {
       console.log("Setting form data from employee:", employee);
-      const employeePosition = employee.position || "";
-      setPosition(employeePosition);
+      
+      // Extract positions from employee data
+      const positions: Record<string, string> = {};
+      
+      // Use role field from User table
+      const role = employee.role || "";
+      setDefaultRole(role);
+      
+      // If employee has project-specific positions in the data
+      if (employee.projectUsers && employee.projectUsers.length > 0) {
+        employee.projectUsers.forEach((pu: any) => {
+          positions[pu.project] = pu.position || role;
+        });
+      } else if (employee.projects) {
+        // For backward compatibility
+        employee.projects.forEach((project: string) => {
+          positions[project] = role;
+        });
+      }
+      
+      setProjectPositions(positions);
       setImage(employee.photoUrl || "/person.png");
       setMultipleProjects(employee.projects || []);
       
@@ -76,7 +119,8 @@ export default function EmployeeForm({
         password: ""
       });
     } else {
-      setPosition("");
+      setDefaultRole("");
+      setProjectPositions({});
       setImage("/person.png");
       setMultipleProjects([]);
       setStatus("active");
@@ -92,9 +136,8 @@ export default function EmployeeForm({
   // Handle form input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "position") {
-      // If changing position field, update position state
-      setPosition(value);
+    if (name === "defaultRole") {
+      setDefaultRole(value);
     } else {
       // Update other form fields
       setFormData({
@@ -104,38 +147,57 @@ export default function EmployeeForm({
     }
   };
 
+  // Handle project position change
+  const handlePositionChange = (project: string, position: string) => {
+    setProjectPositions({
+      ...projectPositions,
+      [project]: position
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Form validation
     if (!formData.name || !formData.email || !formData.personnelId) {
-      alert("Please fill all required fields");
+      toast.error("Missing required fields", {
+        description: "Please fill in all required fields"
+      });
       return;
     }
     
     if (mode === "add" && !formData.password) {
-      alert("Password is required for new employees");
+      toast.error("Password required", {
+        description: "Password is required for new employees"
+      });
       return;
     }
     
-    if (!position) {
-      alert("Please enter an employee role");
+    // Check if any project is missing a position
+    const missingPositions = multipleProjects.filter(project => 
+      !projectPositions[project] || projectPositions[project].trim() === ""
+    );
+    
+    if (missingPositions.length > 0) {
+      toast.error("Missing project roles", {
+        description: `Please enter roles for all projects: ${missingPositions.join(", ")}`
+      });
       return;
     }
     
     // Collect all form data
     const employeeData = {
       ...formData,
-      position, // Use the position state variable
+      role: defaultRole, // This will be stored in User.role field
       status,   // Include the status
       projects: multipleProjects.map(projectName => ({
         projectName,
-        position: position || "Member"
+        position: projectPositions[projectName] // Project-specific position
       })),
       photoUrl: image !== "/person.png" ? image : null
     };
   
-    console.log("Submitting employee data:", employeeData); // Debug log
+    console.log("Submitting employee data:", employeeData);
     
     try {
       const url = mode === "add" ? "/api/employee" : `/api/employee?id=${employee.id}`;
@@ -176,11 +238,15 @@ export default function EmployeeForm({
       } 
       else {
         console.error("Error saving employee:", responseData);
-        alert(`Error: ${responseData.message || "Unknown error"}`);
+        toast.error(`Error: ${responseData.message || "Unknown error"}`, {
+          description: "Please check your form data and try again."
+        });
       }
     } catch (error) {
       console.error("Error in request:", error);
-      alert("An error occurred while saving the employee");
+      toast.error("Network Error", {
+        description: "An error occurred while saving the employee data."
+      });
     }
   };
 
@@ -205,11 +271,11 @@ export default function EmployeeForm({
           <span>Loading project data...</span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="font-poppins space-y-5">
+        <form onSubmit={handleSubmit} className="font-poppins">
           <div className="flex grow gap-8">
             {/* Image Upload */}
             <div
-              className="relative cursor-pointer group"
+              className="relative cursor-pointer group shrink-0"
               onClick={() => fileInputRef.current?.click()}
             >
               <img
@@ -229,9 +295,9 @@ export default function EmployeeForm({
               />
             </div>
 
-            <div className="flex flex-col grow gap-2">
+            <div className="flex flex-col grow gap-2 max-h-[70vh] overflow-y-auto pr-2">
               {/* EMPLOYEE IDENTITY */}
-              <h1 className="my-1">Employee Identity</h1>
+              <h1 className="my-1 text-base font-medium">Employee Identity</h1>
               <Input 
                 name="name"
                 placeholder="Employee Name" 
@@ -240,9 +306,9 @@ export default function EmployeeForm({
                 required
               />
               <Input 
-                name="position"
+                name="defaultRole"
                 placeholder="Employee Role" 
-                value={position}
+                value={defaultRole}
                 onChange={handleChange}
                 required
               />
@@ -260,7 +326,7 @@ export default function EmployeeForm({
                 label="Employee Status" 
               />
 
-              <h1 className="my-1">Employee Account</h1>
+              <h1 className="my-1 mt-3 text-base font-medium">Employee Account</h1>
               <Input 
                 name="email"
                 type="email" 
@@ -278,7 +344,7 @@ export default function EmployeeForm({
                 required={mode === "add"}
               />
 
-              <h1 className="my-2">Project</h1>
+              <h1 className="my-1 mt-3 text-base font-medium">Project Assignment</h1>
 
               {/* EMPLOYEE PROJECTS */}
               <ProjectAssigning
@@ -286,10 +352,14 @@ export default function EmployeeForm({
                 selectedItems={multipleProjects}
                 setSelectedItems={setMultipleProjects}
               />
-
+              {multipleProjects.length <= 0 && (
+                <div className="text-amber-500 text-sm mb-2">
+                  Please select at least one project to assign roles.
+                </div>
+              )}              
               <Button 
                 type="submit"
-                className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900"
+                className="my-4 bg-primary text-white w-1/3 hover:bg-indigo-900"
               >
                 {mode === "add" ? "Submit" : "Update"}
               </Button>

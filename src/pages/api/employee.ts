@@ -40,11 +40,7 @@ async function getEmployees(req: NextApiRequest, res: NextApiResponse) {
     try {
         const employees = await prisma.user.findMany({
             include: {
-                role: {
-                    select: {
-                        roleName: true
-                    }
-                },
+                roleAccess: true, // Changed from role to roleAccess
                 projectUsers: {
                     include: {
                         project: {
@@ -61,17 +57,26 @@ async function getEmployees(req: NextApiRequest, res: NextApiResponse) {
         });
 
         // Format data for frontend
-        const formattedEmployees = employees.map(employee => ({
-            id: employee.id,
-            name: employee.name,
-            email: employee.email,
-            personnelId: employee.personnelId,
-            photoUrl: employee.photoUrl,
-            position: employee.role?.roleName,
-            status: employee.status, // Include status field
-            projects: employee.projectUsers.map(pu => pu.project.projectName),
-            dateAdded: employee.createdAt
-        }));
+        const formattedEmployees = employees.map(employee => {
+            // Get project names
+            const projectUsers = employee.projectUsers.map(pu => ({
+                project: pu.project.projectName,
+            }));
+            
+            return {
+                id: employee.id,
+                name: employee.name,
+                email: employee.email,
+                personnelId: employee.personnelId,
+                photoUrl: employee.photoUrl,
+                role: employee.role || 'No role assigned', // Use the new role field
+                status: employee.status,
+                roleAccess: employee.roleAccess?.roleName || 'No access role',
+                projectUsers: projectUsers,
+                projects: employee.projectUsers.map(pu => pu.project.projectName),
+                dateAdded: employee.createdAt
+            };
+        });
     
         return res.status(200).json(formattedEmployees);
     } catch (error) {
@@ -83,10 +88,13 @@ async function getEmployees(req: NextApiRequest, res: NextApiResponse) {
 // Function to create a new employee
 async function createEmployee(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const { name, email, personnelId, password, position, status, projects, photoUrl } = req.body;
+        const { name, email, personnelId, password, role, status, projects, photoUrl } = req.body;
+
+        // Console log for debugging
+        console.log("Creating employee with projects:", projects);
 
         // Validate required inputs
-        if(!name || !email || !personnelId || !password || !position) {
+        if(!name || !email || !personnelId || !password) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -104,63 +112,69 @@ async function createEmployee(req: NextApiRequest, res: NextApiResponse) {
             return res.status(409).json({ message: 'Email already in use' });
         }
 
-        // Get role ID based on position name
-        const role = await prisma.role.findFirst({
-            where: { 
-                roleName: { 
-                    equals: position.toLowerCase(), 
-                    mode: 'insensitive' 
-                } 
-            }
+        // We need a default role access for new users (employee)
+        const defaultRoleAccess = await prisma.roleAccess.findFirst({
+            where: { roleName: 'employee' } // Changed from role to roleAccess
         });
 
-        if(!role) {
-            return res.status(404).json({ message: 'Role not found' });
+        if(!defaultRoleAccess) {
+            return res.status(404).json({ message: 'Default role access not found' });
         }
 
         // Hash password
         const hashedPassword = await hash(password, 10);
 
-        // Create new user with status
-        const newUser = await prisma.user.create({
-            data: {
-                name,
-                email,
-                personnelId,
-                password: hashedPassword,
-                roleId: role.id,
-                photoUrl: photoUrl || null,
-                status: status, // Set the status field
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            }
-        });
+        // Create new user with status and role
+        const newUser = await prisma.$transaction(async (tx) => {
+            // Create the user first
+            const user = await tx.user.create({
+                data: {
+                    name,
+                    email,
+                    personnelId,
+                    password: hashedPassword,
+                    roleId: defaultRoleAccess.id,
+                    role: role || 'Employee',
+                    photoUrl: photoUrl || null,
+                    status: status,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+            });
 
-        // Create project relationships if provided
-        if(projects && projects.length > 0) {
-            for(const project of projects) {
-                const existingProject = await prisma.project.findFirst({
-                    where: { 
-                        projectName: { 
-                            equals: project.projectName, 
-                            mode: 'insensitive' 
-                        } 
-                    }
-                });
-
-                if(existingProject) {
-                    await prisma.projectUser.create({
-                        data: {
-                            userId: newUser.id,
-                            projectId: existingProject.id,
-                            position: project.position || 'Member'
+            // Create project relationships if provided
+            if(projects && projects.length > 0) {
+                for(const project of projects) {
+                    // Handle both string and object formats
+                    const projectName = typeof project === 'string' ? project : project.projectName;
+                    console.log(`Looking for project: "${projectName}"`);
+                    
+                    const existingProject = await tx.project.findFirst({
+                        where: { 
+                            projectName: { 
+                                equals: projectName, 
+                                mode: 'insensitive' 
+                            } 
                         }
                     });
+
+                    if(existingProject) {
+                        console.log(`Found project ID: ${existingProject.id}`);
+                        await tx.projectUser.create({
+                            data: {
+                                userId: user.id,
+                                projectId: existingProject.id,
+                            }
+                        });
+                    } else {
+                        console.log(`Project not found: ${projectName}`);
+                    }
                 }
             }
-        }
-
-        // Return new user (without password)
+            
+            return user;
+        });
+        // Return new user without password
         const { password: _, ...userWithoutPassword } = newUser;
         return res.status(201).json(userWithoutPassword);
     } catch (error) {
@@ -178,7 +192,9 @@ async function updateEmployee(req: NextApiRequest, res: NextApiResponse) {
             return res.status(400).json({ message: 'Employee ID is required' });
         }
 
-        const { name, email, personnelId, password, position, status, projects, photoUrl } = req.body;
+        const { name, email, personnelId, password, role, status, projects, photoUrl } = req.body;
+
+        console.log("Updating employee with projects:", projects);
 
         // Validate status if provided
         if(status && status !== 'active' && status !== 'inactive') {
@@ -187,10 +203,7 @@ async function updateEmployee(req: NextApiRequest, res: NextApiResponse) {
 
         // Get current user data
         const existingUser = await prisma.user.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-                role: true
-            }
+            where: { id: parseInt(id) }
         });
 
         if(!existingUser) {
@@ -208,82 +221,86 @@ async function updateEmployee(req: NextApiRequest, res: NextApiResponse) {
             }
         }
 
-        // Get role ID if position is changing
-        let roleId = existingUser.roleId;
-        if(position) {
-            const role = await prisma.role.findFirst({
-                where: { 
-                    roleName: { 
-                        equals: position.toLowerCase(), 
-                        mode: 'insensitive' 
-                    } 
-                }
+        // Use transaction for the entire update operation
+        const updatedUser = await prisma.$transaction(async (tx) => {
+            // Get current user data
+            const existingUser = await tx.user.findUnique({
+                where: { id: parseInt(id) }
             });
 
-            if(!role) {
-                return res.status(404).json({ message: 'Role not found' });
+            if(!existingUser) {
+                throw new Error('Employee not found');
             }
-            roleId = role.id;
-        }
 
-        // Update user data
-        const updateData: any = {
-            name: name || existingUser.name,
-            email: email || existingUser.email,
-            personnelId: personnelId || existingUser.personnelId,
-            roleId,
-            status: status || existingUser.status, // Update status if provided
-            photoUrl: photoUrl || existingUser.photoUrl,
-            updatedAt: new Date()
-        };
+            // Update user data
+            const updateData: any = {
+                name: name || existingUser.name,
+                email: email || existingUser.email,
+                personnelId: personnelId || existingUser.personnelId,
+                role: role || existingUser.role,
+                status: status || existingUser.status,
+                photoUrl: photoUrl || existingUser.photoUrl,
+                updatedAt: new Date()
+            };
 
-        // Only update password if provided
-        if(password) {
-            updateData.password = await hash(password, 10);
-        }
+            // Only update password if provided
+            if(password) {
+                updateData.password = await hash(password, 10);
+            }
 
-        // Update user in database
-        const updatedUser = await prisma.user.update({
-            where: { id: parseInt(id) },
-            data: updateData
-        });
-
-        // Update project relations if provided
-        if(projects && projects.length > 0) {
-            // First remove all existing project relations
-            await prisma.projectUser.deleteMany({
-                where: { userId: parseInt(id) }
+            // Update user in database
+            const user = await tx.user.update({
+                where: { id: parseInt(id) },
+                data: updateData
             });
 
-            // Then add new project relations
-            for(const project of projects) {
-                const existingProject = await prisma.project.findFirst({
-                    where: { 
-                        projectName: { 
-                            equals: project.projectName, 
-                            mode: 'insensitive' 
-                        } 
-                    }
+            // Update project relations if provided
+            if(projects && projects.length > 0) {
+                // First remove all existing project relations
+                await tx.projectUser.deleteMany({
+                    where: { userId: parseInt(id) }
                 });
 
-                if(existingProject) {
-                    await prisma.projectUser.create({
-                        data: {
-                            userId: parseInt(id),
-                            projectId: existingProject.id,
-                            position: project.position || 'Member'
+                // Then add new project relations
+                for(const project of projects) {
+                    const projectName = typeof project === 'string' ? project : project.projectName;
+                    console.log(`Looking for project: "${projectName}"`);
+                    
+                    const existingProject = await tx.project.findFirst({
+                        where: { 
+                            projectName: { 
+                                equals: projectName, 
+                                mode: 'insensitive' 
+                            } 
                         }
                     });
+
+                    if(existingProject) {
+                        console.log(`Found project ID: ${existingProject.id}`);
+                        await tx.projectUser.create({
+                            data: {
+                                userId: parseInt(id),
+                                projectId: existingProject.id,
+                            }
+                        });
+                    } else {
+                        console.log(`Project not found: ${projectName}`);
+                    }
                 }
             }
-        }
+            
+            return user;
+        });
 
-        // Return updated user (without password)
+        // Return updated user without password
         const { password: _, ...userWithoutPassword } = updatedUser;
         return res.status(200).json(userWithoutPassword);
     } catch (error) {
         console.error('Error updating employee:', error);
-        return res.status(500).json({ message: 'Internal server error', error });
+        return res.status(500).json({ 
+            message: error instanceof Error ? error.message : 'Internal server error', 
+            error 
+        });
     }
 }
 
@@ -296,6 +313,8 @@ async function deleteEmployee(req: NextApiRequest, res: NextApiResponse) {
             return res.status(400).json({ message: 'Employee ID is required' });
         }
         
+        console.log(`Attempting to delete employee with ID: ${id}`);
+        
         // Check if employee exists
         const employee = await prisma.user.findUnique({
             where: { id: parseInt(id) }
@@ -307,17 +326,24 @@ async function deleteEmployee(req: NextApiRequest, res: NextApiResponse) {
 
         // Use transaction to ensure all related records are deleted atomically
         await prisma.$transaction(async (tx) => {
-            // Delete sessions first
+            // Delete all potential relationships first
+            console.log("Deleting sessions...");
             await tx.session.deleteMany({
                 where: { userId: parseInt(id) }
             });
-
-            // Delete project_users relations
+            
+            console.log("Deleting project assignments...");
             await tx.projectUser.deleteMany({
                 where: { userId: parseInt(id) }
             });
             
-            // Finally delete the user
+            console.log("Updating tasks...");
+            await tx.task.updateMany({
+                where: { userId: parseInt(id) },
+                data: { userId: undefined }
+            });
+            
+            console.log("Deleting user...");
             await tx.user.delete({
                 where: { id: parseInt(id) }
             });
@@ -326,6 +352,10 @@ async function deleteEmployee(req: NextApiRequest, res: NextApiResponse) {
         return res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         console.error('Error deleting employee:', error);
-        return res.status(500).json({ message: 'Internal server error', error });
+        return res.status(500).json({ 
+            message: 'Internal server error', 
+            details: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+        });
     }
 }

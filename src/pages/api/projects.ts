@@ -85,6 +85,9 @@ async function createProject(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { projectName, projectCode, projectOwner, startDate, endDate, status, employees } = req.body;
 
+    console.log('Creating project with data:', { projectName, projectCode, projectOwner, startDate, endDate, status });
+    console.log('Employees:', employees);
+
     // Validate required inputs
     if(!projectName || !projectCode || !projectOwner || !startDate || !endDate) {
       return res.status(400).json({ message: 'Missing required fields' });
@@ -101,51 +104,111 @@ async function createProject(req: NextApiRequest, res: NextApiResponse) {
     });
 
     if(!projectStatus) {
-      return res.status(404).json({ message: 'Status not found' });
+      return res.status(404).json({ 
+        message: `Status "${status}" not found. Available statuses: Pending, Ongoing, Completed, Delayed` 
+      });
     }
 
-    // Create new project
-    const newProject = await prisma.project.create({
-      data: {
-        projectName,
-        projectCode,
-        projectOwner,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        statusId: projectStatus.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    });
-
-    // Create employee assignments if provided
-    if(employees && employees.length > 0) {
-      for(const employee of employees) {
-        const user = await prisma.user.findFirst({
-          where: { 
-            name: { 
-              equals: employee.employeeName, 
-              mode: 'insensitive' 
-            } 
+    try {
+      // Use a transaction to ensure data consistency
+      let projectId: number;
+      await prisma.$transaction(async (tx) => {
+        // Create new project
+        const project = await tx.project.create({
+          data: {
+            projectName,
+            projectCode,
+            projectOwner,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            statusId: projectStatus.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           }
         });
+        
+        projectId = project.id;
 
-        if(user) {
-          await prisma.projectUser.create({
-            data: {
-              userId: user.id,
-              projectId: newProject.id,
-              position: employee.position || 'Member'
+        // Create employee assignments if provided
+        if(employees && Array.isArray(employees) && employees.length > 0) {
+          for(const employee of employees) {
+            if (!employee.employeeName) {
+              console.warn('Skipping employee assignment without name:', employee);
+              continue;
             }
-          });
-        }
-      }
-    }
 
-    return res.status(201).json(newProject);
+            const user = await tx.user.findFirst({
+              where: { 
+                name: { 
+                  equals: employee.employeeName, 
+                  mode: 'insensitive' 
+                } 
+              }
+            });
+
+            if(user) {
+              await tx.projectUser.create({
+                data: {
+                  userId: user.id,
+                  projectId: project.id
+                }
+              });
+            } else {
+              console.warn(`User ${employee.employeeName} not found, skipping assignment.`);
+            }
+          }
+        }
+      });
+
+      // Fetch the created project after transaction completes
+      const newProject = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: {
+          status: true,
+          projectUsers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  personnelId: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Format response object - similar to what you do in updateProject
+      const response = newProject ? {
+        id: newProject.id,
+        projectName: newProject.projectName,
+        projectCode: newProject.projectCode,
+        projectOwner: newProject.projectOwner,
+        startDate: newProject.startDate,
+        endDate: newProject.endDate,
+        status: newProject.status.statusName,
+        employees: newProject.projectUsers.map(pu => ({
+          employeeName: pu.user.name
+        }))
+      } : { message: 'Project created but could not retrieve details' };
+
+      return res.status(201).json(response);
+      
+    } catch (txError) {
+      console.error('Transaction error:', txError);
+      return res.status(500).json({ 
+        message: 'Error creating project data', 
+        error: txError instanceof Error ? txError.message : 'Unknown transaction error' 
+      });
+    }
   } catch (error) {
     console.error('Error creating project:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
+    return res.status(500).json({ 
+      message: error instanceof Error ? error.message : 'Internal server error',
+      error 
+    });
   }
 }
 
@@ -159,6 +222,10 @@ async function updateProject(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const { projectName, projectCode, projectOwner, startDate, endDate, status, employees } = req.body;
+    
+    console.log('Updating project with ID:', id);
+    console.log('Update data:', { projectName, projectCode, projectOwner, startDate, endDate, status });
+    console.log('Employees:', employees);
 
     // Get current project data
     const existingProject = await prisma.project.findUnique({
@@ -182,59 +249,115 @@ async function updateProject(req: NextApiRequest, res: NextApiResponse) {
       });
 
       if(!projectStatus) {
-        return res.status(404).json({ message: 'Status not found' });
+        return res.status(404).json({ 
+          message: `Status "${status}" not found. Available statuses: Pending, Ongoing, Completed, Delayed` 
+        });
       }
       statusId = projectStatus.id;
     }
 
-    // Update project in database
-    const updatedProject = await prisma.project.update({
-      where: { id: parseInt(id) },
-      data: {
-        projectName: projectName || existingProject.projectName,
-        projectCode: projectCode || existingProject.projectCode,
-        projectOwner: projectOwner || existingProject.projectOwner,
-        startDate: startDate ? new Date(startDate) : existingProject.startDate,
-        endDate: endDate ? new Date(endDate) : existingProject.endDate,
-        statusId,
-        updatedAt: new Date()
-      }
-    });
-
-    // Update employee assignments if provided
-    if(employees && employees.length > 0) {
-      // First remove all existing project-user relations
-      await prisma.projectUser.deleteMany({
-        where: { projectId: parseInt(id) }
-      });
-
-      // Then add new project-user relations
-      for(const employee of employees) {
-        const user = await prisma.user.findFirst({
-          where: { 
-            name: { 
-              equals: employee.employeeName, 
-              mode: 'insensitive' 
-            } 
+    try {
+      // Use a transaction to ensure data consistency
+      await prisma.$transaction(async (tx) => {
+        // Update project in database
+        await tx.project.update({
+          where: { id: parseInt(id) },
+          data: {
+            projectName: projectName !== undefined ? projectName : existingProject.projectName,
+            projectCode: projectCode !== undefined ? projectCode : existingProject.projectCode,
+            projectOwner: projectOwner !== undefined ? projectOwner : existingProject.projectOwner,
+            startDate: startDate ? new Date(startDate) : existingProject.startDate,
+            endDate: endDate ? new Date(endDate) : existingProject.endDate,
+            statusId,
+            updatedAt: new Date()
           }
         });
 
-        if(user) {
-          await prisma.projectUser.create({
-            data: {
-              projectId: parseInt(id),
-              userId: user.id,
-              position: employee.position || 'Member'
-            }
+        // Update employee assignments if provided
+        if(employees && Array.isArray(employees)) {
+          // First remove all existing project-user relations
+          await tx.projectUser.deleteMany({
+            where: { projectId: parseInt(id) }
           });
-        }
-      }
-    }
 
-    return res.status(200).json(updatedProject);
+          // Then add new project-user relations
+          for(const employee of employees) {
+            if (!employee.employeeName) {
+              console.warn('Skipping employee assignment without name:', employee);
+              continue;
+            }
+            
+            const user = await tx.user.findFirst({
+              where: { 
+                name: { 
+                  equals: employee.employeeName, 
+                  mode: 'insensitive' 
+                } 
+              }
+            });
+
+            if(user) {
+              await tx.projectUser.create({
+                data: {
+                  projectId: parseInt(id),
+                  userId: user.id,
+                }
+              });
+            } else {
+              console.warn(`User ${employee.employeeName} not found, skipping assignment.`);
+            }
+          }
+        }
+      });
+
+      // Fetch the updated project after transaction is complete
+      const updatedProject = await prisma.project.findUnique({
+        where: { id: parseInt(id) },
+        include: {
+          status: true,
+          projectUsers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  personnelId: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Format response object
+      const response = updatedProject ? {
+        id: updatedProject.id,
+        projectName: updatedProject.projectName,
+        projectCode: updatedProject.projectCode,
+        projectOwner: updatedProject.projectOwner,
+        startDate: updatedProject.startDate,
+        endDate: updatedProject.endDate,
+        status: updatedProject.status.statusName,
+        employees: updatedProject.projectUsers.map(pu => ({
+          employeeName: pu.user.name
+        }))
+      } : { message: 'Project updated but could not retrieve details' };
+
+      return res.status(200).json(response);
+    } catch (txError) {
+      console.error('Transaction error:', txError);
+      return res.status(500).json({ 
+        message: 'Error updating project data', 
+        error: txError instanceof Error ? txError.message : 'Unknown transaction error' 
+      });
+    }
   } catch (error) {
-    console.error('Error updating project:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
+    console.error('Error handling update request:', error);
+    return res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
 
@@ -258,7 +381,24 @@ async function deleteProject(req: NextApiRequest, res: NextApiResponse) {
 
     // Use transaction to ensure all related records are deleted atomically
     await prisma.$transaction(async (tx) => {
-      // Delete project-user relations first
+      // Find tasks related to this project
+      const tasks = await tx.task.findMany({
+        where: { projectId: parseInt(id) }
+      });
+      
+      // For each task, delete associated task progress entries
+      for (const task of tasks) {
+        await tx.taskProgress.deleteMany({
+          where: { taskId: task.id }
+        });
+      }
+      
+      // Delete tasks related to this project
+      await tx.task.deleteMany({
+        where: { projectId: parseInt(id) }
+      });
+      
+      // Delete project-user relations
       await tx.projectUser.deleteMany({
         where: { projectId: parseInt(id) }
       });

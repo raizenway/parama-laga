@@ -5,6 +5,7 @@ import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { useState, useEffect } from "react";
 import AddButton from "@/app/components/button/button";
 import EmployeeTable from "@/app/components/table/employee-table";
+import { toast } from "sonner";
 
 // Tipe data untuk karyawan
 type Employee = {
@@ -28,6 +29,15 @@ export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+
+  const closeEmployeeModal = () => {
+    setIsDetailOpen(false);
+    // Important: Reset the selectedEmployee when closing the modal
+    // This ensures a fresh form when "Add Employee" is clicked
+    setSelectedEmployee(null);
+  };
 
   const fetchEmployees = async () => {
     try {
@@ -104,95 +114,110 @@ export default function Page() {
     // Refresh employee list
     fetchEmployees();
   };
-
-// Handle delete confirmation
-const handleConfirmDelete = async () => {
-  if (!selectedEmployee) return;
-
-  try {
-    console.log("Deleting employee:", selectedEmployee.id);
-    const response = await fetch(`/api/employee?id=${selectedEmployee.id}`, {
-      method: 'DELETE',
-    });
+  
+  // Update your handleDeleteConfirm function
+  const handleDeleteConfirm = async () => {
+    if (!selectedEmployee) return;
     
-    // Log status dan response untuk debugging
-    console.log("Delete response status:", response.status);
-    
-    if (response.ok) {
-      // Response parseable sebagai JSON
-      const data = await response.json().catch(() => ({ message: "Success but no JSON returned" }));
-      console.log("Delete successful:", data);
-      fetchEmployees();
-      setIsDeleteOpen(false);
-    } else {
-      // Error response
-      let errorMessage = "Failed to delete employee";
-      try {
-        const errorData = await response.json();
-        console.error("Delete failed:", errorData);
-        errorMessage = errorData.message || "Unknown error";
+    setDeleteLoading(true);
+    try {
+      const response = await fetch(`/api/employee?id=${selectedEmployee.id}`, {
+        method: 'DELETE',
+      });
+      
+      console.log("Delete response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json().catch(() => ({ message: "Success but no JSON returned" }));
+        console.log("Delete successful:", data);
         
-        // Log detail error jika ada
-        if (errorData.details) {
-          console.error("Error details:", errorData.details);
+        // Add success toast notification
+        toast.success(`Employee Deleted`, {
+          description: `${selectedEmployee.name} has been successfully removed from the system.`
+        });
+        
+        fetchEmployees();
+        setIsDeleteOpen(false);
+      } else {
+        // Error handling
+        let errorMessage = "Failed to delete employee";
+        try {
+          const errorData = await response.json();
+          console.error("Delete failed:", errorData);
+          errorMessage = errorData.message || "Unknown error";
+          
+          // Add error toast notification
+          toast.error(`Delete Failed`, {
+            description: errorMessage
+          });
+          
+          if (errorData.details) {
+            console.error("Error details:", errorData.details);
+          }
+          if (errorData.constraints) {
+            console.error("Constraint details:", errorData.constraints);
+          }
+        } catch (jsonError) {
+          console.error("Error parsing JSON response:", jsonError);
+          toast.error(`Delete Failed`, {
+            description: "An unexpected error occurred"
+          });
         }
-        if (errorData.constraints) {
-          console.error("Constraint details:", errorData.constraints);
-        }
-      } catch (jsonError) {
-        console.error("Error parsing error response:", jsonError);
       }
-      alert(`Failed to delete employee: ${errorMessage}`);
+    } catch (error) {
+      console.error("Network error:", error);
+      toast.error(`Network Error`, {
+        description: "Could not connect to the server"
+      });
+    } finally {
+      setDeleteLoading(false);
     }
-  } catch (error) {
-    console.error("Network or fetch error:", error);
-    alert("An error occurred while trying to delete the employee");
-  }
-};
+  };
+
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
       <div className="mt-12 grow">
         <div className="font-poppins font-bold text-2xl">Employees</div>
-          <div className="flex justify-end items-center gap-3">
-            <Input 
-              className="w-72" 
-              type="text" 
-              placeholder="Search" 
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
-            <AddButton text="+ Add Employee" onClick={() => setIsDetailOpen(true)} />
-          </div>
+        <div className="flex justify-end items-center gap-3">
+          <Input 
+            className="w-72" 
+            type="text" 
+            placeholder="Search" 
+            onChange={handleSearchChange}
+          />
+          <AddButton text="+ Add Employee" onClick={handleAdd} />
+        </div>
 
-          <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
-            <div className="max-h-full w-full">
-              <EmployeeTable 
-                employees={filteredEmployees} 
-                isLoading={isLoading} 
-                error={error}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </div>
+        <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
+          <div className="max-h-full w-full">
+            <EmployeeTable 
+              employees={filteredEmployees} 
+              isLoading={isLoading} 
+              error={error}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
         </div>
+      </div>
 
       {/* Employee Modal */}
       <EmployeeModal 
         open={isDetailOpen} 
-        onClose={() => setIsDetailOpen(false)} 
+        onClose={closeEmployeeModal} 
         employee={selectedEmployee}
         mode={modalMode}
-        onEmployeeChange={handleEmployeeChange} // Add this new prop
+        onEmployeeChange={handleEmployeeChange}
       />
-
+      
       {/* Delete Confirmation */}
       {selectedEmployee && (
         <DeleteConfirmation 
           open={isDeleteOpen}
           onClose={() => setIsDeleteOpen(false)}
-          onConfirm={handleConfirmDelete}
+          onConfirm={handleDeleteConfirm}
           name={selectedEmployee.name}
+          isLoading={deleteLoading}
         />
       )}
     </div>

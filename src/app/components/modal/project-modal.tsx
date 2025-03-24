@@ -25,7 +25,7 @@ export default function ProjectModal({
   }, [open, project]);
 
   return (
-    <Modal open={open} onClose={onClose} title={title} size="lg">
+    <Modal closeType="cross" open={open} onClose={onClose} title={title} size="lg">
       <ProjectForm 
         onClose={onClose} 
         project={project} 

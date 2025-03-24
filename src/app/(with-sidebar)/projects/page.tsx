@@ -7,6 +7,7 @@ import AddButton from "@/app/components/button/button";
 import ProjectModal from "@/app/components/modal/project-modal";
 import { Loader2 } from "lucide-react";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
+import { toast } from "sonner"; // Make sure to import toast
 
 // Define project type
 type Project = {
@@ -30,6 +31,8 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
 
   // Fetch projects
   const fetchProjects = async () => {
@@ -73,6 +76,7 @@ export default function Page() {
 
   const confirmDeleteProject = async () => {
     if (!selectedProject) return;
+    setDeleteLoading(true);
     
     try {
       const response = await fetch(`/api/projects?id=${selectedProject.id}`, {
@@ -80,13 +84,37 @@ export default function Page() {
       });
       
       if (response.ok) {
+        // Show success toast notification
+        toast.success("Project Berhasil Dihapus", {
+          description: `Project "${selectedProject.projectName}" telah berhasil dihapus dari sistem.`
+        });
+        
         setIsDeleteModalOpen(false);
         fetchProjects(); // Refresh list
       } else {
-        console.error("Failed to delete project");
+        // Parse error response
+        let errorMessage = "Gagal menghapus project";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If response can't be parsed as JSON
+        }
+        
+        // Show error toast notification
+        toast.error("Gagal Menghapus Project", {
+          description: errorMessage
+        });
+        console.error("Failed to delete project:", errorMessage);
       }
     } catch (error) {
+      // Show error toast notification for network/unexpected errors
+      toast.error("Error", {
+        description: "Terjadi kesalahan saat menghapus project. Silahkan coba lagi nanti."
+      });
       console.error("Error deleting project:", error);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -130,8 +158,11 @@ export default function Page() {
         open={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDeleteProject}
-        title="Delete Project"
-        description={`Are you sure you want to delete ${selectedProject?.projectName}? This action cannot be undone.`}
+        name={selectedProject?.projectName || ""}
+        entityType="project"
+        title="Konfirmasi Hapus Project"
+        description={`Tindakan ini tidak dapat dibatalkan. Semua tasks dan progress terkait project ini juga akan dihapus.`}
+        isLoading={deleteLoading}
       />
     </div>
   );
