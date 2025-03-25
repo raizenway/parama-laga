@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Check, CircleCheckBig, ListChecks, NotebookPen, PlusCircle } from "lucide-react";
+import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
-const initialRows = [
-  { task: "Cek kop surat", note: "Revisi nomor kop", checked: false },
-  { task: "Cek tanda tangan", note: "Perbaiki posisi", checked: false },
-  { task: "Cek nomor surat", note: "Perbaiki posisi", checked: false },
-];
 
 export default function ChecklistTable() {
   const [rows, setRows] = useState(initialRows);
   const [newTask, setNewTask] = useState("");
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<{id: number, task: string} | null>(null);
 
   const toggleCheck = (index: number) => {
     const updatedRows = [...rows];
@@ -23,13 +23,31 @@ export default function ChecklistTable() {
     setRows(updatedRows);
   };
 
+  // const handleAddTask = () => {
+  //   if (newTask.trim() !== "") {
+  //     const updatedRows = [...rows, { task: newTask, note: "", checked: false }];
+  //     setRows(updatedRows);
+  //     setNewTask("");
+  //   }
+  // };
+
   const handleAddTask = () => {
     if (newTask.trim() !== "") {
-      const updatedRows = [...rows, { task: newTask, note: "", checked: false }];
+      // Generate a unique ID for the new item
+      const maxId = Math.max(...rows.map(row => row.id), 0);
+      const updatedRows = [...rows, { id: maxId + 1, task: newTask, note: "", checked: false }];
       setRows(updatedRows);
       setNewTask("");
     }
   };
+  
+  // Show delete confirmation modal
+  const handleDeleteClick = (id: number, task: string) => {
+    
+    setDeleteItem({ id, task });
+    setIsDeleteOpen(true);
+  };
+  
 
   return (
     <div className="w-full">
@@ -72,6 +90,14 @@ export default function ChecklistTable() {
                   <Check size={20} strokeWidth={4} />
                 </button>
               </td>
+              <td className="py-4 px-4 border-r-2 border-l-2 text-center">
+                <button
+                  onClick={() => handleDeleteClick(row.id, row.task)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -93,6 +119,14 @@ export default function ChecklistTable() {
           <PlusCircle size={30} className="text-tersier hover:text-indigo-400"/>
         </button>
       </div>
+        <DeleteConfirmation
+          open={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={handleConfirmDelete}
+          name={deleteItem?.task || ""}
+          title="Konfirmasi Hapus"
+          entityType="tugas"
+      />
     </div>
   );
 }

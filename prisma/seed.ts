@@ -17,6 +17,68 @@ async function main() {
   // await prisma.$executeRaw`TRUNCATE TABLE "template_checklists" CASCADE`;
   // await prisma.$executeRaw`TRUNCATE TABLE "tasks" CASCADE`;
   // await prisma.$executeRaw`TRUNCATE TABLE "task_progress" CASCADE`;
+  // await prisma.$executeRaw`TRUNCATE TABLE "document_types" CASCADE`;
+
+
+    // ===== Create Document Types =====
+    console.log('Creating document types...');
+  
+    const requirementsDoc = await prisma.documentType.upsert({
+      where: { id: 1 },
+      update: {},
+      create: {
+        name: "Requirements Document",
+      },
+    });
+  
+    const designDoc = await prisma.documentType.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        name: "Design Document",
+      },
+    });
+  
+    const technicalDoc = await prisma.documentType.upsert({
+      where: { id: 3 },
+      update: {},
+      create: {
+        name: "Technical Documentation",
+      },
+    });
+  
+    const userManual = await prisma.documentType.upsert({
+      where: { id: 4 },
+      update: {},
+      create: {
+        name: "User Manual",
+      },
+    });
+  
+    const testReport = await prisma.documentType.upsert({
+      where: { id: 5 },
+      update: {},
+      create: {
+        name: "Test Report",
+      },
+    });
+  
+    const projectPlan = await prisma.documentType.upsert({
+      where: { id: 6 },
+      update: {},
+      create: {
+        name: "Project Plan",
+      },
+    });
+  
+    const codeReview = await prisma.documentType.upsert({
+      where: { id: 7 },
+      update: {},
+      create: {
+        name: "Code Review",
+      },
+    });  
+
 
   // ===== Buat Role =====
   console.log('Membuat role...');
@@ -424,13 +486,14 @@ async function main() {
     },
   });
 
-  // ===== Create Sample Tasks =====
+
   console.log('Creating sample tasks...');
   const task1 = await prisma.task.upsert({
     where: { id: 1 },
     update: {},
     create: {
       taskName: "Implement User Authentication",
+      documentTypeId: technicalDoc.id,  // Add document type ID
       templateId: template1.id,
       projectId: project1.id,
       userId: developer2.id,
@@ -444,6 +507,7 @@ async function main() {
     update: {},
     create: {
       taskName: "Create Landing Page",
+      documentTypeId: designDoc.id,  // Add document type ID
       templateId: template2.id,
       projectId: project1.id,
       userId: developer1.id,
@@ -451,7 +515,21 @@ async function main() {
       iteration: 1
     },
   });
-
+  
+  // Add one more task example
+  const task3 = await prisma.task.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      taskName: "API Documentation",
+      documentTypeId: userManual.id,
+      templateId: template3.id,
+      projectId: project2.id,
+      userId: developer1.id,
+      dateAdded: new Date('2024-02-05'),
+      iteration: 1
+    },
+  });
   // ===== Create Task Progress =====
   console.log('Creating task progress...');
   const taskProgress1 = await prisma.taskProgress.upsert({
@@ -516,6 +594,7 @@ async function main() {
 
   console.log('Seed berhasil!');
 }
+
 
 main()
   .catch((e) => {
