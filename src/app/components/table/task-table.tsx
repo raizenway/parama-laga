@@ -1,46 +1,196 @@
 "use client"
-import { CalendarCheck2, CreditCard, FileText, Eye, IterationCw, MoveDown, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Clock, Hourglass } from "lucide-react"
+import { CalendarCheck2, FileText, Eye, IterationCw, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 
-export default function TaskTable(){
+type Task = {
+  id: number;
+  taskName: string;
+  documentType: {
+    id: number;
+    name: string;
+  };
+  project: {
+    id: number;
+    projectName: string;
+  };
+  dateAdded: string;
+  iteration: number;
+  user: {
+    id: number;
+    name: string;
+  };
+  progresses: {
+    id: number;
+    checked: boolean;
+  }[];
+};
+
+type TaskTableProps = {
+  searchTerm?: string;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
+  refreshTrigger?: number;
+};
+
+export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTrigger = 0, }: TaskTableProps){
   const router = useRouter();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const debouncedSearchQuery = useDebounce(searchTerm, 500);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  return(
-        <table className="font-poppins w-full table-auto justify-start">
+  // Fetch tasks
+  const fetchTasks = async (query = "") => {
+    setIsLoading(true);
+    try {
+      const url = query ? `/api/tasks?search=${encodeURIComponent(query)}` : "/api/tasks";
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch tasks");
+      }
+      
+      const data = await response.json();
+      setTasks(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+      setError("Failed to load tasks");
+      toast.error("Error", {
+        description: "Failed to load tasks. Please try again later."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Effect to fetch tasks when search term changes
+  useEffect(() => {
+    fetchTasks(debouncedSearchQuery);
+  }, [debouncedSearchQuery,refreshTrigger]);
+
+  // Calculate task status based on progress
+  const getTaskStatus = (task: Task) => {
+    if (!task.progresses || task.progresses.length === 0) return "Not Started";
+    
+    const completedCount = task.progresses.filter(p => p.checked).length;
+    const totalCount = task.progresses.length;
+    
+    if (completedCount === 0) return "To Do";
+    if (completedCount === totalCount) return "Done";
+    return "On Going";
+  };
+
+  // Handle edit action if provided
+  const handleEdit = (task: Task) => {
+    if (onEdit) {
+      onEdit(task);
+    } else {
+      router.push(`/task/detail-task?id=${task.id}`);
+    }
+  };
+  
+  // Handle delete action
+  const handleDeleteTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!selectedTask) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/tasks/${selectedTask.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete task');
+      }
+      
+      toast.success('Task deleted successfully');
+      
+      // Refresh the task list
+      fetchTasks(debouncedSearchQuery);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task', { 
+        description: error instanceof Error ? error.message : 'Unknown error occurred' 
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
+  // Handle view action
+  const handleView = (task: Task) => {
+    router.push(`/task/detail-task?id=${task.id}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-64 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2">Loading tasks...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-64 flex justify-center items-center">
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <table className="font-poppins w-full table-auto justify-start">
         <thead className="bg-tersier">
-        <tr>
-            <th className="px-4 py-2 w-[25%] text-left  rounded-tl-lg">
+          <tr>
+            <th className="px-4 py-2 w-[25%] text-left rounded-tl-lg">
               <div className="flex items-center gap-1">
                 <ListCheck /> Task Name
               </div>
             </th>
-            <th className="px-4 py-2 w-[20%] text-left ">
+            <th className="px-4 py-2 w-[20%] text-left">
               <div className="flex items-center gap-1">
                 <FileText /> Document Type
               </div>
             </th>
-            <th className="px-4 py-2 w-[10%] text-left ">
+            <th className="px-4 py-2 w-[10%] text-left">
               <div className="flex items-center gap-1">
                 <TrafficCone /> Project
               </div>
             </th>
-            <th className="px-4 py-2 w-[15%] text-left ">
+            <th className="px-4 py-2 w-[15%] text-left">
               <div className="flex items-center gap-1">
                 <CalendarCheck2 /> Date Added
               </div>
             </th>
-            <th className="px-4 py-2 w-[10%] text-center ">
+            <th className="px-4 py-2 w-[10%] text-center">
               <div className="flex items-center justify-center gap-1">
                 <IterationCw /> Iteration
               </div>
             </th>
-            <th className="px-4 py-2 w-[10%] text-left ">
+            <th className="px-4 py-2 w-[10%] text-left">
               <div className="flex items-center gap-1">
                 <Hourglass /> Status
               </div>
             </th>
-            <th className="px-4 py-2 w-[10%] text-center  rounded-tr-lg">
+            <th className="px-4 py-2 w-[10%] text-center rounded-tr-lg">
               <div className="flex items-center justify-center gap-1">
                 <Zap /> Act
               </div>
@@ -48,28 +198,59 @@ export default function TaskTable(){
           </tr>
         </thead>
         <tbody>
-          {[...Array(5)].map((_, i) => (
-            <tr key={i} className="border-b-2 border-tersier">
-                <td className="px-4 py-3">Document Checking</td>
-                <td className="px-4 py-3">Meeting Document</td>
-                <td className="px-4 py-3">Project KAI</td>
-                <td className="px-4 py-3">1 Jan 2025</td>
-                <td className="px-4 py-3 text-center w-1/12 ">3</td>
-                <td className="px-4 py-3 text-center w-1/12 ">On Going</td>
-                <td className="px-4 py-3 flex gap-5">
-                    <button>
-                      <PencilLine className="text-green-600 hover:text-green-700"/>
-                    </button>
-                    <button>
-                      <Trash2 className="text-red-500 hover:text-red-700"/>
-                    </button>
-                    <button onClick={() => router.push("/task/detail-task")}>
-                      <CircleArrowRight size={30} className="text-blue-500 hover:text-blue-700"/>
-                    </button>
+          {tasks.length > 0 ? (
+            tasks.map((task) => (
+              <tr key={task.id} className="border-b-2 border-tersier">
+                <td className="px-4 py-3">{task.taskName}</td>
+                <td className="px-4 py-3">{task.documentType.name}</td>
+                <td className="px-4 py-3">{task.project.projectName}</td>
+                <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-center">{task.iteration}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    getTaskStatus(task) === "Done" ? "bg-green-100 text-green-800" :
+                    getTaskStatus(task) === "On Going" ? "bg-blue-100 text-blue-800" : 
+                    "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {getTaskStatus(task)}
+                  </span>
+                </td>
+                <td className="px-4 py-3 flex gap-3 justify-center">
+                  <button onClick={() => handleEdit(task)} title="Edit task">
+                    <PencilLine className="text-green-600 hover:text-green-700"/>
+                  </button>
+                  <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                    <Trash2 className="text-red-500 hover:text-red-700"/>
+                  </button>
+                  <button onClick={() => handleView(task)} title="View task details">
+                    <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={7} className="text-center py-8">
+                {searchTerm ? "No tasks match your search" : "No tasks available"}
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
-        </table>
-    )
+      </table>
+      
+      {/* Delete confirmation modal - rendered ONCE outside the table */}
+      {selectedTask && (
+        <DeleteConfirmation
+          open={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={confirmDeleteTask}
+          name={selectedTask.taskName}
+          entityType="task"
+          title="Confirm Task Deletion"
+          description="Deleting this task will remove all associated progress and checklist items. This action cannot be undone."
+          isLoading={isDeleting}
+        />
+      )}
+    </>
+  );
 }
