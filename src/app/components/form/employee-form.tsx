@@ -18,7 +18,7 @@ export default function EmployeeForm({
 }: { 
   onClose: () => void; 
   employee?: any;
-  mode?: "add" | "edit";
+  mode?: "add" | "edit" | "view";
   onSuccess?: () => void; // Add type for the new prop
 }){  
   // Project-specific positions
@@ -147,13 +147,6 @@ export default function EmployeeForm({
     }
   };
 
-  // Handle project position change
-  const handlePositionChange = (project: string, position: string) => {
-    setProjectPositions({
-      ...projectPositions,
-      [project]: position
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,6 +297,8 @@ export default function EmployeeForm({
                 value={formData.name}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <Input 
                 name="defaultRole"
@@ -311,6 +306,8 @@ export default function EmployeeForm({
                 value={defaultRole}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <Input 
                 name="personnelId"
@@ -318,12 +315,16 @@ export default function EmployeeForm({
                 value={formData.personnelId}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <StatusDropdown 
                 status={status} 
                 setStatus={setStatus} 
                 options={userStatusOptions} 
-                label="Employee Status" 
+                label="Employee Status"
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""} 
               />
 
               <h1 className="my-1 mt-3 text-base font-medium">Employee Account</h1>
@@ -334,15 +335,21 @@ export default function EmployeeForm({
                 value={formData.email}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
-              <Input 
-                name="password"
-                type="password" 
-                placeholder={mode === "edit" ? "Leave blank to keep current password" : "Password"} 
-                value={formData.password}
-                onChange={handleChange}
-                required={mode === "add"}
-              />
+               {mode !== "view" && (
+                <Input 
+                  name="password"
+                  type="password" 
+                  placeholder={mode === "edit" ? "Leave blank to keep current password" : "Password"} 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required={mode === "add"}
+                  disabled={mode === "view"}
+                  className={mode === "view" ? "bg-gray-50" : ""}
+                />
+              )}
 
               <h1 className="my-1 mt-3 text-base font-medium">Project Assignment</h1>
 
@@ -351,18 +358,22 @@ export default function EmployeeForm({
                 options={availableProjects}
                 selectedItems={multipleProjects}
                 setSelectedItems={setMultipleProjects}
+                disabled={mode=== "view"} // Disable selection in view mode
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               {multipleProjects.length <= 0 && (
                 <div className="text-amber-500 text-sm mb-2">
                   Please select at least one project to assign roles.
                 </div>
               )}              
-              <Button 
-                type="submit"
-                className="my-4 bg-primary text-white w-1/3 hover:bg-indigo-900"
-              >
-                {mode === "add" ? "Submit" : "Update"}
-              </Button>
+              {mode !== "view" && (
+                <Button 
+                  type="submit"
+                  className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900"
+                >
+                  {mode === "add" ? "Submit" : "Update"}
+                </Button>
+              )}
             </div>
           </div>
         </form>

@@ -22,9 +22,10 @@ type EmployeeTableProps = {
   error: string | null;
   onEdit: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
+  onView: (employee: Employee) => void; // Added view handler
 };
 
-export default function EmployeeTable({ employees, isLoading, error,onEdit, onDelete }: EmployeeTableProps) {
+export default function EmployeeTable({ employees, isLoading, error, onEdit, onDelete, onView }: EmployeeTableProps) {
   if (isLoading) {
     return (
       <div className="w-full h-64 flex justify-center items-center">
@@ -84,21 +85,27 @@ export default function EmployeeTable({ employees, isLoading, error,onEdit, onDe
                 <td className="px-4 py-3">{employee.role}</td>
                 <td className="px-4 py-3">{employee.personnelId}</td>
                 <td className="px-4 py-3">{new Date(employee.dateAdded).toLocaleDateString()}</td>
-                <td className="px-4 py-3">  {employee.projects && employee.projects.length > 0 ? employee.projects.join(', ') : '-'}</td>
+                <td className="px-4 py-3">{employee.projects && employee.projects.length > 0 ? employee.projects.join(', ') : '-'}</td>
                 <td className="px-4 py-3 flex justify-center gap-3">
-                <button 
+                  <button 
                     onClick={() => onEdit(employee)} 
                     className="text-green-600 hover:text-green-700"
+                    title="Edit employee"
                   >
                     <PencilLine />
                   </button>
                   <button 
                     onClick={() => onDelete(employee)} 
                     className="text-red-500 hover:text-red-700"
+                    title="Delete employee"
                   >
                     <Trash2 />
                   </button>
-                  <button className="text-slate-800 hover:text-slate-950">
+                  <button 
+                    onClick={() => onView(employee)} 
+                    className="text-slate-800 hover:text-slate-950"
+                    title="View employee details"
+                  >
                     <Eye />
                   </button>
                 </td>

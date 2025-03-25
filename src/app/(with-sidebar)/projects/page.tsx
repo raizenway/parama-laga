@@ -1,4 +1,5 @@
 "use client"
+import { useDebounce } from "@/hooks/useDebounce";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import ProjectTable from "@/app/components/table/project-table";
@@ -26,19 +27,20 @@ type Project = {
 export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   // Fetch projects
-  const fetchProjects = async () => {
+  const fetchProjects = async (query="") => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/projects");
+      const url = query ? `/api/projects?search=${encodeURIComponent(query)}` : "/api/projects";
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch projects");
       }
@@ -53,9 +55,10 @@ export default function Page() {
     }
   };
 
+  // Fetch when search query changes
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    fetchProjects(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
   const handleAddProject = () => {
     setSelectedProject(null);
@@ -73,6 +76,17 @@ export default function Page() {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
   };
+
+  const handleViewProject = (project: Project) => {
+    setSelectedProject(project);
+    setModalMode("view");
+    setIsModalOpen(true);
+  };
+
+    // Handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    };
 
   const confirmDeleteProject = async () => {
     if (!selectedProject) return;
@@ -123,7 +137,7 @@ export default function Page() {
       <div className="mt-12 grow">
         <div className="font-poppins font-bold text-2xl">Projects</div>
         <div className="flex justify-end items-center gap-3">
-          <Input className="w-72" placeholder="Search" />
+        <Input className="w-72" placeholder="Search project name..." value={searchQuery} onChange={handleSearchChange}/>
           <AddButton text="+ Add Project" onClick={handleAddProject} />
         </div>
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
@@ -140,6 +154,7 @@ export default function Page() {
                 projects={projects}
                 onEdit={handleEditProject}
                 onDelete={handleDeleteProject}
+                onView={handleViewProject}
               />
             )}
           </div>

@@ -17,9 +17,10 @@ type ProjectTableProps = {
   projects: Project[];
   onEdit: (project: Project) => void;
   onDelete: (project: Project) => void;
+  onView: (project: Project) => void; // Add onView prop
 };
 
-export default function ProjectTable({ projects, onEdit, onDelete }: ProjectTableProps) {
+export default function ProjectTable({ projects, onEdit, onDelete, onView }: ProjectTableProps) {
   return (
     <table className="font-poppins w-full table-auto justify-start">
       <thead className="bg-tersier">
@@ -45,8 +46,8 @@ export default function ProjectTable({ projects, onEdit, onDelete }: ProjectTabl
           <th className="px-4 py-2 text-left">
             <div className="flex items-center gap-1">Status</div>
           </th>
-          <th className="px-4 py-2 rounded-tr-lg text-left">
-            <div className="flex items-center gap-1"><Zap /> Actions </div>
+          <th className="px-4 py-2 rounded-tr-lg text-center">
+            <div className="flex items-center justify-center">Actions</div>
           </th>
         </tr>
       </thead>
@@ -72,12 +73,15 @@ export default function ProjectTable({ projects, onEdit, onDelete }: ProjectTabl
                   {project.status.statusName}
                 </span>
               </td>
-              <td className="px-4 py-3 flex justify-start gap-3">
-                <button onClick={() => onEdit(project)}>
+              <td className="px-4 py-3 flex justify-center gap-3">
+                <button onClick={() => onEdit(project)} title="Edit project">
                   <PencilLine className="text-green-600 hover:text-green-700"/>
                 </button>
-                <button onClick={() => onDelete(project)}>
+                <button onClick={() => onDelete(project)} title="Delete project">
                   <Trash2 className="text-red-500 hover:text-red-700"/>
+                </button>
+                <button onClick={() => onView(project)} title="View project details">
+                  <Eye className="text-slate-800 hover:text-slate-950"/>
                 </button>
               </td>
             </tr>

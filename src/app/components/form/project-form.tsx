@@ -25,7 +25,7 @@ export default function ProjectForm({
 }: { 
   onClose: () => void; 
   project?: any;
-  mode?: "add" | "edit";
+  mode?: "add" | "edit" | "view";
   onSuccess?: () => void;
 }) {
   const [status, setStatus] = useState<ProjectStatus>("Pending");
@@ -219,6 +219,8 @@ export default function ProjectForm({
                 value={formData.projectName}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <Input 
                 name="projectOwner"
@@ -226,6 +228,8 @@ export default function ProjectForm({
                 value={formData.projectOwner}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <Input 
                 name="projectCode"
@@ -233,6 +237,8 @@ export default function ProjectForm({
                 value={formData.projectCode}
                 onChange={handleChange}
                 required
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
               <div className="flex gap-2">
                 <div className="w-1/2">
@@ -243,6 +249,8 @@ export default function ProjectForm({
                     value={formData.startDate}
                     onChange={handleChange}
                     required
+                    disabled={mode === "view"}
+                    className={mode === "view" ? "bg-gray-50" : ""}    
                   />
                 </div>
                 <div className="w-1/2">
@@ -253,6 +261,8 @@ export default function ProjectForm({
                     value={formData.endDate}
                     onChange={handleChange}
                     required
+                    disabled={mode === "view"}
+                    className={mode === "view" ? "bg-gray-50" : ""}    
                   />
                 </div>
               </div>
@@ -261,6 +271,8 @@ export default function ProjectForm({
                 setStatus={(value) => setStatus(value as ProjectStatus)} 
                 options={projectStatusOptions}
                 label="Project Status" 
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
 
               {/* EMPLOYEES ASSIGNED */}
@@ -268,14 +280,18 @@ export default function ProjectForm({
               <EmployeeAssigning 
                 selectedItems={assignedEmployees} 
                 setSelectedItems={setAssignedEmployees} 
+                disabled={mode === "view"}
+                className={mode === "view" ? "bg-gray-50" : ""}
               />
 
-              <Button 
-                type="submit"
-                className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900"
-              >
-                {mode === "add" ? "Submit" : "Update"}
-              </Button>
+              {mode !== "view" && (
+                <Button 
+                  type="submit"
+                  className="my-2 bg-primary text-white w-1/3 hover:bg-indigo-900"
+                >
+                  {mode === "add" ? "Submit" : "Update"}
+                </Button>
+              )}
             </div>
           </div>
         </form>

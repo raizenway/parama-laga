@@ -37,7 +37,16 @@ export default async function handler(
 // Function to get all projects
 async function getProjects(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const searchQuery = req.query.search as string || '';
+    
+    // Build search condition
+    const whereCondition = searchQuery
+    ? {
+      projectName: { contains: searchQuery, mode: 'insensitive' } 
+    } 
+  : {};
     const projects = await prisma.project.findMany({
+      where: whereCondition,
       include: {
         status: true,
         projectUsers: {

@@ -12,25 +12,24 @@ export default function ProjectModal({
   open: boolean; 
   onClose: () => void; 
   project?: any; 
-  mode?: "add" | "edit";
+  mode?: "add" | "edit" | "view";
   onProjectChange?: () => void;
 }) {
-  const title = mode === "add" ? "Add Project" : "Edit Project";
-
-  // For debugging - log when project prop changes
-  useEffect(() => {
-    if (open && project) {
-      console.log("Modal opened with project data:", project);
-    }
-  }, [open, project]);
+  const title = mode === "add" ? "Add New Project" : 
+               mode === "edit" ? "Edit Project" : "View Project";
 
   return (
-    <Modal closeType="cross" open={open} onClose={onClose} title={title} size="lg">
+    <Modal 
+      closeType="cross" 
+      open={open} 
+      onClose={onClose} 
+      title={title}
+    >
       <ProjectForm 
         onClose={onClose} 
         project={project} 
-        mode={mode} 
-        onSuccess={onProjectChange}
+        mode={mode}
+        onSuccess={onProjectChange} 
       />
     </Modal>
   );

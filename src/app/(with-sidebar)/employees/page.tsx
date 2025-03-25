@@ -1,4 +1,5 @@
 "use client";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/input";
 import EmployeeModal from "@/app/components/modal/employee-modal";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
@@ -28,21 +29,23 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
 
   const closeEmployeeModal = () => {
     setIsDetailOpen(false);
-    // Important: Reset the selectedEmployee when closing the modal
-    // This ensures a fresh form when "Add Employee" is clicked
+    // Reset the selectedEmployee when closing the modal
     setSelectedEmployee(null);
   };
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (query="") => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/employee');
+      const url = query ?`/api/employee?search=${encodeURIComponent(query)}` : "/api/employee";
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -59,10 +62,11 @@ export default function Page() {
     }
   };
 
+  
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    fetchEmployees(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
   // Handle search functionality
   useEffect(() => {
@@ -85,10 +89,11 @@ export default function Page() {
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
+   // Handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    };
+
 
   // Handle edit button click
   const handleEdit = (employee: Employee) => {
@@ -103,6 +108,13 @@ export default function Page() {
     setIsDeleteOpen(true);
   };
 
+    
+  // Handle view button click
+  const handleView = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setModalMode("view");
+    setIsDetailOpen(true);
+  };
   // Handle add button click
   const handleAdd = () => {
     setSelectedEmployee(null);
@@ -182,7 +194,8 @@ export default function Page() {
           <Input 
             className="w-72" 
             type="text" 
-            placeholder="Search" 
+            placeholder="Search employee name..."
+            value={searchQuery} 
             onChange={handleSearchChange}
           />
           <AddButton text="+ Add Employee" onClick={handleAdd} />
@@ -196,6 +209,7 @@ export default function Page() {
               error={error}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onView={handleView} // Add view handler
             />
           </div>
         </div>

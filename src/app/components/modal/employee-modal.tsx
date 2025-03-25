@@ -12,15 +12,17 @@ export default function EmployeeModal({
   open: boolean; 
   onClose: () => void; 
   employee?: any; 
-  mode?: "add" | "edit";
+  mode?: "add" | "edit" | "view";
   onEmployeeChange?: () => void; // Add type for the new prop
 }) {
-  const title = mode === "add" ? "Add Employee" : "Edit Employee";
+  const title = mode === "add" ? "Add Employee" : 
+                mode === "edit" ? "Edit Employee" : "View Employee";
 
   const handleClose = () => {
     // Call the onClose function passed from parent
     onClose();
   };
+
   // For debugging - log when employee prop changes
   useEffect(() => {
     if (open && employee) {
@@ -28,14 +30,14 @@ export default function EmployeeModal({
     }
   }, [open, employee]);
 
-return (
-  <Modal closeType="cross" open={open} onClose={handleClose} title={title} size="lg">
-    <EmployeeForm 
-      onClose={handleClose} 
-      employee={employee} 
-      mode={mode} 
-      onSuccess={onEmployeeChange} // Pass the callback to EmployeeForm
-    />
-  </Modal>
-);
+  return (
+    <Modal closeType="cross" open={open} onClose={handleClose} title={title} size="lg">
+      <EmployeeForm 
+        onClose={handleClose} 
+        employee={employee} 
+        mode={mode} 
+        onSuccess={onEmployeeChange}
+      />
+    </Modal>
+  );
 }

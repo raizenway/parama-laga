@@ -38,7 +38,15 @@ export default async function handler(
 // Function to get all employees
 async function getEmployees(req: NextApiRequest, res: NextApiResponse) {
     try {
+        const searchQuery = req.query.search as string ||'';
+        //Build search condition
+        const whereCondition = searchQuery
+        ?{
+            name:{contains : searchQuery, mode:'insensitive'},
+        }
+        :{};
         const employees = await prisma.user.findMany({
+            where: whereCondition,
             include: {
                 roleAccess: true, // Changed from role to roleAccess
                 projectUsers: {

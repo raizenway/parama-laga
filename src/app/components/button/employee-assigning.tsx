@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Employee = {
   id: string;
@@ -18,11 +19,15 @@ type Employee = {
 export default function EmployeeAssigning({
   selectedItems,
   setSelectedItems,
-  options
+  options,
+  disabled = false,
+  className = ""
 }: {
   selectedItems: string[];
   setSelectedItems: (items: string[] | ((prev: string[]) => string[])) => void;
   options?: string[]; // Optional prop to allow passing employee list from parent
+  disabled?: boolean; // Add disabled prop for view mode
+  className?: string; // Add className prop for styling customization
 }) {
   const [employees, setEmployees] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,8 +72,33 @@ export default function EmployeeAssigning({
     );
   };
 
+  // If disabled (view mode), render a read-only list of assigned employees
+  if (disabled) {
+    return (
+      <div className={cn("space-y-2", className)}>
+        {/* Show a disabled-looking button */}
+        <div className="flex items-center justify-between px-3 py-2 border rounded-md bg-gray-50 text-gray-500">
+          {selectedItems.length > 0 ? `${selectedItems.length} Employee(s) Assigned` : "No Employees Assigned"}
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        </div>
+
+        {/* Show the list of assigned employees in a non-editable format */}
+        {selectedItems.length > 0 && (
+          <div className="border border-gray-300 rounded-md p-3 space-y-1 bg-gray-50">
+            {selectedItems.map((item) => (
+              <div key={item} className="flex items-center px-3 py-1 rounded-md">
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Interactive version for add/edit modes
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full justify-between">

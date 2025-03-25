@@ -13,13 +13,17 @@ type StatusDropdownProps<T extends string> = {
     color?: string;
   }>;
   label?: string;
+  disabled?: boolean; // Add disabled prop
+  className?: string; // Add optional className prop
 };
 
 export default function StatusDropdown<T extends string>({ 
   status, 
   setStatus,
   options,
-  label = "Status"
+  label = "Status",
+  disabled = false,
+  className = ""
 }: StatusDropdownProps<T>) {
     // Get the current option data for styling
     const currentOption = options.find(opt => opt.value === status);
@@ -34,32 +38,56 @@ export default function StatusDropdown<T extends string>({
       return "text-gray-700 hover:text-gray-800 border-gray-300";
     };
 
+    // If disabled, render a non-interactive element that looks like the dropdown
+    if (disabled) {
+      return (
+        <div className={cn("w-full", className)}>
+          {label && <div className="text-sm mb-1">{label}</div>}
+          <div 
+            className={cn(
+              "flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm bg-gray-50",
+              currentOption?.color || getDefaultColor(status),
+              className
+            )}
+          >
+            {/* Display the label if available, otherwise capitalize the status */}
+            {currentOption?.label || status.charAt(0).toUpperCase() + status.slice(1)}
+            <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+          </div>
+        </div>
+      );
+    }
+
+    // Regular interactive dropdown
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button
-                className={cn(
-                  "justify-between items-center",
-                  currentOption?.color || getDefaultColor(status)
-                )}
-                variant="outline"
-              >
-                {/* Display the label if available, otherwise capitalize the status */}
-                {currentOption?.label || status.charAt(0).toUpperCase() + status.slice(1)}
-                <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">
-              <DropdownMenuLabel>{label}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
-                {options.map((option) => (
-                  <DropdownMenuRadioItem key={option.value} value={option.value}>
-                    {option.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <div className={cn("w-full", className)}>
+          {label && <div className="text-sm mb-1">{label}</div>}
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+              <Button
+                  className={cn(
+                    "justify-between items-center w-full",
+                    currentOption?.color || getDefaultColor(status)
+                  )}
+                  variant="outline"
+                >
+                  {/* Display the label if available, otherwise capitalize the status */}
+                  {currentOption?.label || status.charAt(0).toUpperCase() + status.slice(1)}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">
+                <DropdownMenuLabel>{label}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
+                  {options.map((option) => (
+                    <DropdownMenuRadioItem key={option.value} value={option.value}>
+                      {option.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
     );
 }
