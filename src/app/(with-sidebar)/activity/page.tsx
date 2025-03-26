@@ -1,5 +1,5 @@
 "use client"
-import Button from "@/app/components/button/button"
+import Button from "@/app/components/button/button-custom"
 import Activity from "@/app/components/table/activity"
 
 export default function Page(){

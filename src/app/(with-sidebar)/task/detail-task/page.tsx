@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import SubmitButton from "@/app/components/button/button";
+import SubmitButton from "@/app/components/button/button-custom";
 import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
 import { Input } from "@/components/ui/input";
