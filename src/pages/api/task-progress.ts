@@ -92,8 +92,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
   
+  
   // DELETE: Delete a task progress entry
   else if (req.method === 'DELETE') {
+    if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
+      return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+    }  
     try {
       const { progressId } = req.body;
       

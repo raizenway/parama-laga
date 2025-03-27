@@ -26,6 +26,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ message: 'Failed to fetch checklists' });
     }
   } else if (req.method === 'POST') {
+    if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
+      return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+    }  
     try {
       const { criteria } = req.body;
       

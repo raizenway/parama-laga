@@ -332,6 +332,19 @@ async function deleteEmployee(req: NextApiRequest, res: NextApiResponse) {
             return res.status(404).json({ message: 'Employee not found' });
         }
 
+                // Check if employee has associated tasks
+                const associatedTasks = await prisma.task.findMany({
+                    where: { userId: parseInt(id) }
+                });
+                
+                if (associatedTasks.length > 0) {
+                    return res.status(409).json({ 
+                        message: 'Cannot delete employee because this employee is assigned to specific task(s)',
+                        details: `This employee is assigned to ${associatedTasks.length} task(s). Please reassign these tasks before deleting this employee.`,
+                        type: 'HAS_ASSOCIATED_TASKS'
+                    });
+                }
+
         // Use transaction to ensure all related records are deleted atomically
         await prisma.$transaction(async (tx) => {
             // Delete all potential relationships first
@@ -345,11 +358,11 @@ async function deleteEmployee(req: NextApiRequest, res: NextApiResponse) {
                 where: { userId: parseInt(id) }
             });
             
-            console.log("Updating tasks...");
-            await tx.task.updateMany({
-                where: { userId: parseInt(id) },
-                data: { userId: undefined }
-            });
+            // console.log("Updating tasks...");
+            // await tx.task.updateMany({
+            //     where: { userId: parseInt(id) },
+            //     data: { userId: null }
+            // });
             
             console.log("Deleting user...");
             await tx.user.delete({
