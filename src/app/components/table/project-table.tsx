@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, Trash2, CircleArrowRight } from "lucide-react"
+import { Building2, CalendarCheck2, CalendarClock, Clock, CreditCard, Eye, MoveDown, PencilLine, TrafficCone, Trash2, Zap } from "lucide-react"
 import { useState } from "react";
 import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
@@ -33,33 +33,31 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
     <div>
       <table className="font-poppins w-full table-auto justify-start">
         <thead className="bg-tersier">
-          <tr>
-            <th className="px-4 py-2 rounded-tl-lg text-left">
-              <div className="flex items-center gap-1">Logo</div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><MoveDown /> Project</div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><Building2 /> Company </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CreditCard /> ID Project </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CalendarCheck2 /> Start Date </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1"><CalendarClock /> End Date </div>
-            </th>
-            <th className="px-4 py-2 text-left">
-              <div className="flex items-center gap-1">Status</div>
-            </th>
-            <th className="px-4 py-2 rounded-tr-lg text-center">
-              <div className="flex items-center justify-center">Actions</div>
-            </th>
+          <tr className="text-black">
+            {[
+              { label: "Logo", width: "w-[5%] h-[50px]" },
+              { icon: <TrafficCone />, label: "Project", width: "w-[20%] h-[50px]" },
+              { icon: <Building2 />, label: "Company", width: "w-[20%] h-[50px]" },
+              { icon: <CreditCard />, label: "Project ID", width: "w-[10%] h-[50px]" },
+              { icon: <CalendarCheck2 />, label: "Start Date", width: "w-[10%] h-[50px]" },
+              { icon: <CalendarClock />, label: "End Date", width: "w-[10%] h-[50px]" },
+              { icon: <Clock />, label: "Status", width: "w-[10%] h-[50px]" },
+              { icon: <Zap />, label: "Act", width: "w-[15%]" },
+            ].map(({ icon, label, width }, i) => (
+              <th
+                key={i}
+                className={`px-4 py-2 ${width} ${
+                  i === 0 ? "rounded-tl-lg" : ""
+                } ${i === 7 ? "rounded-tr-lg" : ""}`}
+              >
+                <div className="flex items-center gap-1">
+                  {icon} {label}
+                </div>
+              </th>
+            ))}
           </tr>
         </thead>
+
         <tbody>
           {paginatedProjects.length > 0 ? (
             paginatedProjects.map((project) => (

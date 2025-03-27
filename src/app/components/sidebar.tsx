@@ -81,12 +81,12 @@ const Sidebar = () => {
                     }
                   ]}
                 />
-                <SidebarItem
+                {/* <SidebarItem
                   icon={<ChartSpline size={20} />}
                   text="Performance Report"
                   active={activeItem === "Performance Report"}
                   onClick={() => handleItemClick("Performance Report", "#")}
-                />
+                /> */}
                 
                 {/* Only render PM Options if user is admin or project manager */}
                 {isPMOrAdmin && (
