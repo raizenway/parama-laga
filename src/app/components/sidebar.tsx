@@ -70,12 +70,12 @@ const Sidebar = () => {
                     }
                   ]}
                 />
-                <SidebarItem
+                {/* <SidebarItem
                   icon={<ChartSpline size={20} />}
                   text="Performance Report"
                   active={activeItem === "Performance Report"}
                   onClick={() => handleItemClick("Performance Report", "#")}
-                />
+                /> */}
                 <SidebarItem
                   icon={<Settings2 size={20} />}
                   text="PM Options"
