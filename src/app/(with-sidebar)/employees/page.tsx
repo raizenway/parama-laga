@@ -137,11 +137,11 @@ export default function Page() {
         method: 'DELETE',
       });
       
-      console.log("Delete response status:", response.status);
+      // console.log("Delete response status:", response.status);
       
       if (response.ok) {
         const data = await response.json().catch(() => ({ message: "Success but no JSON returned" }));
-        console.log("Delete successful:", data);
+        // console.log("Delete successful:", data);
         
         // Add success toast notification
         toast.success(`Employee Deleted`, {

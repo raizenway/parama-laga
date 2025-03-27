@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, MoveDown, Users, CreditCard, CalendarCheck2, TrafficCone, Zap, PencilLine, Trash2, Eye } from "lucide-react";
+import { User, CircleArrowRight,MoveDown, Users, CreditCard, CalendarCheck2, TrafficCone, Zap, PencilLine, Trash2, Eye } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import Pagination from "../pagination";
+import { useRouter } from "next/navigation";
 
 // Definisi tipe data untuk karyawan
 type Employee = {
@@ -31,7 +32,8 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
   const itemsPerPage = 10;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentEmployees = employees.slice(startIndex, startIndex + itemsPerPage);
-  
+  const router = useRouter();
+
   if (isLoading) {
     return (
       <div className="w-full h-64 flex justify-center items-center">
@@ -122,6 +124,13 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
                   >
                     <Eye />
                   </button>
+                  <button 
+                  onClick={() => router.push(`/employees/detail-employee/${employee.id}`)} 
+                  className="text-blue-600 hover:text-blue-700"
+                  title="Go to employee details page"
+                >
+                  <CircleArrowRight />
+                </button>
                 </td>
               </tr>
             ))

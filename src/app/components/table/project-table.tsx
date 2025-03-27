@@ -1,6 +1,7 @@
-import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, Trash2, Zap } from "lucide-react"
+import { Building2, CalendarCheck2, CalendarClock, CreditCard, Eye, MoveDown, PencilLine, Trash2, CircleArrowRight } from "lucide-react"
 import { useState } from "react";
 import Pagination from "../pagination";
+import { useRouter } from "next/navigation";
 
 type Project = {
   id: string;
@@ -26,7 +27,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const paginatedProjects = projects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
+  const router = useRouter();
 
   return (
     <div>
@@ -91,6 +92,13 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
                   <button onClick={() => onView(project)} title="View project details">
                     <Eye className="text-slate-800 hover:text-slate-950"/>
                   </button>
+                  <button 
+                  onClick={() => router.push(`/projects/detail-project/${project.id}`)} 
+                  className="text-blue-600 hover:text-blue-700"
+                  title="Go to project details page"
+                >
+                  <CircleArrowRight />
+                </button>
                 </td>
               </tr>
             ))

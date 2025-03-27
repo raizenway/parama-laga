@@ -338,18 +338,7 @@ export default function EmployeeForm({
                 disabled={mode === "view"}
                 className={mode === "view" ? "bg-gray-50" : ""}
               />
-               {mode !== "view" && (
-                <Input 
-                  name="password"
-                  type="password" 
-                  placeholder={mode === "edit" ? "Leave blank to keep current password" : "Password"} 
-                  value={formData.password}
-                  onChange={handleChange}
-                  required={mode === "add"}
-                  disabled={mode === "view"}
-                  className={mode === "view" ? "bg-gray-50" : ""}
-                />
-              )}
+
 
               <h1 className="my-1 mt-3 text-base font-medium">Project Assignment</h1>
 

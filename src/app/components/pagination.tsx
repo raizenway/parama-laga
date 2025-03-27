@@ -10,6 +10,9 @@ interface PaginationProps {
 export default function Pagination({ totalItems, itemsPerPage, currentPage, onPageChange }: PaginationProps) {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const visiblePages = 5;
+    
+    // Check if pagination is actually needed
+    const isPaginationNeeded = totalItems > 0 && totalPages > 1;
 
     const getPageNumbers = () => {
         const pages = [];
@@ -38,46 +41,46 @@ export default function Pagination({ totalItems, itemsPerPage, currentPage, onPa
       <div className="flex justify-center gap-1 mt-4">
         <button
           onClick={() => onPageChange(1)}
-          disabled={currentPage === 1}
+          disabled={!isPaginationNeeded || currentPage === 1}
           className="px-3 py-1 rounded disabled:opacity-50"
         >
-            <ChevronsLeft className="text-primary" />
+            <ChevronsLeft className={`${!isPaginationNeeded || currentPage === 1 ? 'text-gray-400' : 'text-primary'}`} />
         </button>
 
         <button
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded  disabled:opacity-50"
+          disabled={!isPaginationNeeded || currentPage === 1}
+          className="px-3 py-1 rounded disabled:opacity-50"
         >
-          <ChevronLeft className="text-primary"/>
+          <ChevronLeft className={`${!isPaginationNeeded || currentPage === 1 ? 'text-gray-400' : 'text-primary'}`} />
         </button>
   
         {getPageNumbers().map((page, index) => (
-                <button
-                    key={index}
-                    onClick={() => typeof page === "number" && onPageChange(page)}
-                    className={`px-3 py-1 border rounded ${currentPage === page ? 'bg-primary text-white' : ''}`}
-                    disabled={typeof page !== "number"}
-                >
-                    {page}
-                </button>
-            ))}
+            <button
+                key={index}
+                onClick={() => typeof page === "number" && onPageChange(page)}
+                className={`px-3 py-1 border rounded ${currentPage === page ? 'bg-primary text-white' : ''}`}
+                disabled={!isPaginationNeeded || typeof page !== "number"}
+            >
+                {page}
+            </button>
+        ))}
   
         <button
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={!isPaginationNeeded || currentPage === totalPages}
           className="px-3 py-1 rounded disabled:opacity-50"
         >
-          <ChevronRight className="text-primary" />
+          <ChevronRight className={`${!isPaginationNeeded || currentPage === totalPages ? 'text-gray-400' : 'text-primary'}`} />
         </button>
 
         <button
           onClick={() => onPageChange(totalPages)}
-          disabled={currentPage === totalPages}
+          disabled={!isPaginationNeeded || currentPage === totalPages}
           className="px-3 py-1 rounded disabled:opacity-50"
         >
-          <ChevronsRight className="text-primary" />
+          <ChevronsRight className={`${!isPaginationNeeded || currentPage === totalPages ? 'text-gray-400' : 'text-primary'}`} />
         </button>
       </div>
     );
-  }
+}

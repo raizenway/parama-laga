@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import SubmitButton from "@/app/components/button/button";
+import SubmitButton from "@/app/components/button/button-custom";
 import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
 import { Input } from "@/components/ui/input";
@@ -186,8 +186,8 @@ export default function DetailTaskPage() {
       const documentTypeId = documentTypes.find(dt => dt.name === selectedDocumentType)?.id || task.documentType.id;
       const projectId = projects.find(p => p.projectName === selectedProject)?.id || task.project.id;      
       // Update task data
-      console.log("documentTypeId", documentTypeId);
-      console.log("projectId", projectId);
+      // console.log("documentTypeId", documentTypeId);
+      // console.log("projectId", projectId);
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {

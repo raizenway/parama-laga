@@ -39,6 +39,8 @@ type TaskTableProps = {
   refreshTrigger?: number;
   onTaskDeleted?: () => void;
   userRole?: string | null; // Add new prop for user role
+  employeeId?: string;
+  projectId?: string;
 };
 
 export default function TaskTable({ 
@@ -47,7 +49,9 @@ export default function TaskTable({
   onDelete,
   refreshTrigger = 0,
   onTaskDeleted,
-  userRole = null 
+  userRole = null,
+  employeeId = null,
+  projectId = null
 }: TaskTableProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -69,7 +73,26 @@ export default function TaskTable({
     setIsLoading(true);
     try {
       // If employee role, the API will filter tasks by userId automatically
-      const url = query ? `/api/tasks?search=${encodeURIComponent(query)}` : "/api/tasks";
+      let url;
+      // Priority order: projectId first, then employeeId, then general tasks
+      if (projectId) {
+        // Use project-specific API endpoint
+        url = query 
+          ? `/api/projects/${projectId}/tasks?search=${encodeURIComponent(query)}`
+          : `/api/projects/${projectId}/tasks`;
+      } else
+      if (employeeId) {
+        // Use the employee-specific API endpoint
+        url = query 
+          ? `/api/employee/${employeeId}/tasks?search=${encodeURIComponent(query)}`
+          : `/api/employee/${employeeId}/tasks`;
+      } else {
+        // Use the general tasks API endpoint
+        url = query 
+          ? `/api/tasks?search=${encodeURIComponent(query)}` 
+          : "/api/tasks";
+      }
+
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -92,7 +115,7 @@ export default function TaskTable({
   // Effect to fetch tasks when search term changes
   useEffect(() => {
     fetchTasks(debouncedSearchQuery);
-  }, [debouncedSearchQuery,refreshTrigger]);
+  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId]);
 
   // Calculate task status based on progress
   const getTaskStatus = (task: Task) => {
