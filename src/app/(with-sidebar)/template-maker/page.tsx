@@ -1,13 +1,14 @@
 "use client"
 import { Input } from "@/components/ui/input"
 import TemplateModal from "@/app/components/modal/template-modal";
-import Button from "@/app/components/button/button";
+import Button from "@/app/components/button/button-custom";
 import { useState } from "react";
 import TemplateTable from "@/app/components/table/template-table";
 import CheckListModal from "@/app/components/modal/check-list-modal";
-import { PencilLine } from "lucide-react";
+import { FileText, PencilLine } from "lucide-react";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { toast } from "sonner";
+import DocumentTypeModal from "@/app/components/modal/document-type-modal"
 
 // Define Template type
 type Template = {
@@ -29,6 +30,7 @@ type Template = {
 export default function Page() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isCheckListDetailOpen, setIsCheckListDetailOpen] = useState(false);
+  const [isDocumentTypeOpen, setIsDocumentTypeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -114,9 +116,15 @@ export default function Page() {
             onClick={handleAddTemplate}
           />
           <Button 
-            text="Edit Check List" 
+            text="Edit Check Lists" 
             onClick={() => setIsCheckListDetailOpen(true)} 
             icon={PencilLine} 
+            iconPosition="left"
+          />
+          <Button 
+            text="Document Types" 
+            onClick={() => setIsDocumentTypeOpen(true)} 
+            icon={FileText} 
             iconPosition="left"
           />
         </div>
@@ -146,6 +154,11 @@ export default function Page() {
       <CheckListModal 
         open={isCheckListDetailOpen} 
         onClose={() => setIsCheckListDetailOpen(false)} 
+      />
+
+      <DocumentTypeModal 
+        open={isDocumentTypeOpen}
+        onClose={() => setIsDocumentTypeOpen(false)}
       />
       
       <DeleteConfirmation

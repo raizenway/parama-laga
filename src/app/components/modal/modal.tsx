@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import Button from "../button/button";
+import Button from "../button/button-custom";
 interface ModalProps {
   open: boolean;
   onClose: () => void;

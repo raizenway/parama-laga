@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import EmployeeModal from "@/app/components/modal/employee-modal";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { useState, useEffect } from "react";
-import AddButton from "@/app/components/button/button";
+import AddButton from "@/app/components/button/button-custom";
 import EmployeeTable from "@/app/components/table/employee-table";
 import { toast } from "sonner";
 

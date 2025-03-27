@@ -210,38 +210,47 @@ export default function ProjectForm({
               />
             </div>
 
-            <div className="flex flex-col grow gap-2">
-              {/* PROJECT INFO */}
-              <h1 className="my-1">Project Info</h1>
-              <Input 
-                name="projectName"
-                placeholder="Project Name" 
-                value={formData.projectName}
-                onChange={handleChange}
-                required
-                disabled={mode === "view"}
-                className={mode === "view" ? "bg-gray-50" : ""}
-              />
-              <Input 
-                name="projectOwner"
-                placeholder="Company/Client" 
-                value={formData.projectOwner}
-                onChange={handleChange}
-                required
-                disabled={mode === "view"}
-                className={mode === "view" ? "bg-gray-50" : ""}
-              />
-              <Input 
-                name="projectCode"
-                placeholder="Project Code (e.g. PRJ-001)" 
-                value={formData.projectCode}
-                onChange={handleChange}
-                required
-                disabled={mode === "view"}
-                className={mode === "view" ? "bg-gray-50" : ""}
-              />
+            <div className="flex flex-col grow gap-4">
+              {/* PROJECT INFO */}  
+              <div>
+                <h1>Project Name</h1>
+                <Input 
+                  name="projectName"
+                  placeholder="Project Name" 
+                  value={formData.projectName}
+                  onChange={handleChange}
+                  required
+                  disabled={mode === "view"}
+                  className={mode === "view" ? "bg-gray-50" : ""}
+                />
+              </div>
+              <div>
+                <h1>Project Owner</h1>
+                <Input 
+                  name="projectOwner"
+                  placeholder="Company/Client" 
+                  value={formData.projectOwner}
+                  onChange={handleChange}
+                  required
+                  disabled={mode === "view"}
+                  className={mode === "view" ? "bg-gray-50" : ""}
+                />
+              </div>
+              <div>
+                <h1>Project Code</h1>
+                <Input 
+                  name="projectCode"
+                  placeholder="Project Code (e.g. PRJ-001)" 
+                  value={formData.projectCode}
+                  onChange={handleChange}
+                  required
+                  disabled={mode === "view"}
+                  className={mode === "view" ? "bg-gray-50" : ""}
+                />
+              </div>  
               <div className="flex gap-2">
                 <div className="w-1/2">
+                <h1>Start Date</h1>
                   <Input 
                     name="startDate"
                     type="date" 
@@ -254,6 +263,7 @@ export default function ProjectForm({
                   />
                 </div>
                 <div className="w-1/2">
+                  <h1>End Date</h1>
                   <Input 
                     name="endDate"
                     type="date" 
@@ -270,19 +280,20 @@ export default function ProjectForm({
                 status={status} 
                 setStatus={(value) => setStatus(value as ProjectStatus)} 
                 options={projectStatusOptions}
-                label="Project Status" 
                 disabled={mode === "view"}
                 className={mode === "view" ? "bg-gray-50" : ""}
               />
 
               {/* EMPLOYEES ASSIGNED */}
-              <h1 className="my-1">Assign Employees</h1>
-              <EmployeeAssigning 
-                selectedItems={assignedEmployees} 
-                setSelectedItems={setAssignedEmployees} 
-                disabled={mode === "view"}
-                className={mode === "view" ? "bg-gray-50" : ""}
-              />
+              <div>
+                <h1 className="my-1">Assign Employees</h1>
+                <EmployeeAssigning 
+                  selectedItems={assignedEmployees} 
+                  setSelectedItems={setAssignedEmployees} 
+                  disabled={mode === "view"}
+                  className={mode === "view" ? "bg-gray-50" : ""}
+                />
+              </div>
 
               {mode !== "view" && (
                 <Button 

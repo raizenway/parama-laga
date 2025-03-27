@@ -1,7 +1,7 @@
 "use client"
   
 import { Input } from "@/components/ui/input"
-import AddButton from "@/app/components/button/button";
+import AddButton from "@/app/components/button/button-custom";
 import { useState } from "react";
 import DocumentTable from "@/app/components/table/task-table";
 import DocumentModal from "@/app/components/modal/task-modal";

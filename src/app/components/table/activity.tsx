@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, CircleCheckBig, ListChecks, NotebookPen, PlusCircle } from "lucide-react";
-import Button from "../button/button";
+import Button from "../button/button-custom";
 import Notification from "@/app/components/modal/notification-modal"
 
 const initialRows = [

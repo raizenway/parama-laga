@@ -6,6 +6,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
+import Pagination from "../pagination";
 
 type Task = {
   id: number;
@@ -59,6 +60,9 @@ export default function TaskTable({
   
   // Check if user is admin or project_manager
   const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const paginatedTasks = tasks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Fetch tasks
   const fetchTasks = async (query = "") => {
@@ -210,9 +214,9 @@ export default function TaskTable({
             </th>
           </tr>
         </thead>
-<tbody>
-          {tasks.length > 0 ? (
-            tasks.map((task) => (
+        <tbody>
+          {paginatedTasks.length > 0 ? (
+            paginatedTasks.map((task) => (
               <tr key={task.id} className="border-b-2 border-tersier">
                 <td className="px-4 py-3">{task.taskName}</td>
                 <td className="px-4 py-3">{task.documentType.name}</td>
@@ -265,6 +269,12 @@ export default function TaskTable({
           isLoading={isDeleting}
         />
       )}
+      <Pagination 
+      currentPage={currentPage}
+      onPageChange={setCurrentPage}
+      itemsPerPage={itemsPerPage}
+      totalItems={tasks.length}
+      />
     </>
   );
 }
