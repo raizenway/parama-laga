@@ -13,10 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  if (req.method === 'GET') {
+    return getTasks(req, res);
+  }
+
+  if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
+    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+  }
+
   // Handle various HTTP methods
   switch (req.method) {
-    case 'GET':
-      return getTasks(req, res);
     case 'POST':
       return createTask(req, res);
     case 'PUT':
@@ -32,7 +38,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function getTasks(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id, search } = req.query;
+    const session = await getServerSession(req, res, authOptions);
+    const userRole = (session?.user as any)?.role;
+    const userId = (session?.user as any)?.id;
     
+
+    console.log('Session user info:', {
+      role: userRole,
+      id: userId,
+      user: session?.user
+    });
+
     // If ID is provided, fetch a specific task
     if (id) {
       const task = await prisma.task.findUnique({
@@ -57,6 +73,15 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
         }
       });
 
+      // If employee is trying to access a task not assigned to them, deny access
+      if (
+        userRole !== 'admin' && 
+        userRole !== 'project_manager' && 
+        task?.userId !== userId
+      ) {
+        return res.status(403).json({ message: 'You do not have permission to view this task' });
+      }
+
       if (!task) {
         return res.status(404).json({ message: 'Task not found' });
       }
@@ -66,11 +91,19 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
 
     // Build search condition
     const searchQuery = search as string || '';
-    const whereCondition = searchQuery
+    let whereCondition: any = searchQuery
       ? {
           taskName: { contains: searchQuery, mode: 'insensitive' }
         }
       : {};
+
+    // For employees, only show their assigned tasks
+    if (userRole !== 'admin' && userRole !== 'project_manager'&& userId) {
+      whereCondition = {
+        ...whereCondition,
+        userId: typeof userId === 'number' ? userId : parseInt(userId.toString())
+      };
+    }
 
     // Fetch all tasks with filtering
     const tasks = await prisma.task.findMany({
@@ -173,8 +206,8 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       userId, 
       iteration, 
       progresses,
-      assignee, // New parameter from frontend
-      status // Status may be provided from frontend
+      assignee,
+      status
     } = req.body;
 
     if (!id) {
@@ -188,11 +221,44 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
     
     // Only include fields in the update if they're provided
     if (taskName) updateData.taskName = taskName;
-    if (documentTypeId) updateData.documentTypeId = parseInt(documentTypeId);
-    if (templateId) updateData.templateId = parseInt(templateId);
-    if (projectId) updateData.projectId = parseInt(projectId);
+    
+    // Enhanced error handling for documentTypeId
+    if (documentTypeId !== undefined && documentTypeId !== null) {
+      try {
+        updateData.documentTypeId = typeof documentTypeId === 'number' 
+          ? documentTypeId 
+          : parseInt(documentTypeId.toString());
+      } catch (e) {
+        console.error("Error parsing documentTypeId:", documentTypeId, e);
+      }
+    }
+    
+    // Enhanced error handling for templateId
+    if (templateId !== undefined && templateId !== null) {
+      try {
+        updateData.templateId = typeof templateId === 'number' 
+          ? templateId 
+          : parseInt(templateId.toString());
+      } catch (e) {
+        console.error("Error parsing templateId:", templateId, e);
+      }
+    }
+    
+    // Enhanced error handling for projectId
+    if (projectId !== undefined && projectId !== null) {
+      try {
+        updateData.projectId = typeof projectId === 'number' 
+          ? projectId 
+          : parseInt(projectId.toString());
+        console.log("Project ID successfully parsed:", updateData.projectId);
+      } catch (e) {
+        console.error("Error parsing projectId:", projectId, e);
+      }
+    }
+    
     if (iteration) updateData.iteration = iteration;
     
+      
     // Handle user assignment - either directly by userId or by assignee name
     if (userId) {
       updateData.userId = parseInt(userId);

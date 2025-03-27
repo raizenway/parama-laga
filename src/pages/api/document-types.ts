@@ -12,10 +12,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
+  
+  if (req.method === 'GET') {
+    return getDocumentTypes(req, res);
+  }
+
+  if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
+    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+  }
+
 
   switch (req.method) {
-    case 'GET':
-      return getDocumentTypes(req, res);
     case 'POST':
       return createDocumentType(req, res);
     case 'PUT':

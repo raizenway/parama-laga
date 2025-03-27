@@ -8,9 +8,10 @@ export async function middleware(request: NextRequest) {
   
   // Definisikan rute yang dilindungi dan role yang diizinkan
   const protectedRoutes = [
-    { path: '/dashboard', roles: ['admin', 'project_manager', 'developer'] },
     { path: '/employees', roles: ['admin','project_manager'] },
-    { path: '/projects', roles: ['admin', 'project_manager'] }
+    { path: '/projects', roles: ['admin', 'project_manager'] },
+    { path: '/template-maker', roles : ['admin', 'project_manager']},
+    { path: '/template-maker', roles : ['admin', 'project_manager']},
   ];
   
   // Cek apakah path saat ini adalah rute yang dilindungi

@@ -133,12 +133,12 @@ export default function ProjectForm({
       return;
     }
     
-    // Collect all form data
     const projectData = {
       ...formData,
       status,
       employees: assignedEmployees.map(employeeName => ({
-        employeeName      }))
+        employeeName: employeeName
+      }))
     };
   
     console.log("Submitting project data:", projectData);

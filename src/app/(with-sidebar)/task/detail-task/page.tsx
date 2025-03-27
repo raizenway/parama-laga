@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
+import { useSession } from "next-auth/react";
 import SubmitButton from "@/app/components/button/button";
 import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
@@ -50,10 +50,24 @@ type User = {
   email: string;
 };
 
+type DocumentType = {
+  id: number;
+  name: string;
+};
+
+type Project = {
+  id: number;
+  projectName: string;
+};
+
 export default function DetailTaskPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const taskId = searchParams.get('id');
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
+
   
   const [task, setTask] = useState<Task | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -61,6 +75,12 @@ export default function DetailTaskPage() {
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // New state variables for document types and projects
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
   // Fetch task details
   useEffect(() => {
@@ -105,14 +125,47 @@ export default function DetailTaskPage() {
           setSelectedAssignee(taskData.user.name);
         }
 
-        // Fetch available users for assignment (same endpoint as employee)
-        const usersResponse = await fetch('/api/employee');
-        if (!usersResponse.ok) {
-          throw new Error("Failed to fetch employees");
+        // Set initial document type and project
+        if (taskData.documentType) {
+          setSelectedDocumentType(taskData.documentType.name);
         }
-        const usersData = await usersResponse.json();
-        setAvailableUsers(usersData);
         
+        if (taskData.project) {
+          setSelectedProject(taskData.project.projectName);
+        }
+
+        // Fetch additional data for managers/admins
+        if (isManagerOrAdmin) {
+          try {
+            // Fetch employees
+            const usersResponse = await fetch('/api/employee');
+            if (!usersResponse.ok) {
+              throw new Error("Failed to fetch employees");
+            }
+            const usersData = await usersResponse.json();
+            setAvailableUsers(usersData);
+            
+            // Fetch document types
+            const docTypesResponse = await fetch('/api/document-types');
+            if (!docTypesResponse.ok) {
+              throw new Error("Failed to fetch document types");
+            }
+            const docTypesData = await docTypesResponse.json();
+            setDocumentTypes(docTypesData);
+            
+            // Fetch projects
+            const projectsResponse = await fetch('/api/projects');
+            if (!projectsResponse.ok) {
+              throw new Error("Failed to fetch projects");
+            }
+            const projectsData = await projectsResponse.json();
+            setProjects(projectsData);
+            
+          } catch (error) {
+            console.error("Error fetching data:", error);
+            toast.error("Failed to load dropdown options");
+          }
+        }
       } catch (error) {
         console.error("Error fetching task details:", error);
         toast.error("Failed to load task details");
@@ -122,22 +175,29 @@ export default function DetailTaskPage() {
     };
 
     fetchTaskDetails();
-  }, [taskId, router]);
+  }, [taskId, router, isManagerOrAdmin]);
 
   const handleSubmit = async () => {
     if (!task) return;
     
     setIsSaving(true);
     try {
+      // Find the IDs for the selected document type and project
+      const documentTypeId = documentTypes.find(dt => dt.name === selectedDocumentType)?.id || task.documentType.id;
+      const projectId = projects.find(p => p.projectName === selectedProject)?.id || task.project.id;      
       // Update task data
+      console.log("documentTypeId", documentTypeId);
+      console.log("projectId", projectId);
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          assignee: selectedAssignee, // Now sending a single assignee instead of an array
-          status: selectedStatus
+          assignee: selectedAssignee,
+          status: selectedStatus,
+          documentTypeId: documentTypeId,
+          projectId: projectId
         }),
       });
       
@@ -184,54 +244,78 @@ export default function DetailTaskPage() {
         </button>
         <div className="font-poppins font-bold text-2xl">{task.taskName}</div>
         <div className="grid grow gap-2 mt-5 lg:w-1/2">                               
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div className="flex flex-col gap-2">
-              Document Type
-              <Input 
-                className="border-black bg-slate-200" 
-                value={task.documentType.name} 
-                disabled
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              Project
-              <Input 
-                className="border-black bg-slate-200" 
-                value={task.project.projectName} 
-                disabled
-              />
-            </div>
-            <div className="flex flex-col col-span-1 md:col-span-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+         <div className="flex flex-col gap-2">
+                Document Type
+                {isManagerOrAdmin ? (
+                  <SingleSelection 
+                    options={documentTypes.map(dt => dt.name)}
+                    selectedItem={selectedDocumentType}
+                    setSelectedItem={setSelectedDocumentType}
+                  />
+                ) : (
+                  <Input 
+                    className="border-black bg-slate-200"
+                    value={task.documentType.name} 
+                    disabled
+                  />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                Project
+                {isManagerOrAdmin ? (
+                  <SingleSelection 
+                    options={projects.map(p => p.projectName)}
+                    selectedItem={selectedProject}
+                    setSelectedItem={setSelectedProject}
+                  />
+                ) : (
+                  <Input 
+                    className="border-black bg-slate-200"
+                    value={task.project.projectName} 
+                    disabled
+                  />
+                )}
+              </div>
+              <div className="flex flex-col col-span-1 md:col-span-2 gap-2">
               Status
-              <SingleSelection 
-                options={statuses}
-                selectedItem={selectedStatus}
-                setSelectedItem={setSelectedStatus}
-              />
+              {isManagerOrAdmin ? (
+                <SingleSelection 
+                  options={statuses}
+                  selectedItem={selectedStatus}
+                  setSelectedItem={setSelectedStatus}
+                />
+              ) : (
+                <Input 
+                  className="border-black bg-slate-200" 
+                  value={selectedStatus || ""} 
+                  disabled
+                />
+              )}
             </div>
             <div className="flex flex-col col-span-1 md:col-span-2 gap-2">
                 Assign to Employee
-                {selectedStatus === "To Do" ? (
-                    <SingleSelection
+                {isManagerOrAdmin ? (
+                  <SingleSelection
                     options={availableUsers.map(user => user.name)}
                     selectedItem={selectedAssignee}
                     setSelectedItem={setSelectedAssignee}
-                    />
+                  />
                 ) : (
-                    <Input
+                  <Input
                     className="border-black bg-slate-200"
                     value={selectedAssignee || "Not assigned"}
                     disabled
-                    />
+                  />
                 )}
-                </div>
+              </div>
           </div>
           <div className="font-bold text-emerald-500">Iterasi ke-{task.iteration}</div>                  
         </div>
         
         {/* Now we pass the taskId to our ChecklistTable */}
-        {Number(taskId) > 0 && <CheckListTable taskId={Number(taskId)} />}
-        
+      {Number(taskId) > 0 && <CheckListTable taskId={Number(taskId)} userRole={userRole} />}        
+        {isManagerOrAdmin && (
         <div className="justify-items-end pt-2">
           <SubmitButton   
             text={isSaving ? "Saving..." : "Submit"}
@@ -244,6 +328,7 @@ export default function DetailTaskPage() {
             disabled={isSaving}
           />
         </div>
+      )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { SidebarItem } from "./sidebar-function";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react"; // Add this import
 import {
   CircleCheckBig,
   TrafficCone,
@@ -22,17 +23,27 @@ const Sidebar = () => {
     const [isTaskActivityOpen, setIsTaskActivityOpen] = useState(false);
     const [activeItem, setActiveItem] = useState("Dashboard");
     const [activeSubItem, setActiveSubItem] = useState("");
+    const { data: session } = useSession(); // Get session data
+    
+    // Check if user is admin or project manager
+    const isPMOrAdmin = session?.user?.role === 'admin' || session?.user?.role === 'project_manager';
+    
     const handleItemClick = (menu: string, path: string) => {
       if (menu === "PM Options") setIsPMOpen(!isPMOpen);
       if (menu === "Task/Activity") setIsTaskActivityOpen(!isTaskActivityOpen);
       setActiveItem(menu);
-      setActiveSubItem("");
-      router.push(path);
+      
+      if(path) {
+        setActiveSubItem("");
+        router.push(path);
+      }
     };
+    
     const handleSubItemClick = (submenu: string, path: string) => {
       setActiveSubItem(submenu);
       router.push(path);
     };
+    
     const pathname = usePathname();
     const isAuthenticationPage = pathname?.startsWith("/authentication");
 
@@ -76,37 +87,43 @@ const Sidebar = () => {
                   active={activeItem === "Performance Report"}
                   onClick={() => handleItemClick("Performance Report", "#")}
                 />
-                <SidebarItem
-                  icon={<Settings2 size={20} />}
-                  text="PM Options"
-                  more
-                  active={activeItem === "PM Options"}
-                  isOpen={isPMOpen}
-                  onClick={() => handleItemClick("PM Options", "")}
-                />
-                <SidebarMenu
-                  isOpen={isPMOpen}
-                  items={[
-                    {
-                      icon: <UserCircle size={16} />,
-                      text: "Employees",
-                      active: activeSubItem === "Employees",
-                      onClick: () => handleSubItemClick("Employees", "/employees"),
-                    },
-                    {
-                      icon: <TrafficCone size={16} />,
-                      text: "Projects",
-                      active: activeSubItem === "Projects",
-                      onClick: () => handleSubItemClick("Projects", "/projects"),
-                    },
-                    {
-                      icon: <FileText size={16} />,
-                      text: "Template Maker",
-                      active: activeSubItem === "Template Maker",
-                      onClick: () => handleSubItemClick("Template Maker", "template-maker"),
-                    },
-                  ]}
-                />
+                
+                {/* Only render PM Options if user is admin or project manager */}
+                {isPMOrAdmin && (
+                  <>
+                    <SidebarItem
+                      icon={<Settings2 size={20} />}
+                      text="PM Options"
+                      more
+                      active={activeItem === "PM Options"}
+                      isOpen={isPMOpen}
+                      onClick={() => handleItemClick("PM Options", "")}
+                    />
+                    <SidebarMenu
+                      isOpen={isPMOpen}
+                      items={[
+                        {
+                          icon: <UserCircle size={16} />,
+                          text: "Employees",
+                          active: activeSubItem === "Employees",
+                          onClick: () => handleSubItemClick("Employees", "/employees"),
+                        },
+                        {
+                          icon: <TrafficCone size={16} />,
+                          text: "Projects",
+                          active: activeSubItem === "Projects",
+                          onClick: () => handleSubItemClick("Projects", "/projects"),
+                        },
+                        {
+                          icon: <FileText size={16} />,
+                          text: "Template Maker",
+                          active: activeSubItem === "Template Maker",
+                          onClick: () => handleSubItemClick("Template Maker", "/template-maker"),
+                        },
+                      ]}
+                    />
+                  </>
+                )}
             </SidebarFunction>
         </div>
     )

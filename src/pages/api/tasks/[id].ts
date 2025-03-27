@@ -64,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // PUT: Update a task
   else if (req.method === 'PUT') {
     try {
-      const { taskName, documentTypeId, status, assignees } = req.body;
+      const { taskName, documentTypeId, status, assignees, projectId } = req.body;
       
       const existingTask = await prisma.task.findUnique({
         where: { id: taskId },
@@ -82,7 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { id: taskId },
         data: {
           taskName: taskName || existingTask.taskName,
-          documentTypeId: documentTypeId || existingTask.documentTypeId
+          documentTypeId: documentTypeId || existingTask.documentTypeId,
+          projectId: projectId || existingTask.projectId
         },
         include: {
           documentType: true,

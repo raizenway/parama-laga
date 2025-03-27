@@ -30,14 +30,24 @@ type Task = {
   }[];
 };
 
+// Add userRole to the component props
 type TaskTableProps = {
   searchTerm?: string;
   onEdit?: (task: Task) => void;
   onDelete?: (task: Task) => void;
   refreshTrigger?: number;
+  onTaskDeleted?: () => void;
+  userRole?: string | null; // Add new prop for user role
 };
 
-export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTrigger = 0, }: TaskTableProps){
+export default function TaskTable({ 
+  searchTerm = "", 
+  onEdit, 
+  onDelete,
+  refreshTrigger = 0,
+  onTaskDeleted,
+  userRole = null 
+}: TaskTableProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,11 +56,15 @@ export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTri
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  
+  // Check if user is admin or project_manager
+  const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
 
   // Fetch tasks
   const fetchTasks = async (query = "") => {
     setIsLoading(true);
     try {
+      // If employee role, the API will filter tasks by userId automatically
       const url = query ? `/api/tasks?search=${encodeURIComponent(query)}` : "/api/tasks";
       const response = await fetch(url);
       
@@ -71,7 +85,6 @@ export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTri
       setIsLoading(false);
     }
   };
-
   // Effect to fetch tasks when search term changes
   useEffect(() => {
     fetchTasks(debouncedSearchQuery);
@@ -197,7 +210,7 @@ export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTri
             </th>
           </tr>
         </thead>
-        <tbody>
+<tbody>
           {tasks.length > 0 ? (
             tasks.map((task) => (
               <tr key={task.id} className="border-b-2 border-tersier">
@@ -216,12 +229,13 @@ export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTri
                   </span>
                 </td>
                 <td className="px-4 py-3 flex gap-3 justify-center">
-                  <button onClick={() => handleEdit(task)} title="Edit task">
-                    <PencilLine className="text-green-600 hover:text-green-700"/>
-                  </button>
-                  <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                    <Trash2 className="text-red-500 hover:text-red-700"/>
-                  </button>
+                  {isManagerOrAdmin && (
+                    <>
+                      <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                        <Trash2 className="text-red-500 hover:text-red-700"/>
+                      </button>
+                    </>
+                  )}
                   <button onClick={() => handleView(task)} title="View task details">
                     <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
                   </button>
@@ -238,8 +252,8 @@ export default function TaskTable({ searchTerm = "", onEdit, onDelete,refreshTri
         </tbody>
       </table>
       
-      {/* Delete confirmation modal - rendered ONCE outside the table */}
-      {selectedTask && (
+      {/* Delete confirmation modal - only render if user is manager/admin */}
+      {isManagerOrAdmin && selectedTask && (
         <DeleteConfirmation
           open={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}

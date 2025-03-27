@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 type ChecklistTableProps = {
   taskId: number;
+  userRole?:string | null;
 };
 
 type TaskProgress = {
@@ -19,11 +20,13 @@ type TaskProgress = {
   };
 };
 
-export default function ChecklistTable({ taskId }: ChecklistTableProps) {
+export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTableProps) {
   const [progressItems, setProgressItems] = useState<TaskProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newCriteria, setNewCriteria] = useState("");
+
+  const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
 
   // Fetch task progress for this task
   useEffect(() => {
@@ -210,9 +213,11 @@ export default function ChecklistTable({ taskId }: ChecklistTableProps) {
             <th className="px-4 py-2 w-1/12 text-center">
               <div className="flex items-center justify-center gap-1"><CircleCheckBig /></div>
             </th>
-            <th className="px-4 py-2 w-1/12 text-center rounded-tr-lg">
-              <div className="flex items-center justify-center gap-1">Actions</div>
-            </th>
+            {isManagerOrAdmin && (
+              <th className="px-4 py-2 w-1/12 text-center rounded-tr-lg">
+                <div className="flex items-center justify-center gap-1">Actions</div>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -233,29 +238,31 @@ export default function ChecklistTable({ taskId }: ChecklistTableProps) {
                     disabled={isSaving}
                   />
                 </td>
-                <td className="py-4 px-4 border-r-2 border-l-2 text-center">
-                  <button
-                    onClick={() => toggleCheck(item)}
-                    className={
-                      item.checked
-                        ? "text-green-500 hover:text-green-700"
-                        : "text-gray-300 hover:text-gray-400"
-                    }
-                    disabled={isSaving}
-                  >
-                    <Check size={20} strokeWidth={4} />
-                  </button>
-                </td>
-                <td className="py-4 px-4 border-r-2 border-l-2 text-center">
-                  <button 
-                    onClick={() => deleteItem(item)}
-                    className="text-red-500 hover:text-red-700"
-                    disabled={isSaving}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
+                  <td className="py-4 px-4 border-r-2 border-l-2 text-center">
+                    <button
+                      onClick={() => toggleCheck(item)}
+                      className={
+                        item.checked
+                          ? "text-green-500 hover:text-green-700"
+                          : "text-gray-300 hover:text-gray-400"
+                      }
+                      disabled={isSaving}
+                    >
+                      <Check size={20} strokeWidth={4} />
+                    </button>
+                  </td>
+                  {isManagerOrAdmin && (
+                    <td className="py-4 px-4 border-r-2 border-l-2 text-center">
+                      <button 
+                        onClick={() => deleteItem(item)}
+                        className="text-red-500 hover:text-red-700"
+                        disabled={isSaving}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  )}
+                </tr>
             ))
           ) : (
             <tr>

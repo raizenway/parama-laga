@@ -14,6 +14,11 @@ export default async function handler(
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+    // For GET requests, allow all authenticated users
+    if (req.method === 'GET') {
+      return getProjects(req, res);
+    }
+
   // Check if user is admin or project manager
   if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
     return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
@@ -21,8 +26,6 @@ export default async function handler(
 
   // Handle different HTTP methods
   switch (req.method) {
-    case 'GET':
-      return getProjects(req, res);
     case 'POST':
       return createProject(req, res);
     case 'PUT':
@@ -38,15 +41,35 @@ export default async function handler(
 async function getProjects(req: NextApiRequest, res: NextApiResponse) {
   try {
     const searchQuery = req.query.search as string || '';
+    const session = await getServerSession(req, res, authOptions);
+    const userRole = (session?.user as any)?.role;
+    const userId = (session?.user as any)?.id;
+
+      // Build the search condition
+      const searchCondition = searchQuery
+      ? {
+          projectName: { contains: searchQuery, mode: 'insensitive' }
+        }
+      : {};
     
-    // Build search condition
-    const whereCondition = searchQuery
-    ? {
-      projectName: { contains: searchQuery, mode: 'insensitive' } 
-    } 
-  : {};
+    // Build the role-based condition
+    const roleCondition = {};
+    if (userRole !== 'admin' && userRole !== 'project_manager' && userId) {
+      // Get only projects where this user is assigned
+      roleCondition['projectUsers'] = {
+        some: {
+          userId: parseInt(userId.toString())
+        }
+      };
+    }
+        // Combine both conditions properly
+        const whereCondition = {
+          ...searchCondition,
+          ...roleCondition
+        };
+        
     const projects = await prisma.project.findMany({
-      where: whereCondition,
+      where: whereCondition ,
       include: {
         status: true,
         projectUsers: {

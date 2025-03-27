@@ -13,6 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
+    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+  }
+
+
   if (req.method === 'GET') {
     try {
       const searchQuery = req.query.search as string || '';
