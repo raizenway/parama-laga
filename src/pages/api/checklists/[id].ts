@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT') {
     try {
-      const { criteria } = req.body;
+      const { criteria, hint } = req.body;
       
       if (!criteria) {
         return res.status(400).json({ message: 'Checklist criteria is required' });
@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { id: checklistId },
         data: {
           criteria,
+          hint, // Include the hint in the update
           updatedAt: new Date(),
         }
       });
