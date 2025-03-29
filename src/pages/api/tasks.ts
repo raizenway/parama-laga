@@ -134,7 +134,7 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
 // Function to create a new task
 async function createTask(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { taskName, documentTypeId, templateId, projectId, userId, iteration } = req.body;
+    const { taskName, documentTypeId, templateId, projectId, userId } = req.body;
     const session = await getServerSession(req, res, authOptions);
     const userRole = (session?.user as any)?.role;
     const currentUserId = parseInt((session?.user as any)?.id);
@@ -158,7 +158,6 @@ async function createTask(req: NextApiRequest, res: NextApiResponse) {
         templateId: parseInt(templateId),
         projectId: parseInt(projectId),
         userId: assigneeId,
-        iteration: iteration || 1,
         dateAdded: new Date()
       },
       include: {
@@ -208,7 +207,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       templateId, 
       projectId, 
       userId, 
-      iteration, 
       progresses,
       assignee,
       status
@@ -260,7 +258,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       }
     }
     
-    if (iteration) updateData.iteration = iteration;
     
       
     // Handle user assignment - either directly by userId or by assignee name

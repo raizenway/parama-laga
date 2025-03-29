@@ -64,40 +64,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } 
   
-  // PUT: Update task progress entries
-  if (req.method === 'PUT') {
-    try {
-      // Handle bulk update
-      const updates = req.body;
-      if (!Array.isArray(updates)) {
-        return res.status(400).json({ message: 'Expected an array of updates' });
-      }
-
-      // Process each update in the array
-      const updatePromises = updates.map(async (update) => {
-        const { id, checked, comment, updatedAt } = update;
-        
-        if (!id) {
-          throw new Error('Progress ID is required for each item');
-        }
-        
-        return prisma.taskProgress.update({
-          where: { id: id },
-          data: {
-            checked: checked,
-            comment: comment,
-            updatedAt: updatedAt ? new Date(updatedAt) : new Date()
-          }
-        });
-      });
-      
-      const results = await Promise.all(updatePromises);
-      return res.status(200).json(results);
-    } catch (error) {
-      console.error('Error updating task progress:', error);
-      return res.status(500).json({ message: 'Failed to update task progress' });
+// In the PUT method handler
+else if (req.method === 'PUT') {
+  try {
+    const items = req.body;
+    
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ message: 'Expected array of task progress items' });
     }
+    
+    const updates = await Promise.all(items.map(async (item) => {
+      return prisma.taskProgress.update({
+        where: { id: item.id },
+        data: {
+          checked: item.checked,
+          comment: item.comment,
+          updatedAt: new Date()
+        },
+        include: { checklist: true }
+      });
+    }));
+    
+    // After updating the progress items, check if all items are completed
+    // If yes, update the task completedDate
+    const taskId = parseInt(req.query.taskId as string);
+    const allTaskProgress = await prisma.taskProgress.findMany({
+      where: { taskId: taskId }
+    });
+    
+    const allCompleted = allTaskProgress.length > 0 && allTaskProgress.every(p => p.checked);
+    
+    if (allCompleted) {
+      // All items are completed, update the task completedDate if not already set
+      await prisma.task.update({
+        where: { id: taskId },
+        data: {
+          completedDate: {
+            set: new Date()  // Only set if it's null
+          }
+        }
+      });
+    }
+    
+    return res.status(200).json(updates);
+  } catch (error) {
+    console.error('Error updating task progress:', error);
+    return res.status(500).json({ message: 'Failed to update task progress' });
   }
+}
   
   
   // DELETE: Delete a task progress entry

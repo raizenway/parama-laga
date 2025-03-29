@@ -1,5 +1,5 @@
 "use client"
-import { CalendarCheck2, FileText, Eye, IterationCw, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass } from "lucide-react"
+import { CalendarCheck2, FileText, Eye, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, User,CalendarDays } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -20,7 +20,6 @@ type Task = {
     projectName: string;
   };
   dateAdded: string;
-  iteration: number;
   user: {
     id: number;
     name: string;
@@ -29,6 +28,7 @@ type Task = {
     id: number;
     checked: boolean;
   }[];
+  completedDate?: string | null; // Add this field to track completion date
 };
 
 // Add userRole to the component props
@@ -197,86 +197,100 @@ export default function TaskTable({
 
   return (
     <>
-      <table className="font-poppins w-full table-auto justify-start">
-        <thead className="bg-tersier">
-          <tr>
-            <th className="px-4 py-2 w-[25%] text-left rounded-tl-lg">
-              <div className="flex items-center gap-1">
-                <ListCheck /> Task Name
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[20%] text-left">
-              <div className="flex items-center gap-1">
-                <FileText /> Document Type
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[10%] text-left">
-              <div className="flex items-center gap-1">
-                <TrafficCone /> Project
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[15%] text-left">
-              <div className="flex items-center gap-1">
-                <CalendarCheck2 /> Date Added
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[10%] text-center">
-              <div className="flex items-center justify-center gap-1">
-                <IterationCw /> Iteration
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[10%] text-left">
-              <div className="flex items-center gap-1">
-                <Hourglass /> Status
-              </div>
-            </th>
-            <th className="px-4 py-2 w-[10%] text-center rounded-tr-lg">
-              <div className="flex items-center justify-center gap-1">
-                <Zap /> Act
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedTasks.length > 0 ? (
-            paginatedTasks.map((task) => (
-              <tr key={task.id} className="border-b-2 border-tersier">
-                <td className="px-4 py-3">{task.taskName}</td>
-                <td className="px-4 py-3">{task.documentType.name}</td>
-                <td className="px-4 py-3">{task.project.projectName}</td>
-                <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-center">{task.iteration}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-sm ${
-                    getTaskStatus(task) === "Done" ? "bg-green-100 text-green-800" :
-                    getTaskStatus(task) === "On Going" ? "bg-blue-100 text-blue-800" : 
-                    "bg-yellow-100 text-yellow-800"
-                  }`}>
-                    {getTaskStatus(task)}
-                  </span>
-                </td>
-                <td className="px-4 py-3 flex gap-3 justify-center">
-                    <>
-                      <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                        <Trash2 className="text-red-500 hover:text-red-700"/>
-                      </button>
-                    </>
-                  <button onClick={() => handleView(task)} title="View task details">
-                    <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
+    <table className="font-poppins w-full table-auto justify-start">
+      <thead className="bg-tersier">
+        <tr>
+          <th className="px-4 py-2 w-[5%] text-center rounded-tl-lg">
+            <div className="flex items-center justify-center gap-1">
+              #
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[20%] text-left">
+            <div className="flex items-center gap-1">
+              <ListCheck /> Task Name
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[15%] text-left">
+            <div className="flex items-center gap-1">
+              <FileText /> Document Type
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[10%] text-left">
+            <div className="flex items-center gap-1">
+              <TrafficCone /> Project
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[15%] text-left">
+            <div className="flex items-center gap-1">
+              <User /> Assigned To
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[10%] text-left">
+            <div className="flex items-center gap-1">
+              <CalendarCheck2 /> Date Added
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[10%] text-left">
+            <div className="flex items-center gap-1">
+              <CalendarDays /> Completed Date
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[8%] text-left">
+            <div className="flex items-center gap-1">
+              <Hourglass /> Status
+            </div>
+          </th>
+          <th className="px-4 py-2 w-[9%] text-center rounded-tr-lg">
+            <div className="flex items-center justify-center gap-1">
+              <Zap /> Act
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {paginatedTasks.length > 0 ? (
+          paginatedTasks.map((task, index) => (
+            <tr key={task.id} className="border-b-2 border-tersier">
+              <td className="px-4 py-3 text-center">
+                {(currentPage - 1) * itemsPerPage + index + 1}
+              </td>
+              <td className="px-4 py-3">{task.taskName}</td>
+              <td className="px-4 py-3">{task.documentType.name}</td>
+              <td className="px-4 py-3">{task.project.projectName}</td>
+              <td className="px-4 py-3">{task.user?.name || 'Unassigned'}</td>
+              <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
+              <td className="px-4 py-3">{task.completedDate ? new Date(task.completedDate).toLocaleDateString() : '-'}</td>
+              <td className="px-4 py-3">
+                <span className={`px-2 py-1 rounded-full text-sm ${
+                  getTaskStatus(task) === "Done" ? "bg-green-100 text-green-800" :
+                  getTaskStatus(task) === "On Going" ? "bg-blue-100 text-blue-800" : 
+                  "bg-yellow-100 text-yellow-800"
+                }`}>
+                  {getTaskStatus(task)}
+                </span>
+              </td>
+              <td className="px-4 py-3 flex gap-3 justify-center">
+                <>
+                  <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                    <Trash2 className="text-red-500 hover:text-red-700"/>
                   </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={7} className="text-center py-8">
-                {searchTerm ? "No tasks match your search" : "No tasks available"}
+                </>
+                <button onClick={() => handleView(task)} title="View task details">
+                  <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
+                </button>
               </td>
             </tr>
-          )}
-        </tbody>
-      </table>
-      {selectedTask && ( // Add this conditional check
+          ))
+        ) : (
+          <tr>
+            <td colSpan={9} className="text-center py-8">
+              {searchTerm ? "No tasks match your search" : "No tasks available"}
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+    {selectedTask && ( // Add this conditional check
       <DeleteConfirmation
         open={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

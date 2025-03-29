@@ -43,7 +43,6 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
     templateId: "",
     projectId: "",
     userId: userId || "",
-    iteration: 1
   });
   
   // Dropdown options state
@@ -269,19 +268,7 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
             />
           </div>
         )}
-        
-        <div className="space-y-2">
-          <label htmlFor="iteration" className="block text-sm font-medium">Iteration</label>
-          <Input 
-            id="iteration" 
-            name="iteration" 
-            type="number" 
-            min="1" 
-            value={formData.iteration} 
-            onChange={handleChange} 
-            className="w-full"
-          />
-        </div>
+
         
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>

@@ -15,7 +15,6 @@ const statuses = ["Done", "On Going", "To Do"];
 type Task = {
   id: number;
   taskName: string;
-  iteration: number;
   dateAdded: string;
   documentType: {
     id: number;
@@ -392,8 +391,7 @@ export default function DetailTaskPage() {
                 />
               )}
             </div>
-          </div>
-          <div className="font-bold text-emerald-500">Iterasi ke-{task.iteration}</div>                  
+          </div>             
         </div>
         
         {/* Checklist table */}
