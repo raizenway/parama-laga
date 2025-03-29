@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import SingleSelection from "../dropdown-single-selection";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 // Types
 type DocumentType = {
@@ -28,13 +29,20 @@ type Employee = {
 };
 
 export default function TaskForm({onClose, onSuccess} : {onClose: () => void, onSuccess?: () => void}) {
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const userId = (session?.user as any)?.id;
+  const userName = (session?.user as any)?.name;
+  const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
+
+
   // Form data state
   const [formData, setFormData] = useState({
     taskName: "",
     documentTypeId: "",
     templateId: "",
     projectId: "",
-    userId: "",
+    userId: userId || "",
     iteration: 1
   });
   
@@ -52,7 +60,7 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
   const [selectedDocType, setSelectedDocType] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(isEmployee ? userName : null);
 
   // Fetch all necessary data when component mounts
   useEffect(() => {
@@ -81,11 +89,14 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           setTemplates(templates);
         }
         
-        // Fetch employees (users)
-        const employeeRes = await fetch('/api/employee');
-        if (employeeRes.ok) {
-          const employees = await employeeRes.json();
-          setEmployees(employees);
+        // Only fetch employees if user is admin or project manager
+        if (!isEmployee) {
+          // Fetch employees (users)
+          const employeeRes = await fetch('/api/employee');
+          if (employeeRes.ok) {
+            const employees = await employeeRes.json();
+            setEmployees(employees);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -96,7 +107,7 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
     };
     
     fetchData();
-  }, []);
+  }, [isEmployee]);
   
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,11 +132,12 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
       if (template) setFormData(prev => ({ ...prev, templateId: template.id.toString() }));
     }
     
-    if (selectedEmployee) {
+    // If user is not employee, update selected employee as usual
+    if (!isEmployee && selectedEmployee) {
       const employee = employees.find(e => e.name === selectedEmployee);
       if (employee) setFormData(prev => ({ ...prev, userId: employee.id.toString() }));
     }
-  }, [selectedDocType, selectedProject, selectedTemplate, selectedEmployee, documentTypes, projects, templates, employees]);
+  }, [selectedDocType, selectedProject, selectedTemplate, selectedEmployee, documentTypes, projects, templates, employees, isEmployee]);
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +179,9 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
       
       if (response.ok) {
         toast.success("Task created successfully");
-        if (onSuccess) onSuccess();
+        if (onSuccess){
+          onSuccess();
+        } 
         onClose();
       } else {
         toast.error(`Failed to create task: ${data.message || "Unknown error"}`);
@@ -234,15 +248,27 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           />
         </div>
         
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Assign to Employee</label>
-          <SingleSelection 
-            options={employees.map(e => e.name)}
-            selectedItem={selectedEmployee}
-            setSelectedItem={setSelectedEmployee}
-            placeholder="Select employee"
-          />
-        </div>
+        {/* Only show employee selection for admins and project managers */}
+        {!isEmployee ? (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Assign to Employee</label>
+            <SingleSelection 
+              options={employees.map(e => e.name)}
+              selectedItem={selectedEmployee}
+              setSelectedItem={setSelectedEmployee}
+              placeholder="Select employee"
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Assign to Employee</label>
+            <Input 
+              value={userName || "You"}
+              className="bg-gray-50"
+              readOnly
+            />
+          </div>
+        )}
         
         <div className="space-y-2">
           <label htmlFor="iteration" className="block text-sm font-medium">Iteration</label>

@@ -63,7 +63,7 @@ export default function TaskTable({
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   
   // Check if user is admin or project_manager
-  const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
+  // const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const paginatedTasks = tasks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -256,13 +256,11 @@ export default function TaskTable({
                   </span>
                 </td>
                 <td className="px-4 py-3 flex gap-3 justify-center">
-                  {isManagerOrAdmin && (
                     <>
                       <button onClick={() => handleDeleteTask(task)} title="Delete task">
                         <Trash2 className="text-red-500 hover:text-red-700"/>
                       </button>
                     </>
-                  )}
                   <button onClick={() => handleView(task)} title="View task details">
                     <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
                   </button>
@@ -278,26 +276,25 @@ export default function TaskTable({
           )}
         </tbody>
       </table>
-      
-      {/* Delete confirmation modal - only render if user is manager/admin */}
-      {isManagerOrAdmin && selectedTask && (
-        <DeleteConfirmation
-          open={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={confirmDeleteTask}
-          name={selectedTask.taskName}
-          entityType="task"
-          title="Confirm Task Deletion"
-          description="Deleting this task will remove all associated progress and checklist items. This action cannot be undone."
-          isLoading={isDeleting}
-        />
-      )}
-      <Pagination 
+      {selectedTask && ( // Add this conditional check
+      <DeleteConfirmation
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDeleteTask}
+        name={selectedTask.taskName}
+        entityType="task"
+        title="Confirm Task Deletion"
+        description="Deleting this task will remove all associated progress and checklist items. This action cannot be undone."
+        isLoading={isDeleting}
+      />
+    )}
+    
+    <Pagination 
       currentPage={currentPage}
       onPageChange={setCurrentPage}
       itemsPerPage={itemsPerPage}
       totalItems={tasks.length}
-      />
-    </>
+    />
+  </>
   );
 }

@@ -44,7 +44,7 @@ export default function Page() {
   
   // Check if user is admin or project_manager
   const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
-  
+    
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -65,12 +65,10 @@ export default function Page() {
             value={searchQuery}
             onChange={handleSearchChange}
           />
-          {isManagerOrAdmin && (
             <AddButton 
               text="+ Add Task" 
               onClick={() => setIsDetailOpen(true)}
             />
-          )}
         </div>
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
           <div className="max-h-full w-full">
@@ -82,14 +80,12 @@ export default function Page() {
             />
           </div>
         </div>
-      </div>
-      {isManagerOrAdmin && (
+      </div>  
         <TaskModal 
           open={isDetailOpen} 
           onClose={() => setIsDetailOpen(false)} 
           onTaskSaved={handleTaskSaved}
         />
-      )}
     </div>
   );
 }
