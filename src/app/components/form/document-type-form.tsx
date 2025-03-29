@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash, Check, Loader2 } from "lucide-react";
+import { Trash, Check, Loader2, FileCheck2, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 type documentType = {
@@ -185,7 +185,8 @@ export default function documentTypeForm({ onClose }: { onClose: () => void }) {
         <div className="max-h-80 overflow-y-auto border border-gray-300 p-2 rounded-lg">
           {filtereddocumentTypes.length > 0 ? (
             filtereddocumentTypes.map((documentType) => (
-              <div key={documentType.id} className="flex items-center gap-3 mb-2">
+              <div key={documentType.id} className="flex items-center gap-2 mb-2">
+                <FileText size={20} className="text-sky-600" />
                 <Input
                   type="text"
                   value={editingIndex === documentType.id ? newType : documentType.name}

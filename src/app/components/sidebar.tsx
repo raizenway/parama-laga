@@ -12,7 +12,7 @@ import {
   ChartSpline,
   Settings2,
   UserCircle,
-  FileText,
+  FileCheck2,
   LayoutDashboard,
   Activity,
   LayoutList
@@ -116,7 +116,7 @@ const Sidebar = () => {
                           onClick: () => handleSubItemClick("Projects", "/projects"),
                         },
                         {
-                          icon: <FileText size={16} />,
+                          icon: <FileCheck2 size={16} />,
                           text: "Template Maker",
                           active: activeSubItem === "Template Maker",
                           onClick: () => handleSubItemClick("Template Maker", "/template-maker"),

@@ -5,7 +5,7 @@ import Button from "@/app/components/button/button-custom";
 import { useState } from "react";
 import TemplateTable from "@/app/components/table/template-table";
 import CheckListModal from "@/app/components/modal/check-list-modal";
-import { FileText, PencilLine } from "lucide-react";
+import { FileCheck2, FileText, PencilLine } from "lucide-react";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { toast } from "sonner";
 import DocumentTypeModal from "@/app/components/modal/document-type-modal"

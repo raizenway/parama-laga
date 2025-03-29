@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash, Check, Loader2, Info } from "lucide-react";
+import { Trash, Check, Loader2, Info, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 type Checklist = {
   id: number;
@@ -67,6 +68,19 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
     
     setIsSaving(true);
     try {
+      const tempId = Date.now();
+      
+      const tempChecklist = {
+        id: tempId,
+        criteria: newCriteria,
+        hint: newHint,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setChecklists([tempChecklist, ...checklists]);
+      setFilteredChecklists([tempChecklist, ...filteredChecklists]);
+      
       const response = await fetch('/api/checklists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,13 +92,24 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
       
       if (!response.ok) throw new Error("Failed to create checklist");
       
-      const newChecklist = await response.json();
-      setChecklists([...checklists, newChecklist]);
-      setFilteredChecklists([...filteredChecklists, newChecklist]);
+      const serverChecklist = await response.json();
+      
+      setChecklists([
+        serverChecklist,
+        ...checklists.filter(c => c.id !== tempId)
+      ]);
+      
+      setFilteredChecklists([
+        serverChecklist, 
+        ...filteredChecklists.filter(c => c.id !== tempId)
+      ]);
+      
       setNewCriteria("");
       setNewHint("");
       toast.success("Checklist added successfully");
     } catch (error) {
+      setChecklists(checklists.filter(c => c.id !== tempId));
+      setFilteredChecklists(filteredChecklists.filter(c => c.id !== tempId));
       console.error("Error adding checklist:", error);
       toast.error("Failed to add checklist");
     } finally {
@@ -101,42 +126,50 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
     });
   };
 
-  // Update checklist with hint
-  const updateCriteria = async (id: number) => {
-    if (!editingValues.criteria.trim()) {
-      toast.error("Criteria cannot be empty");
-      return;
-    }
+  // Update checklist
+const updateCriteria = async (id: number) => {
+  if (!editingValues.criteria.trim()) {
+    toast.error("Criteria cannot be empty");
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/checklists/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        criteria: editingValues.criteria,
+        hint: editingValues.hint,
+        updatedAt: new Date().toISOString()
+      })
+    });
     
-    try {
-      const response = await fetch(`/api/checklists/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          criteria: editingValues.criteria,
-          hint: editingValues.hint
-        })
-      });
-      
-      if (!response.ok) throw new Error("Failed to update checklist");
-      
-      const updatedChecklist = await response.json();
-      
-      setChecklists(checklists.map(cl => 
-        cl.id === updatedChecklist.id ? updatedChecklist : cl
-      ));
-      
-      setFilteredChecklists(filteredChecklists.map(cl => 
-        cl.id === updatedChecklist.id ? updatedChecklist : cl
-      ));
-      
-      setEditingId(null);
-      toast.success("Checklist updated successfully");
-    } catch (error) {
-      console.error("Error updating checklist:", error);
-      toast.error("Failed to update checklist");
-    }
-  };
+    if (!response.ok) throw new Error("Failed to update checklist");
+    
+    const updatedChecklist = await response.json();
+    
+    // Update checklists utama
+    const updatedChecklists = checklists.map(cl => 
+      cl.id === updatedChecklist.id ? updatedChecklist : cl
+    ).sort((a, b) => 
+      new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    );
+    
+    // Update filteredChecklists berdasarkan searchTerm
+    const updatedFiltered = updatedChecklists.filter(
+      checklist => checklist.criteria.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setChecklists(updatedChecklists);
+    setFilteredChecklists(updatedFiltered);
+    
+    setEditingId(null);
+    toast.success("Checklist updated successfully");
+  } catch (error) {
+    console.error("Error updating checklist:", error);
+    toast.error("Failed to update checklist");
+  }
+};
 
   // Delete checklist
   const removeChecklist = async (id: number) => {
@@ -170,7 +203,7 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="w-full bg-white p-5 rounded-lg shadow-md space-y-3">
-      <input 
+      <Input
         type="search" 
         placeholder="🔍︎ Search check criteria" 
         value={searchTerm}
@@ -178,14 +211,15 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
         className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
       />
       
-      <div className="font-poppins space-y-4">
+      <div className="font-poppins space-y-2">
         <div className="max-h-80 overflow-y-auto border border-gray-300 p-2 rounded-lg">
           {filteredChecklists.length > 0 ? (
             filteredChecklists.map((checklist) => (
               <div key={checklist.id} className="mb-4 space-y-2">
                 <div className="flex items-center gap-3">
-                  {/* Criteria input */}
-                  <input
+                  {/* Criteria Show */}
+                  <CheckCircle className="text-lime-600" size={20}/>
+                  <Input
                     type="text"
                     value={editingId === checklist.id ? editingValues.criteria : checklist.criteria}
                     placeholder="Check Criteria"
@@ -223,21 +257,22 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
                   </button>
                 </div>
                 
-                {/* Hint input */}
+                {/* Hint Show */}
                 <div className="flex items-center gap-3">
                   <Info className="text-gray-400" size={16} />
-                  <input
+                  <Input
                     type="text"
                     value={editingId === checklist.id ? editingValues.hint : checklist.hint || ""}
                     placeholder="Hint"
                     onChange={(e) => {
                       if (editingId === checklist.id) {
-                        setEditingValues({
-                          ...editingValues,
+                        setEditingValues(prev => ({
+                          ...prev,
                           hint: e.target.value
-                        });
+                        }));
                       }
                     }}
+                    onFocus={() => startEditing(checklist)}
                     className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
                   />
                 </div>
@@ -257,7 +292,7 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
             placeholder="New check criteria"
             value={newCriteria}
             onChange={(e) => setNewCriteria(e.target.value)}
-                          className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+            className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
           />
           <div className="flex items-center gap-2">
             <Info className="text-gray-400" size={16} />

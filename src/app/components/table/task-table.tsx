@@ -1,5 +1,5 @@
 "use client"
-import { CalendarCheck2, FileText, Eye, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, User,CalendarDays, User } from "lucide-react"
+import { CalendarCheck2, FileCheck2, Eye, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -212,7 +212,7 @@ export default function TaskTable({
           </th>
           <th className="px-4 py-2 w-[15%] text-left">
             <div className="flex items-center gap-1">
-              <FileText /> Document Type
+              <FileCheck2 /> Document Type
             </div>
           </th>
           <th className="px-4 py-2 w-[10%] text-left">

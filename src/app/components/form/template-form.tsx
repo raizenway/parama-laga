@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Info, Loader2 } from "lucide-react";
+import { FileText, Info, Loader2 } from "lucide-react";
 
 type Checklist = {
   id: number;
@@ -89,7 +89,24 @@ export default function TemplateForm({
     }
     
     setIsSaving(true);
+    const tempId = Date.now(); // ID sementara
+    
     try {
+      // 1. Buat temporary checklist
+      const tempChecklist = {
+        id: tempId,
+        criteria: newCriteria,
+        hint: newHint,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+  
+      // 2. Optimistic update ke SEMUA state yang relevan
+      setAvailableChecklists(prev => [tempChecklist, ...prev]);
+      setChecklists(prev => [tempChecklist, ...prev]);
+      setFilteredChecklists(prev => [tempChecklist, ...prev]);
+  
+      // 3. Kirim ke server
       const response = await fetch('/api/checklists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -98,16 +115,34 @@ export default function TemplateForm({
           hint: newHint
         })
       });
-      
+  
       if (!response.ok) throw new Error("Failed to create checklist");
-      
-      const newChecklist = await response.json();
-      setChecklists([...checklists, newChecklist]);
-      setFilteredChecklists([...filteredChecklists, newChecklist]);
+  
+      // 4. Dapatkan response dari server
+      const serverChecklist = await response.json();
+  
+      // 5. Ganti temporary item dengan data real
+      const updateLists = (prev: any[]) => [
+        serverChecklist,
+        ...prev.filter(item => item.id !== tempId)
+      ];
+  
+      setAvailableChecklists(updateLists);
+      setChecklists(updateLists);
+      setFilteredChecklists(updateLists);
+  
+      // 6. Reset form
       setNewCriteria("");
       setNewHint("");
       toast.success("Checklist added successfully");
+  
     } catch (error) {
+      // 7. Rollback jika error
+      const removeTemp = (prev: any[]) => prev.filter(item => item.id !== tempId);
+      setAvailableChecklists(removeTemp);
+      setChecklists(removeTemp);
+      setFilteredChecklists(removeTemp);
+      
       console.error("Error adding checklist:", error);
       toast.error("Failed to add checklist");
     } finally {
@@ -187,7 +222,7 @@ export default function TemplateForm({
                 />
                 <label 
                   htmlFor={`checklist-${checklist.id}`}
-                  className="cursor-pointer flex-1"
+                  className="cursor-pointer flex-1 text-sm"
                 >
                   {checklist.criteria}
                 </label>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDebounce } from "@/hooks/useDebounce";  
-import { CalendarCheck2, MoveDown, PencilLine, Trash2, Eye, FileText, ListCheck, Zap } from "lucide-react";
+import { CalendarCheck2, MoveDown, PencilLine, Trash2, Eye, FileCheck2, ListCheck, Zap } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -95,7 +95,7 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
         <thead className="bg-tersier">
         <tr className="text-black">
             {[
-              { icon: <FileText />, label: "Template Name", width: "w-[55%] h-[50px]" },
+              { icon: <FileCheck2 />, label: "Template Name", width: "w-[55%] h-[50px]" },
               { icon: <CalendarCheck2 />, label: "Date Added", width: "w-[15%] h-[50px]" },
               { icon: <ListCheck />, label: "Checklist", width: "w-[5%] h-[50px]" },
               { icon: <Zap />, label: "Actions", width: "w-[25%]", center: true},
