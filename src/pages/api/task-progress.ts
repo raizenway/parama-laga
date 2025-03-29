@@ -65,27 +65,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } 
   
   // PUT: Update task progress entries
-  else if (req.method === 'PUT') {
+  if (req.method === 'PUT') {
     try {
-      const items = req.body;
-      
-      if (!Array.isArray(items)) {
-        return res.status(400).json({ message: 'Expected array of task progress items' });
+      // Handle bulk update
+      const updates = req.body;
+      if (!Array.isArray(updates)) {
+        return res.status(400).json({ message: 'Expected an array of updates' });
       }
-      
-      const updates = await Promise.all(items.map(async (item) => {
+
+      // Process each update in the array
+      const updatePromises = updates.map(async (update) => {
+        const { id, checked, comment, updatedAt } = update;
+        
+        if (!id) {
+          throw new Error('Progress ID is required for each item');
+        }
+        
         return prisma.taskProgress.update({
-          where: { id: item.id },
+          where: { id: id },
           data: {
-            checked: item.checked,
-            comment: item.comment,
-            updatedAt: new Date()
-          },
-          include: { checklist: true }
+            checked: checked,
+            comment: comment,
+            updatedAt: updatedAt ? new Date(updatedAt) : new Date()
+          }
         });
-      }));
+      });
       
-      return res.status(200).json(updates);
+      const results = await Promise.all(updatePromises);
+      return res.status(200).json(results);
     } catch (error) {
       console.error('Error updating task progress:', error);
       return res.status(500).json({ message: 'Failed to update task progress' });

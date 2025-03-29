@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import SubmitButton from "@/app/components/button/button-custom";
 import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
+import TaskUpdateConfirmation from "@/app/components/modal/task-update-confirmation";
 import { Input } from "@/components/ui/input";
 
 const statuses = ["Done", "On Going", "To Do"];
@@ -41,6 +42,20 @@ type Task = {
       criteria: string;
     }
   }[];
+};
+
+type TaskProgress = {
+  id: number;
+  taskId: number;
+  checklistId: number;
+  checked: boolean;
+  comment: string | null;
+  updatedAt: Date | null;
+  checklist: {
+    id: number;
+    criteria: string;
+  };
+  isDirty?: boolean;
 };
 
 type User = {
@@ -83,6 +98,16 @@ export default function DetailTaskPage() {
   const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
+  // State for checklist items
+  const [progressItems, setProgressItems] = useState<TaskProgress[]>([]);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  // Track form changes
+  const [originalTaskName, setOriginalTaskName] = useState<string>("");
+  const [originalDocType, setOriginalDocType] = useState<string | null>(null);
+  const [originalProject, setOriginalProject] = useState<string | null>(null);
+  const [originalAssignee, setOriginalAssignee] = useState<string | null>(null);
+
   // Fetch task details
   const fetchTaskDetails = async () => {
     if (!taskId) {
@@ -103,6 +128,7 @@ export default function DetailTaskPage() {
       
       setTask(taskData);
       setTaskName(taskData.taskName || "");
+      setOriginalTaskName(taskData.taskName || "");
       
       // Set initial status based on progress
       const completedItems = taskData.progresses?.filter((p: any) => p.checked).length || 0;
@@ -124,15 +150,18 @@ export default function DetailTaskPage() {
       // Set current assignee
       if (taskData.user && taskData.user.name) {
         setSelectedAssignee(taskData.user.name);
+        setOriginalAssignee(taskData.user.name);
       }
 
       // Set initial document type and project
       if (taskData.documentType) {
         setSelectedDocumentType(taskData.documentType.name);
+        setOriginalDocType(taskData.documentType.name);
       }
       
       if (taskData.project) {
         setSelectedProject(taskData.project.projectName);
+        setOriginalProject(taskData.project.projectName);
       }
 
       try {
@@ -183,7 +212,30 @@ export default function DetailTaskPage() {
     setTaskName(e.target.value);
   };
 
-  const handleSubmit = async () => {
+  const handleProgressItemsChange = (items: TaskProgress[]) => {
+    setProgressItems(items);
+  };
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = () => {
+    return (
+      taskName !== originalTaskName ||
+      selectedDocumentType !== originalDocType ||
+      selectedProject !== originalProject ||
+      selectedAssignee !== originalAssignee ||
+      progressItems.some(item => item.isDirty)
+    );
+  };
+
+  const handleSubmitClick = () => {
+    if (hasUnsavedChanges()) {
+      setIsConfirmModalOpen(true);
+    } else {
+      toast.info("No changes to save");
+    }
+  };
+
+  const handleConfirmSubmit = async () => {
     if (!task) return;
     
     // Basic validation
@@ -213,7 +265,8 @@ export default function DetailTaskPage() {
         }
       }
       
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      // Save task details first
+      const taskResponse = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -221,14 +274,36 @@ export default function DetailTaskPage() {
         body: JSON.stringify(payload),
       });
       
-      if (!response.ok) {
+      if (!taskResponse.ok) {
         throw new Error("Failed to update task");
+      }
+      
+      // If there are checklist changes, save them too
+      const dirtyItems = progressItems.filter(item => item.isDirty);
+      if (dirtyItems.length > 0) {
+        const progressResponse = await fetch(`/api/task-progress/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dirtyItems.map(item => ({
+            id: item.id,
+            checked: item.checked,
+            comment: item.comment,
+            updatedAt: new Date()
+          }))),
+        });
+        
+        if (!progressResponse.ok) {
+          throw new Error("Failed to update checklist items");
+        }
       }
       
       toast.success("Task updated successfully");
       
       // Refresh task data with the latest changes
       fetchTaskDetails();
+      setIsConfirmModalOpen(false);
     } catch (error) {
       console.error("Error updating task:", error);
       toast.error("Failed to update task");
@@ -322,21 +397,44 @@ export default function DetailTaskPage() {
         </div>
         
         {/* Checklist table */}
-        {Number(taskId) > 0 && <CheckListTable taskId={Number(taskId)} userRole={userRole} />}
+        {Number(taskId) > 0 && (
+          <CheckListTable 
+            taskId={Number(taskId)} 
+            userRole={userRole} 
+            onProgressChange={handleProgressItemsChange}
+          />
+        )}
         
         <div className="justify-items-end pt-2">
           <SubmitButton   
-            text={isSaving ? "Saving..." : "Submit"}
-            onClick={handleSubmit}
+            text={hasUnsavedChanges() ? "Submit Changes" : "No Changes"}
+            onClick={handleSubmitClick}
             color='bg-primary'
             hoverColor='hover:bg-indigo-900'
             textColor="text-zinc-100"
             width="w-full md:w-1/5"
             height="h-12"
-            disabled={isSaving}
+            disabled={isSaving || !hasUnsavedChanges()}
           />
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <TaskUpdateConfirmation
+        open={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        isLoading={isSaving}
+        title="Konfirmasi Update Task"
+        description={
+          <>
+            <p>Apakah Anda yakin ingin menyimpan semua perubahan pada task ini?</p>
+            <p className="text-sm text-gray-600 mt-2">
+              Semua perubahan pada task dan checklist akan disimpan.
+            </p>
+          </>
+        }
+      />
     </div>
   );
 }
