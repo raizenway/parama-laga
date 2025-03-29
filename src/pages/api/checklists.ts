@@ -16,7 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const checklists = await prisma.checklist.findMany({
         orderBy: {
-          criteria: 'asc'
+          updatedAt: 'desc'
+        },
+        select: {
+          id: true,
+          criteria: true,
+          hint: true,
+          createdAt: true,
+          updatedAt: true,
         }
       });
       
@@ -30,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
     }  
     try {
-      const { criteria } = req.body;
+      const { criteria, hint } = req.body;
       
       if (!criteria) {
         return res.status(400).json({ message: 'Checklist criteria is required' });
@@ -39,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const checklist = await prisma.checklist.create({
         data: {
           criteria,
+          hint: hint || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         }

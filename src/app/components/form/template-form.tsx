@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Info, Loader2 } from "lucide-react";
+
+type Checklist = {
+  id: number;
+  criteria: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
 
 export default function TemplateForm({ 
   onClose, 
@@ -19,6 +27,13 @@ export default function TemplateForm({
   const [selectedChecklists, setSelectedChecklists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newCriteria, setNewCriteria] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [newHint, setNewHint] = useState("");
+  const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [filteredChecklists, setFilteredChecklists] = useState<Checklist[]>([]);
+  
+
 
   // Fetch available checklists
   useEffect(() => {
@@ -64,6 +79,40 @@ export default function TemplateForm({
         return [...prev, checklist];
       }
     });
+  };
+
+  // Add new checklist
+  const addNewCriteria = async () => {
+    if (!newCriteria.trim()) {
+      toast.error("Please enter a criteria");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/checklists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          criteria: newCriteria,
+          hint: newHint
+        })
+      });
+      
+      if (!response.ok) throw new Error("Failed to create checklist");
+      
+      const newChecklist = await response.json();
+      setChecklists([...checklists, newChecklist]);
+      setFilteredChecklists([...filteredChecklists, newChecklist]);
+      setNewCriteria("");
+      setNewHint("");
+      toast.success("Checklist added successfully");
+    } catch (error) {
+      console.error("Error adding checklist:", error);
+      toast.error("Failed to add checklist");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -151,6 +200,42 @@ export default function TemplateForm({
         )}
       </div>
 
+      {/* Add new checklist */}
+      <div className="space-y-2">
+          <Input
+            type="text"
+            placeholder="New check criteria"
+            value={newCriteria}
+            onChange={(e) => setNewCriteria(e.target.value)}
+
+          />
+          <div className="flex items-center gap-2">
+            <Info className="text-gray-400" size={16} />
+            <Input
+              type="text"
+              placeholder="Hint"
+              value={newHint}
+              onChange={(e) => setNewHint(e.target.value)}
+              className="flex-grow"
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={addNewCriteria}
+            className="bg-blue-600 text-white hover:bg-blue-800 w-full"
+            disabled={isSaving || !newCriteria.trim()}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add New Checklist"
+            )}
+          </Button>
+        </div>
+
       {mode !== 'view' && (
         <div className="flex justify-end gap-2">
           <Button 
@@ -162,6 +247,7 @@ export default function TemplateForm({
             Cancel
           </Button>
           <Button 
+            className="text-white"
             type="submit" 
             disabled={isSubmitting || isLoading}
           >

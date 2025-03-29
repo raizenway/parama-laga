@@ -1,0 +1,26 @@
+Task:
+- Employee bisa CRUD
+- Bae lah ga ada iterasi
+- Simpen tgl done
+- Tampil nama employee di table
+
+Template:
+- Shortcut buat nambah checklist
+- Shortcut buat nambah document
+
+Checklist:
+- Nambah Hint (nempel di-checklist)
+
+Activity:
+- Select Project
+- Select Week
+
+- Kategori
+-- Item Pengecekan (subkategori
+-- Hasil Pengecekan (Notes)
+--- Comment oleh PM
+
+- Nambahin kategori activity (nempel di project dan pekan) tiap pekan ganti activity
+
+Performance (per-30 hari)
+Fitur filter

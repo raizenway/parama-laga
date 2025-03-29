@@ -313,7 +313,6 @@ export default function DetailTaskPage() {
           <div className="font-bold text-emerald-500">Iterasi ke-{task.iteration}</div>                  
         </div>
         
-        {/* Now we pass the taskId to our ChecklistTable */}
       {Number(taskId) > 0 && <CheckListTable taskId={Number(taskId)} userRole={userRole} />}        
         {isManagerOrAdmin && (
         <div className="justify-items-end pt-2">

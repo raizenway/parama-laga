@@ -102,13 +102,14 @@ model VerificationToken {
 model Checklist {
   id                 Int                 @id @default(autoincrement()) @map("checklist_id")
   criteria           String
+  hint               String?
   createdAt          DateTime?           @map("created_at")
   updatedAt          DateTime?           @map("updated_at")
   templateChecklists TemplateChecklist[]
   taskProgresses     TaskProgress[]
 
   @@map("checklists")
-}
+} 
 
 model TaskTemplate {
   id                 Int                 @id @default(autoincrement()) @map("template_id")

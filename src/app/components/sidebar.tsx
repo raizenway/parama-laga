@@ -14,7 +14,8 @@ import {
   UserCircle,
   FileText,
   LayoutDashboard,
-  Activity
+  Activity,
+  LayoutList
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -57,7 +58,7 @@ const Sidebar = () => {
                   onClick={() => handleItemClick("Dashboard", "/dashboard")}
                 />
                 <SidebarItem
-                  icon={<Settings2 size={20} />}
+                  icon={<LayoutList size={20} />}
                   text="Task/Activity"
                   more
                   active={activeItem === "Task/Activity"}

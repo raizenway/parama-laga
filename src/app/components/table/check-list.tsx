@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, CircleCheckBig, ListChecks, NotebookPen, PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { Check, CircleCheckBig, ListChecks, NotebookPen, PlusCircle, Trash2, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 
 type ChecklistTableProps = {
@@ -17,6 +17,7 @@ type TaskProgress = {
   checklist: {
     id: number;
     criteria: string;
+    hint?: string;
   };
 };
 
@@ -25,6 +26,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newCriteria, setNewCriteria] = useState("");
+  const [newHint, setNewHint] = useState("");
 
   const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
 
@@ -127,7 +129,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ criteria: newCriteria.trim() })
+        body: JSON.stringify({ criteria: newCriteria.trim(), hint: newHint.trim() })
       });
       
       if (!checklistResponse.ok) {
@@ -156,6 +158,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
       const newProgress = await progressResponse.json();
       setProgressItems(prev => [...prev, newProgress]);
       setNewCriteria("");
+      setNewHint("");
       toast.success("New checklist item added");
     } catch (error) {
       toast.error("Failed to add checklist item");
@@ -204,10 +207,13 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
       <table className="font-poppins w-full table-auto justify-start border-collapse">
         <thead className="bg-tersier">
           <tr>
-            <th className="px-4 py-2 w-6/12 rounded-tl-lg text-left">
+            <th className="px-4 py-2 w-3/12 rounded-tl-lg text-left">
               <div className="flex items-center gap-1"><ListChecks /> Check List</div>
             </th>
             <th className="px-4 py-2 w-4/12 text-left">
+              <div className="flex items-center gap-1"><Info /> Hint </div>
+            </th>
+            <th className="px-4 py-2 w-3/12 text-left">
               <div className="flex items-center gap-1"><NotebookPen /> Notes</div>
             </th>
             <th className="px-4 py-2 w-1/12 text-center">
@@ -226,6 +232,9 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
               <tr key={item.id} className="border-b-2 border-tersier">
                 <td className="py-4 px-4 border-r-2 border-l-2 border-tersier">
                   {item.checklist.criteria}
+                </td>
+                <td className="py-4 px-4 border-r-2 border-l-2 border-tersier">
+                  {item.checklist.hint}
                 </td>
                 <td className="py-4 px-4 border-r-2 border-l-2">
                   <input
@@ -276,14 +285,27 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
 
       {/* Input for new checklist item */}
       <div className="w-full mt-4 flex gap-2">
-        <input
-          type="text"
-          value={newCriteria}
-          onChange={(e) => setNewCriteria(e.target.value)}
-          className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
-          placeholder="Add a new checklist item..."
-          disabled={isSaving}
-        />
+        <div className="space-y-2 w-full">
+          <input
+            type="text"
+            value={newCriteria}
+            onChange={(e) => setNewCriteria(e.target.value)}
+            className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+            placeholder="Add a new checklist item..."
+            disabled={isSaving}
+          />
+          <div className="flex items-center gap-2">
+            <Info className="text-gray-400" size={25} />
+            <input
+              type="text"
+              value={newHint}
+              onChange={(e) => setNewHint(e.target.value)}
+              className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+              placeholder="Hint"
+              disabled={isSaving}
+            />
+          </div>
+        </div>
         <button
           onClick={handleAddTask}
           disabled={isSaving || newCriteria.trim() === ""}
