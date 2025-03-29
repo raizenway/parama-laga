@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { PrismaClient } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
 
+
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,16 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  if (req.method === 'GET') {
-    return getTasks(req, res);
-  }
-
-  if(!session.user || (session.user as any).role !== 'admin' && (session.user as any).role !== 'project_manager') {
-    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
-  }
-
   // Handle various HTTP methods
   switch (req.method) {
+    case 'GET':
+      return getTasks(req, res);
     case 'POST':
       return createTask(req, res);
     case 'PUT':
@@ -43,11 +38,11 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
     const userId = (session?.user as any)?.id;
     
 
-    console.log('Session user info:', {
-      role: userRole,
-      id: userId,
-      user: session?.user
-    });
+    // console.log('Session user info:', {
+    //   role: userRole,
+    //   id: userId,
+    //   user: session?.user
+    // });
 
     // If ID is provided, fetch a specific task
     if (id) {
@@ -139,11 +134,20 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
 // Function to create a new task
 async function createTask(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { taskName, documentTypeId, templateId, projectId, userId, iteration } = req.body;
+    const { taskName, documentTypeId, templateId, projectId, userId } = req.body;
+    const session = await getServerSession(req, res, authOptions);
+    const userRole = (session?.user as any)?.role;
+    const currentUserId = parseInt((session?.user as any)?.id);
 
     // Validate required fields
     if (!taskName || !documentTypeId || !templateId || !projectId || !userId) {
       return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // For employee users, override userId with their own ID
+    let assigneeId = userId ? parseInt(userId) : null;
+    if (userRole !== 'admin' && userRole !== 'project_manager') {
+      assigneeId = currentUserId;
     }
 
     // Create the task
@@ -153,8 +157,7 @@ async function createTask(req: NextApiRequest, res: NextApiResponse) {
         documentTypeId: parseInt(documentTypeId),
         templateId: parseInt(templateId),
         projectId: parseInt(projectId),
-        userId: parseInt(userId),
-        iteration: iteration || 1,
+        userId: assigneeId,
         dateAdded: new Date()
       },
       include: {
@@ -204,7 +207,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       templateId, 
       projectId, 
       userId, 
-      iteration, 
       progresses,
       assignee,
       status
@@ -256,7 +258,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       }
     }
     
-    if (iteration) updateData.iteration = iteration;
     
       
     // Handle user assignment - either directly by userId or by assignee name

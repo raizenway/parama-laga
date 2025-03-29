@@ -498,7 +498,6 @@ async function main() {
       projectId: project1.id,
       userId: developer2.id,
       dateAdded: new Date('2024-01-15'),
-      iteration: 1
     },
   });
 
@@ -512,7 +511,6 @@ async function main() {
       projectId: project1.id,
       userId: developer1.id,
       dateAdded: new Date('2024-01-20'),
-      iteration: 1
     },
   });
   
@@ -527,7 +525,6 @@ async function main() {
       projectId: project2.id,
       userId: developer1.id,
       dateAdded: new Date('2024-02-05'),
-      iteration: 1
     },
   });
   // ===== Create Task Progress =====

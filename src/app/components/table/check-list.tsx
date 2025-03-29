@@ -4,7 +4,9 @@ import { toast } from "sonner";
 
 type ChecklistTableProps = {
   taskId: number;
-  userRole?:string | null;
+  userRole?: string | null;
+  onProgressChange?: (items: TaskProgress[]) => void;
+  readOnly?: boolean;
 };
 
 type TaskProgress = {
@@ -19,10 +21,17 @@ type TaskProgress = {
     criteria: string;
     hint?: string;
   };
+  isDirty?: boolean; // Track if this item has changed
 };
 
-export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTableProps) {
+export default function ChecklistTable({ 
+  taskId, 
+  userRole = null,
+  onProgressChange,
+  readOnly = false
+}: ChecklistTableProps) {
   const [progressItems, setProgressItems] = useState<TaskProgress[]>([]);
+  const [originalItems, setOriginalItems] = useState<TaskProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newCriteria, setNewCriteria] = useState("");
@@ -45,6 +54,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
         
         const data = await response.json();
         setProgressItems(data);
+        setOriginalItems(JSON.parse(JSON.stringify(data))); // Deep copy to keep original state
       } catch (error) {
         console.error("Error fetching task progress:", error);
         toast.error("Failed to load checklist items");
@@ -56,69 +66,30 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
     fetchTaskProgress();
   }, [taskId]);
 
-  const toggleCheck = async (item: TaskProgress) => {
-    try {
-      // Optimistic update
-      setProgressItems(prev => prev.map(p => 
-        p.id === item.id ? { ...p, checked: !p.checked } : p
-      ));
-      
-      const response = await fetch(`/api/task-progress/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([{
-          ...item,
-          checked: !item.checked,
-          updatedAt: new Date()
-        }])
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to update checklist item");
-      }
-    } catch (error) {
-      // Revert optimistic update on error
-      setProgressItems(prev => prev.map(p => 
-        p.id === item.id ? item : p
-      ));
-      toast.error("Failed to update checklist item");
+  // Notify parent component when progress items change
+  useEffect(() => {
+    if (onProgressChange) {
+      onProgressChange(progressItems);
     }
+  }, [progressItems, onProgressChange]);
+
+  const toggleCheck = (item: TaskProgress) => {
+    // Only update locally, don't save to server yet
+    setProgressItems(prev => prev.map(p => 
+      p.id === item.id 
+        ? { ...p, checked: !p.checked, isDirty: true } 
+        : p
+    ));
   };
 
   const handleNoteChange = (item: TaskProgress, newComment: string) => {
     setProgressItems(prev => prev.map(p => 
-      p.id === item.id ? { ...p, comment: newComment } : p
+      p.id === item.id ? { ...p, comment: newComment, isDirty: true } : p
     ));
   };
   
-  const saveNote = async (item: TaskProgress) => {
-    try {
-      setIsSaving(true);
-      const response = await fetch(`/api/task-progress/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([{
-          ...item,
-          updatedAt: new Date()
-        }])
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to save note");
-      }
-    } catch (error) {
-      toast.error("Failed to save note");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleAddTask = async () => {
-    if (newCriteria.trim() === "") return;
+    if (newCriteria.trim() === "" || readOnly) return;
     
     try {
       setIsSaving(true);
@@ -156,7 +127,9 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
       }
       
       const newProgress = await progressResponse.json();
+      
       setProgressItems(prev => [...prev, newProgress]);
+      setOriginalItems(prev => [...prev, newProgress]);
       setNewCriteria("");
       setNewHint("");
       toast.success("New checklist item added");
@@ -168,7 +141,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
   };
   
   const deleteItem = async (item: TaskProgress) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+    if (!confirm("Are you sure you want to delete this item?") || readOnly) return;
     
     try {
       setIsSaving(true);
@@ -185,12 +158,25 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
       }
       
       setProgressItems(prev => prev.filter(p => p.id !== item.id));
+      setOriginalItems(prev => prev.filter(p => p.id !== item.id));
       toast.success("Item deleted successfully");
     } catch (error) {
       toast.error("Failed to delete item");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // New method to check if there are unsaved changes
+  const hasUnsavedChanges = () => {
+    return progressItems.some(item => 
+      item.isDirty || 
+      !originalItems.some(original => 
+        original.id === item.id && 
+        original.checked === item.checked && 
+        original.comment === item.comment
+      )
+    );
   };
 
   if (isLoading) {
@@ -217,11 +203,11 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
               <div className="flex items-center gap-1"><NotebookPen /> Notes</div>
             </th>
             <th className="px-4 py-2 w-1/12 text-center">
-              <div className="flex items-center justify-center gap-1"><CircleCheckBig /></div>
+              <div className="flex items-center justify-center gap-1"><CircleCheckBig /> Check</div>
             </th>
-            {isManagerOrAdmin && (
+            {isManagerOrAdmin && !readOnly && (
               <th className="px-4 py-2 w-1/12 text-center rounded-tr-lg">
-                <div className="flex items-center justify-center gap-1">Actions</div>
+                <div className="flex items-center justify-center gap-1">Action</div>
               </th>
             )}
           </tr>
@@ -229,24 +215,23 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
         <tbody>
           {progressItems.length > 0 ? (
             progressItems.map((item) => (
-              <tr key={item.id} className="border-b-2 border-tersier">
-                <td className="py-4 px-4 border-r-2 border-l-2 border-tersier">
-                  {item.checklist.criteria}
-                </td>
-                <td className="py-4 px-4 border-r-2 border-l-2 border-tersier">
+                <tr key={item.id} className={`border-b-2 border-tersier ${item.isDirty ? 'bg-blue-50' : ''}`}>
+                  <td className="py-4 px-4 border-r-2 border-l-2">
+                    {item.checklist.criteria}
+                  </td>
+                  <td className="py-4 px-4 border-r-2 border-l-2 border-tersier">
                   {item.checklist.hint}
                 </td>
                 <td className="py-4 px-4 border-r-2 border-l-2">
-                  <input
-                    type="text"
-                    value={item.comment || ""}
-                    onChange={(e) => handleNoteChange(item, e.target.value)}
-                    onBlur={() => saveNote(item)}
-                    className="w-full bg-transparent outline-none border-b border-gray-300 focus:border-primary"
-                    placeholder="Add a note..."
-                    disabled={isSaving}
-                  />
-                </td>
+                    <input
+                      type="text"
+                      value={item.comment || ""}
+                      onChange={(e) => handleNoteChange(item, e.target.value)}
+                      className="w-full bg-transparent outline-none border-b border-gray-300 focus:border-primary"
+                      placeholder="Add a note..."
+                      disabled={readOnly}
+                    />
+                  </td>
                   <td className="py-4 px-4 border-r-2 border-l-2 text-center">
                     <button
                       onClick={() => toggleCheck(item)}
@@ -255,12 +240,12 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
                           ? "text-green-500 hover:text-green-700"
                           : "text-gray-300 hover:text-gray-400"
                       }
-                      disabled={isSaving}
+                      disabled={readOnly}
                     >
                       <Check size={20} strokeWidth={4} />
                     </button>
                   </td>
-                  {isManagerOrAdmin && (
+                  {isManagerOrAdmin && !readOnly && (
                     <td className="py-4 px-4 border-r-2 border-l-2 text-center">
                       <button 
                         onClick={() => deleteItem(item)}
@@ -275,7 +260,7 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="py-4 px-4 text-center border-2 border-tersier">
+              <td colSpan={isManagerOrAdmin && !readOnly ? 4 : 3} className="py-4 px-4 text-center border-2 border-tersier">
                 No checklist items yet. Add one below.
               </td>
             </tr>
@@ -284,16 +269,17 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
       </table>
 
       {/* Input for new checklist item */}
-      <div className="w-full mt-4 flex gap-2">
+      {!readOnly && (
+        <div className="w-full mt-4 flex gap-2">
         <div className="space-y-2 w-full">
-          <input
-            type="text"
-            value={newCriteria}
-            onChange={(e) => setNewCriteria(e.target.value)}
-            className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
-            placeholder="Add a new checklist item..."
-            disabled={isSaving}
-          />
+            <input
+              type="text"
+              value={newCriteria}
+              onChange={(e) => setNewCriteria(e.target.value)}
+              className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+              placeholder="Add a new checklist item..."
+              disabled={isSaving}
+            />
           <div className="flex items-center gap-2">
             <Info className="text-gray-400" size={25} />
             <input
@@ -306,18 +292,25 @@ export default function ChecklistTable({ taskId,userRole = null  }: ChecklistTab
             />
           </div>
         </div>
-        <button
-          onClick={handleAddTask}
-          disabled={isSaving || newCriteria.trim() === ""}
-          className="text-tersier hover:text-indigo-400"
-        >
-          {isSaving ? (
-            <Loader2 size={30} className="animate-spin" />
-          ) : (
-            <PlusCircle size={30} />
-          )}
-        </button>
-      </div>
+          <button
+            onClick={handleAddTask}
+            disabled={isSaving || newCriteria.trim() === ""}
+            className="text-tersier hover:text-indigo-400"
+          >
+            {isSaving ? (
+              <Loader2 size={30} className="animate-spin" />
+            ) : (
+              <PlusCircle size={30} />
+            )}
+          </button>
+        </div>
+      )}
+
+      {hasUnsavedChanges() && !readOnly && (
+        <div className="mt-3 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 text-sm">
+          You have unsaved changes. Click Submit to save all changes.
+        </div>
+      )}
     </div>
   );
 }

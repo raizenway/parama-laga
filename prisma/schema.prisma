@@ -148,7 +148,7 @@ model Task {
   projectId   Int            @map("project_id")
   userId      Int            @map("user_id")
   dateAdded   DateTime       @map("date_added")
-  iteration   Int
+  completedDate DateTime?      @map("completed_date") // Add this field
   documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
   template    TaskTemplate   @relation(fields: [templateId], references: [id])
   project     Project        @relation(fields: [projectId], references: [id])
