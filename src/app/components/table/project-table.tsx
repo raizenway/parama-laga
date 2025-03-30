@@ -1,20 +1,11 @@
 import { Building2, CalendarCheck2, CalendarClock, Clock, CreditCard, Eye, MoveDown, PencilLine, TrafficCone, Trash2, Zap, CircleArrowRight} from "lucide-react"
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
-
-type Project = {
-  id: string;
-  projectName: string;
-  projectCode: string;
-  projectOwner: string;
-  startDate: string;
-  endDate: string;
-  status: {
-    statusName: string;
-  };
-  employees: string[];
-};
+import { Project } from "@/app/types/project";
+import TableFilter from "../function/filter-table";
+import { getProjectStatusOptions } from "@/app/utils/filter-utils";
+import { MonthYearFilter } from "../function/month-year-filter";
 
 type ProjectTableProps = {
   projects: Project[];
@@ -26,16 +17,136 @@ type ProjectTableProps = {
 export default function ProjectTable({ projects, onEdit, onDelete, onView }: ProjectTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const paginatedProjects = projects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const router = useRouter();
+  const [filters, setFilters] = useState({
+    projectName: "",
+    companyName: "",
+    status: "",
+    startDate: "",
+    endDate: ""
+  });
+
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Filter berdasarkan nama project
+      const matchesProjectName = filters.projectName === "" || 
+      project.projectName.toLowerCase().includes(filters.projectName.toLowerCase());
+
+      const matchesCompanyName = filters.companyName === "" || 
+      project.projectOwner.toLowerCase().includes(filters.companyName.toLowerCase());
+      
+      // Filter berdasarkan status
+      const matchesStatus = filters.status === "" || 
+        project.status.statusName === filters.status;
+      
+       // Start Date Filter
+      if (filters.startDate) {
+        const [filterYear, filterMonth] = filters.startDate.split('-').map(Number)
+        const projectStart = new Date(project.startDate)
+        const projectStartYear = projectStart.getFullYear()
+        const projectStartMonth = projectStart.getMonth() + 1 // Month is 0-indexed
+
+        if (projectStartYear < filterYear || 
+            (projectStartYear === filterYear && projectStartMonth < filterMonth)) {
+          return false
+        }
+      }
+
+      // End Date Filter
+      if (filters.endDate) {
+        const [filterYear, filterMonth] = filters.endDate.split('-').map(Number)
+        const projectEnd = new Date(project.endDate)
+        const projectEndYear = projectEnd.getFullYear()
+        const projectEndMonth = projectEnd.getMonth() + 1
+
+        if (projectEndYear > filterYear || 
+            (projectEndYear === filterYear && projectEndMonth > filterMonth)) {
+          return false
+        }
+      }
+
+      return matchesProjectName && matchesCompanyName && matchesStatus;
+    });
+  }, [projects, filters]);
+
+  const handleFilterChange = (column: string, value: string) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+    setCurrentPage(1);
+  };
+
+  const handleDateFilterChange = (type: 'startDate' | 'endDate', value: string) => {
+    setFilters(prev => ({ ...prev, [type]: value }))
+    setCurrentPage(1)
+  }
+
+  const paginatedProjects = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div>
+      <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
+        <div className="grid grid-cols-5 gap-4">
+          {/* Project Name Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 ">Project Name</label>
+            <input
+              type="text"
+              placeholder="Filter by name..."
+              className="px-2 py-1 border rounded-md text-sm w-full"
+              value={filters.projectName}
+              onChange={(e) => handleFilterChange("projectName", e.target.value)}
+            />
+          </div>
+    
+          {/* Company Type Filter */}
+          <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 ">Company Name</label>
+            <input
+              type="text"
+              placeholder="Filter by name..."
+              className="px-2 py-1 border rounded-md text-sm w-full"
+              value={filters.companyName}
+              onChange={(e) => handleFilterChange("companyName", e.target.value)}
+            />
+          </div>
+  
+          {/* Status Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <TableFilter
+              column="status"
+              options={getProjectStatusOptions(projects)}
+              selectedValue={filters.status}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+
+           {/* Start Date Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
+            <MonthYearFilter
+              value={filters.startDate}
+              onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
+              placeholder="Select start month"
+            />
+          </div>
+
+          {/* End Date Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Month</label>
+            <MonthYearFilter
+              value={filters.endDate}
+              onChange={(value) => setFilters(prev => ({ ...prev, endDate: value }))}
+              placeholder="Select end month"
+            />
+          </div>
+        </div>
+      </div>
+
       <table className="font-poppins w-full table-auto justify-start">
         <thead className="bg-tersier">
           <tr className="text-black">
             {[
-              { label: "Logo", width: "w-[5%] h-[50px]" },
               { icon: <TrafficCone />, label: "Project", width: "w-[20%] h-[50px]" },
               { icon: <Building2 />, label: "Company", width: "w-[20%] h-[50px]" },
               { icon: <CreditCard />, label: "Project ID", width: "w-[10%] h-[50px]" },
@@ -48,7 +159,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
                 key={i}
                 className={`px-4 py-2 ${width} ${
                   i === 0 ? "rounded-tl-lg" : ""
-                } ${i === 7 ? "rounded-tr-lg" : ""}`}
+                } ${i === 6 ? "rounded-tr-lg" : ""}`}
               >
                 <div className="flex items-center gap-1">
                   {icon} {label}
@@ -62,9 +173,6 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
           {paginatedProjects.length > 0 ? (
             paginatedProjects.map((project) => (
               <tr key={project.id} className="border-b-2 border-tersier">
-                <td className="px-4 py-3 justify-items-center">
-                  <div className="justify-center h-10 w-10 bg-green-300 rounded-full"></div>
-                </td>
                 <td className="px-4 py-3">{project.projectName}</td>
                 <td className="px-4 py-3">{project.projectOwner}</td>
                 <td className="px-4 py-3">{project.projectCode}</td>
@@ -114,7 +222,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
       currentPage={currentPage}
       onPageChange={setCurrentPage}
       itemsPerPage={itemsPerPage}
-      totalItems={projects.length}
+      totalItems={filteredProjects.length}
       />
 
     </div>
