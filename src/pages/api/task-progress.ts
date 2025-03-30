@@ -86,24 +86,47 @@ else if (req.method === 'PUT') {
     }));
     
     // After updating the progress items, check if all items are completed
-    // If yes, update the task completedDate
     const taskId = parseInt(req.query.taskId as string);
     const allTaskProgress = await prisma.taskProgress.findMany({
       where: { taskId: taskId }
     });
     
-    const allCompleted = allTaskProgress.length > 0 && allTaskProgress.every(p => p.checked);
-    
-    if (allCompleted) {
-      // All items are completed, update the task completedDate if not already set
-      await prisma.task.update({
-        where: { id: taskId },
-        data: {
-          completedDate: {
-            set: new Date()  // Only set if it's null
+    if (allTaskProgress.length > 0) {
+      const allCompleted = allTaskProgress.every(p => p.checked);
+      const anyChecked = allTaskProgress.some(p => p.checked);
+      let newStatus: 'Done' | 'OnGoing' | 'ToDo';
+      
+      if (allCompleted) {
+        newStatus = 'Done';
+        // All items are completed, update task status and set completedDate
+        await prisma.task.update({
+          where: { id: taskId },
+          data: {
+            taskStatus: newStatus,
+            completedDate: new Date()
           }
-        }
-      });
+        });
+      } else if (anyChecked) {
+        newStatus = 'OnGoing';
+        // Some items are checked but not all, update status to "OnGoing"
+        await prisma.task.update({
+          where: { id: taskId },
+          data: {
+            taskStatus: newStatus,
+            completedDate: null
+          }
+        });
+      } else {
+        newStatus = 'ToDo';
+        // No items are checked, update status to "ToDo"
+        await prisma.task.update({
+          where: { id: taskId },
+          data: {
+            taskStatus: newStatus,
+            completedDate: null
+          }
+        });
+      }
     }
     
     return res.status(200).json(updates);

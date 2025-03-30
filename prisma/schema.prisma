@@ -140,6 +140,12 @@ model DocumentType {
   @@map("document_type")
 }
 
+enum TaskStatus {
+  Done
+  OnGoing
+  ToDo
+  NotStarted
+}
 model Task {
   id          Int            @id @default(autoincrement()) @map("task_id")
   taskName    String         @map("task_name")
@@ -150,6 +156,7 @@ model Task {
   dateAdded   DateTime       @map("date_added")
   completedDate DateTime?      @map("completed_date") // Add this field
   documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
+  taskStatus        TaskStatus        
   template    TaskTemplate   @relation(fields: [templateId], references: [id])
   project     Project        @relation(fields: [projectId], references: [id])
   user        User           @relation(fields: [userId], references: [id])

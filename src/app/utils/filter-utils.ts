@@ -55,9 +55,9 @@ export const getAssigneeOptions = (tasks: Task[]) => {
 export const statusOptions = [
   { value: "", label: "All Statuses" },
   { value: "Done", label: "Done" },
-  { value: "On Going", label: "On Going" },
-  { value: "To Do", label: "To Do" },
-  { value: "Not Started", label: "Not Started" },
+  { value: "OnGoing", label: "On Going" },
+  { value: "ToDo", label: "To Do" },
+  { value: "NotStarted", label: "Not Started" },
 ];
   
 

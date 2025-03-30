@@ -71,16 +71,21 @@ export default function TaskTable({
     [tasks]
   );
 
-  const getTaskStatus = (task: Task) => {
-    if (!task.progresses || task.progresses.length === 0) return "Not Started";
-    
-    const completedCount = task.progresses.filter(p => p.checked).length;
-    const totalCount = task.progresses.length;
-    
-    if (completedCount === 0) return "To Do";
-    if (completedCount === totalCount) return "Done";
-    return "On Going";
+  const getTaskStatusStyles = (status: string) => {
+    switch(status) {
+      case "Done": 
+        return "bg-green-100 text-green-800";
+      case "OnGoing": 
+        return "bg-blue-100 text-blue-800";
+      case "ToDo": 
+        return "bg-yellow-100 text-yellow-800";
+      case "NotStarted":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
+  
 
 
   // Filter tasks berdasarkan kriteria
@@ -105,10 +110,10 @@ export default function TaskTable({
       
       // Filter berdasarkan status
       const matchesStatus = filters.status === "" || 
-        getTaskStatus(task) === filters.status;
-      
-      return matchesTaskName && matchesDocumentType && matchesProject && 
-             matchesAssignee && matchesStatus;
+        task.taskStatus === filters.status;
+         
+        return matchesTaskName && matchesDocumentType && matchesProject && 
+        matchesAssignee && matchesStatus;
     });
   }, [tasks, filters]);
 
@@ -357,12 +362,8 @@ export default function TaskTable({
                 <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
                 <td className="px-4 py-3">{task.completedDate ? new Date(task.completedDate).toLocaleDateString() : '-'}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-sm ${
-                    getTaskStatus(task) === "Done" ? "bg-green-100 text-green-800" :
-                    getTaskStatus(task) === "On Going" ? "bg-blue-100 text-blue-800" : 
-                    "bg-yellow-100 text-yellow-800"
-                  }`}>
-                    {getTaskStatus(task)}
+                  <span className={`px-2 py-1 rounded-full text-sm ${getTaskStatusStyles(task.taskStatus)}`}>
+                    {task.taskStatus}
                   </span>
                 </td>
                 <td className="px-4 py-3 flex gap-3 justify-center">

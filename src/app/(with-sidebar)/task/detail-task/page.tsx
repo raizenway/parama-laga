@@ -247,12 +247,28 @@ export default function DetailTaskPage() {
     try {
       // Find the IDs for the selected document type and project
       const documentTypeId = documentTypes.find(dt => dt.name === selectedDocumentType)?.id || task.documentType.id;
-      const projectId = projects.find(p => p.projectName === selectedProject)?.id || task.project.id;      
+      const projectId = projects.find(p => p.projectName === selectedProject)?.id || task.project.id;
       
-      const payload: any = {
+      // Check if all checklist items are completed
+      const allChecked = progressItems.every(item => item.checked);
+      const anyChecked = progressItems.some(item => item.checked);
+      
+      let taskStatus = "ToDo";
+      let completedDate = null;
+      
+      if (allChecked && progressItems.length > 0) {
+        taskStatus = "Done";
+        completedDate = new Date();
+      } else if (anyChecked) {
+        taskStatus = "OnGoing";
+      }
+      
+      const payload = {
         taskName: taskName.trim(),
         documentTypeId,
-        projectId
+        projectId,
+        taskStatus,
+        completedDate
       };
       
       // Only include assignee if user is admin or manager

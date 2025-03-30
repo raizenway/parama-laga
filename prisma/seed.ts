@@ -488,33 +488,40 @@ async function main() {
 
 
   console.log('Creating sample tasks...');
+  
+  // Task 1 - OnGoing status with some checklist items completed
   const task1 = await prisma.task.upsert({
     where: { id: 1 },
     update: {},
     create: {
       taskName: "Implement User Authentication",
-      documentTypeId: technicalDoc.id,  // Add document type ID
+      documentTypeId: technicalDoc.id,
       templateId: template1.id,
       projectId: project1.id,
       userId: developer2.id,
       dateAdded: new Date('2024-01-15'),
+      taskStatus: "OnGoing", // Set status to OnGoing
+      completedDate: null, // No completed date since not all items are checked
     },
   });
 
+  // Task 2 - OnGoing status with some checklist items completed
   const task2 = await prisma.task.upsert({
     where: { id: 2 },
     update: {},
     create: {
       taskName: "Create Landing Page",
-      documentTypeId: designDoc.id,  // Add document type ID
+      documentTypeId: designDoc.id,
       templateId: template2.id,
       projectId: project1.id,
       userId: developer1.id,
       dateAdded: new Date('2024-01-20'),
+      taskStatus: "OnGoing", // Set status to OnGoing
+      completedDate: null, // No completed date since not all items are checked
     },
   });
   
-  // Add one more task example
+  // Task 3 - ToDo status with no checklist items completed
   const task3 = await prisma.task.upsert({
     where: { id: 3 },
     update: {},
@@ -525,10 +532,31 @@ async function main() {
       projectId: project2.id,
       userId: developer1.id,
       dateAdded: new Date('2024-02-05'),
+      taskStatus: "ToDo", // Set status to ToDo
+      completedDate: null, // No completed date
     },
   });
+
+  // Task 4 - Done status with all checklist items completed
+  const task4 = await prisma.task.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      taskName: "Setup CI/CD Pipeline",
+      documentTypeId: technicalDoc.id,
+      templateId: template1.id,
+      projectId: project3.id,
+      userId: developer2.id,
+      dateAdded: new Date('2024-01-10'),
+      taskStatus: "Done", // Set status to Done
+      completedDate: new Date('2024-02-15'), // Set completed date
+    },
+  });
+
   // ===== Create Task Progress =====
   console.log('Creating task progress...');
+  
+  // Progress for task 1 (OnGoing)
   const taskProgress1 = await prisma.taskProgress.upsert({
     where: { id: 1 },
     update: {},
@@ -565,6 +593,7 @@ async function main() {
     },
   });
 
+  // Progress for task 2 (OnGoing)
   const taskProgress4 = await prisma.taskProgress.upsert({
     where: { id: 4 },
     update: {},
@@ -589,9 +618,58 @@ async function main() {
     },
   });
 
+  // Progress for task 3 (ToDo)
+  const taskProgress6 = await prisma.taskProgress.upsert({
+    where: { id: 6 },
+    update: {},
+    create: {
+      taskId: task3.id,
+      checklistId: checklist3.id,
+      checked: false,
+      comment: "Not started yet",
+      updatedAt: new Date()
+    },
+  });
+
+  // Progress for task 4 (Done)
+  const taskProgress7 = await prisma.taskProgress.upsert({
+    where: { id: 7 },
+    update: {},
+    create: {
+      taskId: task4.id,
+      checklistId: checklist1.id,
+      checked: true,
+      comment: "All functionality tested",
+      updatedAt: new Date()
+    },
+  });
+
+  const taskProgress8 = await prisma.taskProgress.upsert({
+    where: { id: 8 },
+    update: {},
+    create: {
+      taskId: task4.id,
+      checklistId: checklist2.id,
+      checked: true,
+      comment: "Code passes all standards",
+      updatedAt: new Date()
+    },
+  });
+
+  const taskProgress9 = await prisma.taskProgress.upsert({
+    where: { id: 9 },
+    update: {},
+    create: {
+      taskId: task4.id,
+      checklistId: checklist4.id,
+      checked: true,
+      comment: "Security review completed by team",
+      updatedAt: new Date()
+    },
+  });
+
   console.log('Seed berhasil!');
 }
-
 
 main()
   .catch((e) => {

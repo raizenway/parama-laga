@@ -1,33 +1,28 @@
-// types/task.ts
 export type Task = {
+  id: number;
+  taskName: string;
+  documentType: {
     id: number;
-    taskName: string;
-    documentType: DocumentType;
-    project: Project;
-    dateAdded: string;
-    user: User | null; 
-    progresses: Progress[];
-    completedDate?: string | null;
+    name: string;
   };
-  
-
-//Sub-types
-export type DocumentType = {
-  id: number;
-  name: string;
-};
-
-export type Project = {
-  id: number;
-  projectName: string;
-};
-
-export type User = {
-  id: number;
-  name: string;
-};
-
-export type Progress = {
-  id: number;
-  checked: boolean;
+  project: {
+    id: number;
+    projectName: string;
+  };
+  dateAdded: string;
+  completedDate?: string | null;
+  taskStatus: string; // Gunakan taskStatus dari database
+  user: {
+    id: number;
+    name: string;
+  } | null;
+  template: {
+    id: number;
+    templateName: string;
+  };
+  progresses: {
+    id: number;
+    checked: boolean;
+    comment?: string | null;
+  }[];
 };
