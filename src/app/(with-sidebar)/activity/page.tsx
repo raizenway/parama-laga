@@ -116,7 +116,7 @@ export default function ActivitiesPage() {
     }
     
     try {
-      const response = await fetch('/api/projects/${selectedProject}/weeks', {
+      const response = await fetch(`/api/projects/${selectedProject}/weeks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
