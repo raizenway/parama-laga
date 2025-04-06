@@ -40,7 +40,9 @@ export default function ActivitiesPage() {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+  const [copyPreviousWeek, setCopyPreviousWeek] = useState(true);
+
+
   // Fetch projects
   useEffect(() => {
     if (status === 'authenticated') {
@@ -121,10 +123,9 @@ export default function ActivitiesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId: selectedProject,
-          // You'd typically calculate these dates based on the project start date
-          // and existing weeks, but for simplicity:
           startDate: new Date().toISOString(),
-          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          copyFromPreviousWeek: copyPreviousWeek
         })
       });
       

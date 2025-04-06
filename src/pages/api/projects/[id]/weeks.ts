@@ -36,9 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // POST: Create a new week for a project
   else if (req.method === 'POST') {
     try {
-      // Check if user is admin or project manager
-      
-      const { startDate, endDate } = req.body;
+      const { startDate, endDate, copyFromPreviousWeek = true } = req.body;
       
       if (!startDate || !endDate) {
         return res.status(400).json({ message: 'Start and end dates are required' });
@@ -52,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       const nextWeekNum = latestWeek ? latestWeek.weekNum + 1 : 1;
       
+      // Create new week
       const newWeek = await prisma.activityWeek.create({
         data: {
           projectId,
@@ -62,6 +61,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           updatedAt: new Date()
         }
       });
+      
+      // Copy categories and items if requested and if there's a previous week
+      if (copyFromPreviousWeek && latestWeek) {
+        // Get categories from the previous week
+        const previousCategories = await prisma.activityCategory.findMany({
+          where: { 
+            weekId: latestWeek.id,
+            projectId
+          },
+          include: {
+            items: true
+          }
+        });
+        
+        // Copy each category and its items
+        for (const category of previousCategories) {
+          const newCategory = await prisma.activityCategory.create({
+            data: {
+              name: category.name,
+              userId: category.userId,
+              projectId: category.projectId,
+              weekId: newWeek.id,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+          
+          // Copy items within the category (but not results)
+          for (const item of category.items) {
+            await prisma.activityItem.create({
+              data: {
+                name: item.name,
+                categoryId: newCategory.id,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              }
+            });
+          }
+        }
+      }
       
       return res.status(201).json(newWeek);
     } catch (error) {
