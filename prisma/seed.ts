@@ -668,6 +668,200 @@ async function main() {
     },
   });
 
+  // ===== Create Activity Weeks =====
+  console.log('Creating activity weeks...');
+  
+  const week1 = await prisma.activityWeek.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      projectId: project1.id,
+      weekNum: 1,
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-01-07'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const week2 = await prisma.activityWeek.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      projectId: project1.id,
+      weekNum: 2,
+      startDate: new Date('2024-01-08'),
+      endDate: new Date('2024-01-14'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const week3 = await prisma.activityWeek.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      projectId: project2.id,
+      weekNum: 1,
+      startDate: new Date('2024-03-15'),
+      endDate: new Date('2024-03-21'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // ===== Create Activity Categories =====
+  console.log('Creating activity categories...');
+  
+  const dev1Category1 = await prisma.activityCategory.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      userId: developer1.id,
+      projectId: project1.id,
+      weekId: week1.id,
+      name: "Frontend Development",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const dev1Category2 = await prisma.activityCategory.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      userId: developer1.id,
+      projectId: project1.id,
+      weekId: week2.id,
+      name: "UI Implementation",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const dev2Category1 = await prisma.activityCategory.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      userId: developer2.id,
+      projectId: project1.id,
+      weekId: week1.id,
+      name: "Backend Development",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const pmCategory1 = await prisma.activityCategory.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      userId: projectManager.id,
+      projectId: project2.id,
+      weekId: week3.id,
+      name: "Project Planning",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // ===== Create Activity Items =====
+  console.log('Creating activity items...');
+  
+  const item1 = await prisma.activityItem.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      categoryId: dev1Category1.id,
+      name: "Implement login page",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const item2 = await prisma.activityItem.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      categoryId: dev1Category1.id,
+      name: "Create responsive navigation",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const item3 = await prisma.activityItem.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      categoryId: dev1Category2.id,
+      name: "Design user dashboard",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const item4 = await prisma.activityItem.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      categoryId: dev2Category1.id,
+      name: "Setup authentication API",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const item5 = await prisma.activityItem.upsert({
+    where: { id: 5 },
+    update: {},
+    create: {
+      categoryId: pmCategory1.id,
+      name: "Define project milestones",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // ===== Create Activity Results =====
+  console.log('Creating activity results...');
+  
+  const result1 = await prisma.activityResult.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      itemId: item1.id,
+      result: "Completed login page with validation",
+      comment: "Need to add forgot password functionality",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const result2 = await prisma.activityResult.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      itemId: item2.id,
+      result: "Navigation implemented with mobile support",
+      comment: "Tested on Chrome, Firefox and Safari",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const result3 = await prisma.activityResult.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      itemId: item4.id,
+      result: "JWT authentication implemented",
+      comment: "Added rate limiting to prevent brute force attacks",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
   console.log('Seed berhasil!');
 }
 

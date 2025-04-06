@@ -39,6 +39,7 @@ model User {
   projectUsers    ProjectUser[]
   sessions        Session[]
   tasks           Task[]
+  activityCategories ActivityCategory[]
 
   @@map("users")
 }
@@ -64,6 +65,8 @@ model Project {
   status       ProjectStatus @relation(fields: [statusId], references: [id])
   projectUsers ProjectUser[]
   tasks        Task[]
+  activityCategories ActivityCategory[]
+  activityWeeks ActivityWeek[]
 
   @@map("project")
 }
@@ -96,8 +99,6 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
-
-// New tables for task management
 
 model Checklist {
   id                 Int                 @id @default(autoincrement()) @map("checklist_id")
@@ -154,7 +155,7 @@ model Task {
   projectId   Int            @map("project_id")
   userId      Int            @map("user_id")
   dateAdded   DateTime       @map("date_added")
-  completedDate DateTime?      @map("completed_date") // Add this field
+  completedDate DateTime?      @map("completed_date")
   documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
   taskStatus        TaskStatus        
   template    TaskTemplate   @relation(fields: [templateId], references: [id])
@@ -176,4 +177,58 @@ model TaskProgress {
   checklist   Checklist @relation(fields: [checklistId], references: [id])
 
   @@map("task_progress")
+}
+
+model ActivityWeek {
+  id        Int       @id @default(autoincrement())
+  projectId Int       @map("project_id")
+  weekNum   Int
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  project   Project   @relation(fields: [projectId], references: [id])
+  categories ActivityCategory[]
+
+  @@map("activity_weeks")
+}
+
+model ActivityCategory {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  projectId Int       @map("project_id")
+  weekId    Int       @map("week_id")
+  name      String
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  user      User      @relation(fields: [userId], references: [id])
+  project   Project   @relation(fields: [projectId], references: [id])
+  week      ActivityWeek @relation(fields: [weekId], references: [id])
+  items     ActivityItem[]
+
+  @@map("activity_categories")
+}
+
+model ActivityItem {
+  id          Int               @id @default(autoincrement())
+  categoryId  Int               @map("category_id")
+  name        String
+  createdAt   DateTime?         @map("created_at")
+  updatedAt   DateTime?         @map("updated_at")
+  category    ActivityCategory  @relation(fields: [categoryId], references: [id])
+  results     ActivityResult[]
+
+  @@map("activity_items")
+}
+
+model ActivityResult {
+  id         Int           @id @default(autoincrement())
+  itemId     Int           @map("item_id")
+  result     String?
+  comment    String?
+  createdAt  DateTime?     @map("created_at")
+  updatedAt  DateTime?     @map("updated_at")
+  item       ActivityItem  @relation(fields: [itemId], references: [id])
+
+  @@map("activity_results")
 }
