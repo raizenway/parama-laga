@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } 
   
-  // PUT: Update task progress items
+  // Di bagian PUT handler
   else if (req.method === 'PUT') {
     try {
       const items = req.body;
@@ -76,6 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'Expected array of task progress items' });
       }
       
+      // Update task progresses
       const updates = await Promise.all(items.map(async (item) => {
         return prisma.taskProgress.update({
           where: { id: item.id },
@@ -87,6 +88,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           include: { checklist: true }
         });
       }));
+      
+      // Check if all items are completed to update task status
+      const allTaskProgress = await prisma.taskProgress.findMany({
+        where: { taskId: parseInt(taskId) }
+      });
+      
+      if (allTaskProgress.length > 0) {
+        const allCompleted = allTaskProgress.every(p => p.checked);
+        const anyChecked = allTaskProgress.some(p => p.checked);
+        let newStatus: string;
+        let completedDate: Date | null = null;
+        
+        if (allCompleted) {
+          newStatus = "Done";
+          completedDate = new Date(); // Set completion date
+        } else if (anyChecked) {
+          newStatus = "OnGoing";
+          completedDate = null;
+        } else {
+          newStatus = "ToDo";
+          completedDate = null;
+        }
+        
+        // Update task status and completed date
+        await prisma.task.update({
+          where: { id: parseInt(taskId) },
+          data: {
+            taskStatus: newStatus,
+            completedDate: completedDate
+          }
+        });
+      }
       
       return res.status(200).json(updates);
     } catch (error) {
