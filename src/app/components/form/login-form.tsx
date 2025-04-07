@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 interface LoginFormProps {
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -13,6 +15,8 @@ interface LoginFormProps {
   }
 
 export default function({ handleSubmit, email, setEmail, password, setPassword, isLoading, error }: LoginFormProps) {
+    const [showPassword, setShowPassword] = useState(false);
+
     return (
       <>
         <div className="mb-5 flex flex-col items-center">
@@ -33,18 +37,25 @@ export default function({ handleSubmit, email, setEmail, password, setPassword, 
               disabled={isLoading}
             />
           </div>
-          <div>
+          <div className="relative">
             <Label className="font-bold text-blue-950" htmlFor="password">Password</Label>
             <Input
               name="password"
               className="mt-2 mb-4 border-transparent bg-white rounded-sm text-black"
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="******"
               disabled={isLoading}
             />
+            <button
+              type="button"
+              className="absolute right-3 top-10 text-gray-700"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+            </button>
           </div>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded mb-4">
