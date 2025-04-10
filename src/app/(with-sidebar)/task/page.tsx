@@ -59,12 +59,12 @@ export default function Page() {
       <div className="mt-12 grow">
         <div className="font-poppins font-bold text-2xl">Tasks</div>
         <div className="flex justify-end items-center gap-3">
-          <Input 
+          {/* <Input 
             className="w-72" 
             placeholder="Search" 
             value={searchQuery}
             onChange={handleSearchChange}
-          />
+          /> */}
             <AddButton 
               text="+ Add Task" 
               onClick={() => setIsDetailOpen(true)}
