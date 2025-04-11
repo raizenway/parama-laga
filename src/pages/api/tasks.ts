@@ -137,28 +137,41 @@ async function createTask(req: NextApiRequest, res: NextApiResponse) {
     const { taskName, documentTypeId, templateId, projectId, userId } = req.body;
     const session = await getServerSession(req, res, authOptions);
     const userRole = (session?.user as any)?.role;
-    const currentUserId = parseInt((session?.user as any)?.id);
+    const currentUserId = (session?.user as any)?.id;
 
-    // Validate required fields
-    if (!taskName || !documentTypeId || !templateId || !projectId || !userId) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    // For employee users, override userId with their own ID
-    let assigneeId = userId ? parseInt(userId) : null;
+    // Validate required fields with better error messages
+    if (!taskName) return res.status(400).json({ message: 'Task name is required' });
+    if (!documentTypeId) return res.status(400).json({ message: 'Document type is required' });
+    if (!templateId) return res.status(400).json({ message: 'Template is required' });
+    if (!projectId) return res.status(400).json({ message: 'Project is required' });
+    
+    // Handle employee case specifically - they don't need to provide userId
+    let assigneeId;
     if (userRole !== 'admin' && userRole !== 'project_manager') {
-      assigneeId = currentUserId;
+      // For employees, always assign to themselves
+      assigneeId = parseInt(currentUserId);
+      if (isNaN(assigneeId)) {
+        return res.status(400).json({ message: 'Invalid user ID from session' });
+      }
+    } else {
+      // For admins/PMs, require the userId field
+      if (!userId) return res.status(400).json({ message: 'User ID is required' });
+      assigneeId = parseInt(userId);
+      if (isNaN(assigneeId)) {
+        return res.status(400).json({ message: 'Invalid user ID format' });
+      }
     }
 
-    // Create the task
+    // Create the task with proper type checking
     const task = await prisma.task.create({
       data: {
         taskName,
-        documentTypeId: parseInt(documentTypeId),
-        templateId: parseInt(templateId),
-        projectId: parseInt(projectId),
+        documentTypeId: parseInt(documentTypeId.toString()),
+        templateId: parseInt(templateId.toString()),
+        projectId: parseInt(projectId.toString()),
         userId: assigneeId,
-        dateAdded: new Date()
+        dateAdded: new Date(),
+        taskStatus: "NotStarted"
       },
       include: {
         documentType: true,

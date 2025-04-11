@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Save, CalendarClock, User, CheckCircle2, Pencil, NotebookPen } from "lucide-react";
+import { Loader2, PlusCircle, Save, Delete, CalendarClock, User, CheckCircle2, Pencil, NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import DeleteConfirmation from"@/app/components/modal/delete-confirmation";
 
 type ActivityTableProps = {
   projectId: number | null;
@@ -49,6 +50,7 @@ export default function ActivityTable({
   const [categories, setCategories] = useState<ActivityCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isEmployee = userRole === 'employee';
   
   // State for new category and item forms
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -58,6 +60,17 @@ export default function ActivityTable({
   // State for editing results
   const [editingItems, setEditingItems] = useState<Record<number, { result: string, comment: string }>>({});
   
+  // State to delete 
+  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: number;
+    name: string;
+    type: 'category' | 'item';
+  } | null>(null);
+
   // Fetch activities
   useEffect(() => {
     if (projectId && weekId) {
@@ -97,14 +110,23 @@ const addCategory = async () => {
   }
   
   try {
+    // Create the request body
+    const requestBody: any = {
+      projectId,
+      weekId,
+      name: newCategoryName.trim()
+    };
+    
+    // If we're viewing a specific employee's activities and user is PM/admin,
+    // pass that employee's ID to create the category for them
+    if (employeeId && userRole && (userRole === 'admin' || userRole === 'project_manager')) {
+      requestBody.userId = employeeId;
+    }
+    
     const response = await fetch('/api/activities', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        projectId,
-        weekId,
-        name: newCategoryName.trim()
-      })
+      body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
@@ -113,16 +135,15 @@ const addCategory = async () => {
     
     const newCategory = await response.json();
     
+    
     // Update categories with the newly created one
     setCategories(prev => [...prev, newCategory]);
     
     // Reset the input and active category
+    setCategories(prev => [...prev, newCategory]);
     setNewCategoryName("");
-    // Set active category to the newly created one so user can add items
     setActiveCategory(newCategory.id);
     toast.success('Category added successfully');
-    
-    // Refresh data to ensure everything is in sync
     fetchActivities();
   } catch (error) {
     console.error('Error adding category:', error);
@@ -262,6 +283,35 @@ const addCategory = async () => {
     }
   };
   
+  const deleteCategory = async (categoryId: number) => {
+    try {
+      const response = await fetch(`/api/activities/category/${categoryId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete category');
+      toast.success('Category deleted successfully');
+      // Refresh the activities after deletion
+      fetchActivities();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
+    }
+  };
+  
+  const deleteItem = async (itemId: number) => {
+    try {
+      const response = await fetch(`/api/activities/items/${itemId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete item');
+      toast.success('Item deleted successfully');
+      fetchActivities();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="w-full h-64 flex justify-center items-center">
@@ -395,6 +445,21 @@ categories.forEach(category => {
                       <p className="font-semibold">{row.categoryName}</p>
                       <p className="text-xs text-gray-500">By: {row.userName}</p>
                     </div>
+                    {/* Delete category button */}
+                      <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => {
+                        setDeleteTarget({
+                          id: row.categoryId,
+                          name: row.categoryName,
+                          type: 'category'
+                        });
+                        setIsDeleteModalOpen(true);
+                      }}
+                    >
+                      Delete
+                    </Button>
                     
                     {/* Add item button */}
                     <div className="mt-2">
@@ -457,16 +522,18 @@ categories.forEach(category => {
                         </td>
                         <td className="px-4 py-3">
                           <Textarea 
-                            placeholder="Comments..."
-                            value={editingItems[row.itemId].comment}
-                            onChange={(e) => setEditingItems({
-                              ...editingItems,
-                              [row.itemId]: {
-                                ...editingItems[row.itemId],
-                                comment: e.target.value
-                              }
-                            })}
-                            className="w-full h-20 text-sm"
+                          placeholder="Comments..."
+                          value={editingItems[row.itemId].comment}
+                          onChange={(e) => setEditingItems({
+                            ...editingItems,
+                            [row.itemId]: {
+                            ...editingItems[row.itemId],
+                            comment: e.target.value
+                            }
+                          })}
+                          className={`w-full h-20 text-sm ${isEmployee ? 'bg-gray-100' : ''}`}
+                          readOnly={isEmployee}
+                          disabled={isEmployee}
                           />
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -496,6 +563,7 @@ categories.forEach(category => {
                           {row.comment || <span className="text-gray-400">No comment</span>}
                         </td>
                         <td className="px-4 py-3 text-center">
+                        <div className="flex space-x-2 justify-center">
                           <Button
                             size="sm"
                             variant="outline"
@@ -509,7 +577,24 @@ categories.forEach(category => {
                             <Pencil className="h-4 w-4 mr-1" />
                             {row.result ? 'Update' : 'Add Result'}
                           </Button>
+                          {/* Delete item button */}
+                          <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => {
+                            setDeleteTarget({
+                              id: row.itemId!, // non-null assertion because row.itemId exists here
+                              name: row.itemName || '',
+                              type: 'item'
+                            });
+                            setIsDeleteModalOpen(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                        </div>
                         </td>
+                        
                       </>
                     )}
                   </>
@@ -521,6 +606,31 @@ categories.forEach(category => {
           </table>
         </div>
       )}
+      {/* This goes after the table */}
+      {isDeleteModalOpen && (
+          <DeleteConfirmation 
+            open={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setDeleteTarget(null);
+            }}
+            onConfirm={() => {
+              if (deleteTarget) {
+                if (deleteTarget.type === 'category') {
+                  deleteCategory(deleteTarget.id);
+                } else {
+                  deleteItem(deleteTarget.id);
+                }
+              }
+              setIsDeleteModalOpen(false);
+              setDeleteTarget(null);
+            }}
+            name={deleteTarget ? deleteTarget.name : ""}
+            title="Confirm Delete"
+            description="Are you sure you want to delete this item? This action cannot be undone."
+            isLoading={false}
+          />
+        )}
     </div>
   );
 }
