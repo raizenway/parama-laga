@@ -2,11 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, Plus, Calendar, ListChecks } from "lucide-react";
+import { Loader2, Plus, Calendar, ListChecks, Check, Copy, X } from "lucide-react";
 import { toast } from "sonner";
 import ActivityTable from "@/app/components/table/activity";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 type Project = {
   id: number;
@@ -40,8 +50,10 @@ export default function ActivitiesPage() {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // New week creation states
+  const [isNewWeekModalOpen, setIsNewWeekModalOpen] = useState(false);
   const [copyPreviousWeek, setCopyPreviousWeek] = useState(true);
-
 
   // Fetch projects
   useEffect(() => {
@@ -125,7 +137,7 @@ export default function ActivitiesPage() {
           projectId: selectedProject,
           startDate: new Date().toISOString(),
           endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          copyFromPreviousWeek: copyPreviousWeek
+          copyFromPreviousWeek: copyPreviousWeek,
         })
       });
       
@@ -135,10 +147,15 @@ export default function ActivitiesPage() {
       setWeeks(prev => [newWeek, ...prev]);
       setSelectedWeek(newWeek.id);
       toast.success('New week created successfully');
+      setIsNewWeekModalOpen(false);
     } catch (error) {
       console.error('Error creating week:', error);
       toast.error('Failed to create week');
     }
+  };
+
+  const handleAddWeek = () => {
+    setIsNewWeekModalOpen(true);
   };
   
   return (
@@ -171,7 +188,7 @@ export default function ActivitiesPage() {
                 variant="outline"
                 size="sm"
                 className="ml-2 h-6 w-6 p-0"
-                onClick={createNewWeek}
+                onClick={handleAddWeek}
                 title="Add new week"
               >
                 <Plus className="h-4 w-4" />
@@ -242,6 +259,48 @@ export default function ActivitiesPage() {
           </p>
         </div>
       )}
+
+      {/* // Update the Dialog content section in your activity page */}
+      <Dialog open={isNewWeekModalOpen} onOpenChange={setIsNewWeekModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Week</DialogTitle>
+            <DialogDescription>
+              Set up a new activity week for the selected project.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="copy-previous">Copy activities from previous week</Label>
+              <Switch 
+                id="copy-previous" 
+                checked={copyPreviousWeek} 
+                onCheckedChange={setCopyPreviousWeek} 
+              />
+            </div>
+            
+            {/* Employee selector has been removed */}
+            
+            {copyPreviousWeek && (
+              <p className="text-xs text-gray-500">
+                Activities from the previous week will be copied for all employees in this project.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewWeekModalOpen(false)}>
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <Button onClick={createNewWeek} className="bg-primary text-white hover:bg-primary/90">
+              <Copy className="mr-2 h-4 w-4" />
+              Create Week
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

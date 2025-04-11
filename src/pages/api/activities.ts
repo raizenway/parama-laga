@@ -73,46 +73,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
   
-  // POST: Create a new activity category
-  else if (req.method === 'POST') {
-    try {
-      const { projectId, weekId, name } = req.body;
-      
-      if (!projectId || !weekId || !name) {
-        return res.status(400).json({ message: 'Missing required fields' });
-      }
-      
-      const newCategory = await prisma.activityCategory.create({
-        data: {
-          userId: parseInt(userId),
-          projectId: parseInt(projectId),
-          weekId: parseInt(weekId),
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date()
+// POST: Create a new activity category
+else if (req.method === 'POST') {
+  try {
+    const { projectId, weekId, name, userId: requestUserId } = req.body;
+    
+    if (!projectId || !weekId || !name) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+    
+    // Use the userId from the request body if provided and user is admin/PM
+    // Otherwise use the current user's ID from the session
+    let effectiveUserId = parseInt(userId);
+    
+    if ((userRole === 'admin' || userRole === 'project_manager') && requestUserId) {
+      effectiveUserId = parseInt(requestUserId);
+    }
+    
+    const newCategory = await prisma.activityCategory.create({
+      data: {
+        userId: effectiveUserId,
+        projectId: parseInt(projectId),
+        weekId: parseInt(weekId),
+        name,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            personnelId: true
+          }
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              personnelId: true
-            }
-          },
-          project: true,
-          week: true,
-          items: {
-            include: {
-              results: true
-            }
+        project: true,
+        week: true,
+        items: {
+          include: {
+            results: true
           }
         }
+      }
+    });
+    
+    return res.status(201).json(newCategory);
+  } catch (error) {
+    console.error('Error creating activity category:', error);
+    return res.status(500).json({ message: 'Failed to create activity category' });
+  }
+}
+else if(req.method === 'DELETE'){
+    try {
+      // Delete the category. Ensure cascade delete is configured in your schema if needed.
+      const deletedCategory = await prisma.activityCategory.delete({
+        where: { id: parseInt(id) }
       });
-      
-      return res.status(201).json(newCategory);
+      return res.status(200).json(deletedCategory);
     } catch (error) {
-      console.error('Error creating activity category:', error);
-      return res.status(500).json({ message: 'Failed to create activity category' });
+      console.error('Error deleting activity category:', error);
+      return res.status(500).json({ message: 'Failed to delete activity category' });
     }
   }
   
