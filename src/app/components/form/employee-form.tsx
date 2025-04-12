@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import StatusDropdown from "../status-dropdown";
 import ProjectAssigning from "../dropdown-multiple-selection";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Define the status type based on Prisma schema
@@ -31,6 +31,7 @@ export default function EmployeeForm({
   const [multipleProjects, setMultipleProjects] = useState<string[]>([]);
   const [availableProjects, setAvailableProjects] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -340,15 +341,24 @@ export default function EmployeeForm({
               />
 
               {mode === "add" && (
-                <Input 
-                  name="password"
-                  type="password" 
-                  placeholder="Employee password" 
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="bg-gray-50"
-                />
+                <div className="relative">
+  <Input 
+    name="password"
+    type={showPassword ? "text" : "password"}
+    placeholder="Password" 
+    value={formData.password}
+    onChange={handleChange}
+    required
+    className="bg-gray-50 pr-10" // ruang untuk tombol eye
+  />
+  <button
+    type="button"
+    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+  </button>
+</div>
               )}
                             
 
