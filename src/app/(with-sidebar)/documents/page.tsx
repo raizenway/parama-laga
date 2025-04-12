@@ -14,7 +14,7 @@ import DocumentModal from "@/app/components/modal/task-modal";
         
         {/* Baris 2 */}
         <div className="mt-12 grow">
-          <div className="font-poppins font-bold text-2xl">Documents</div>
+          <div className=" font-bold text-2xl">Documents</div>
           <div className="flex justify-end items-center gap-3">
           <Input className="w-72" placeholder="Search" />
             <AddButton text="+ Add Document" onClick={() => setIsDetailOpen(true)}/>

@@ -57,7 +57,7 @@ export default function Page() {
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
       <div className="mt-12 grow">
-        <div className="font-poppins font-bold text-2xl">Tasks</div>
+        <div className=" font-bold text-2xl">Tasks</div>
         <div className="flex justify-end items-center gap-3">
           {/* <Input 
             className="w-72" 

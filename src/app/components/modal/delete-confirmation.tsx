@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Modal from "./modal";
+import { Trash2 } from "lucide-react";
 
 type DeleteConfirmationProps = {
   open: boolean;
@@ -17,36 +18,40 @@ export default function DeleteConfirmation({
   onClose, 
   onConfirm, 
   name, 
-  title = "Konfirmasi Hapus", 
+  title = "Delete Confirmation", 
   description,
   entityType = "karyawan",
   isLoading = false 
 }: DeleteConfirmationProps) {
   return (
-    <Modal open={open} onClose={onClose} title={title}>
-      <div className="p-4 text-center">
-        <p className="mb-4 text-lg">
-          Apakah Anda yakin ingin menghapus {entityType} <span className="font-semibold">{name}</span>?
+    <Modal open={open} onClose={onClose} title={title} width="w-1/3">
+      <div className=" text-center">
+        <div className="justify-items-center">
+          <Trash2 className="text-red-500" size={75}/>
+        </div>
+        <p className="m-4 text-lg">
+          Are you sure you want to delete <span className="font-semibold">{name}</span>?
         </p>
-        <p className="text-gray-600 mb-6">
-          {description || `Tindakan ini tidak dapat dibatalkan dan semua data terkait ${entityType} ini akan dihapus.`}
+        <p className="text-gray-600 mb-10">
+          {description || `This action cannot be undone and ${entityType} will be deleted.`}
         </p>
         <div className="flex justify-center space-x-4">
-          <Button onClick={onClose} variant="outline" disabled={isLoading}>
-            Batal
+          <Button onClick={onClose} variant="outline" disabled={isLoading} className="w-1/3">
+            Cancel
           </Button>
           <Button 
             onClick={onConfirm} 
             variant="destructive" 
             disabled={isLoading}
+            className="w-1/3"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Menghapus...
+                Deleting...
               </span>
             ) : (
-              "Hapus"
+              "Delete"
             )}
           </Button>
         </div>

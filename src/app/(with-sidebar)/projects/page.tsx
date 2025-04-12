@@ -81,12 +81,7 @@ export default function Page() {
     setSelectedProject(project);
     setModalMode("view");
     setIsModalOpen(true);
-  };
-
-    // Handle search input change
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    };
+  };  
 
   const confirmDeleteProject = async () => {
     if (!selectedProject) return;
@@ -135,9 +130,8 @@ export default function Page() {
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
       <div className="mt-12 grow">
-        <div className="font-poppins font-bold text-2xl">Projects</div>
+        <div className=" font-bold text-2xl">Projects</div>
         <div className="flex justify-end items-center gap-3">
-        <Input className="w-72" placeholder="Search project name..." value={searchQuery} onChange={handleSearchChange}/>
           <AddButton text="+ Add Project" onClick={handleAddProject} />
         </div>
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
@@ -175,7 +169,6 @@ export default function Page() {
         onConfirm={confirmDeleteProject}
         name={selectedProject?.projectName || ""}
         entityType="project"
-        title="Konfirmasi Hapus Project"
         description={`Tindakan ini tidak dapat dibatalkan. Semua tasks dan progress terkait project ini juga akan dihapus.`}
         isLoading={deleteLoading}
       />

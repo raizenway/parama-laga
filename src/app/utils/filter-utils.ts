@@ -53,7 +53,6 @@ export const getAssigneeOptions = (tasks: Task[]) => {
 };
 
 export const statusOptions = [
-  { value: "", label: "All Statuses" },
   { value: "Done", label: "Done" },
   { value: "OnGoing", label: "On Going" },
   { value: "ToDo", label: "To Do" },
@@ -67,5 +66,5 @@ export const getProjectStatusOptions = (projects: Project[]) => {
       project => project.status.statusName,
       project => project.status.statusName
     );
-    return [{ value: "", label: "All Statuses" }, ...uniqueStatuses];
+    return [...uniqueStatuses];
   };

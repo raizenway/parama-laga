@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Save, Delete, CalendarClock, User, CheckCircle2, Pencil, NotebookPen } from "lucide-react";
+import { Loader2, PlusCircle, Save, Delete, CalendarClock, User, CheckCircle2, Pencil, NotebookPen, Trash2, List, ListTodo, LayoutGrid, Paperclip, MessageSquareText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,16 +133,13 @@ const addCategory = async () => {
       throw new Error('Failed to create category');
     }
     
-    const newCategory = await response.json();
-    
-    
+    const newCategory = await response.json();    
     // Update categories with the newly created one
     setCategories(prev => [...prev, newCategory]);
     
     // Reset the input and active category
     setCategories(prev => [...prev, newCategory]);
     setNewCategoryName("");
-    setActiveCategory(newCategory.id);
     toast.success('Category added successfully');
     fetchActivities();
   } catch (error) {
@@ -198,15 +195,15 @@ const addCategory = async () => {
   };
   
   // Start editing an item's result
-  const startEditing = (itemId: number, result: ActivityResult | null) => {
-    setEditingItems({
-      ...editingItems,
-      [itemId]: {
-        result: result?.result || '',
-        comment: result?.comment || ''
-      }
-    });
-  };
+const startEditing = (itemId: number, result: ActivityResult | null) => {
+  setEditingItems((prev) => ({
+    ...prev,
+    [itemId]: {
+      result: result?.result || '',
+      comment: result?.comment || '',
+    },
+  }));
+};
   
   // Save result for an item
   const saveResult = async (itemId: number, existingResultId: number | null) => {
@@ -407,14 +404,30 @@ categories.forEach(category => {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className=" table-fixed w-full border-collapse">
             <thead>
               <tr className="bg-tersier">
-                <th className="px-4 py-3 text-left font-medium border-b">Category</th>
-                <th className="px-4 py-3 text-left font-medium border-b">Item</th>
-                <th className="px-4 py-3 text-left font-medium border-b">Result</th>
-                <th className="px-4 py-3 text-left font-medium border-b">Comment</th>
-                <th className="px-4 py-3 text-center font-medium border-b">Actions</th>
+                <th className="w-[20%] px-4 py-3 text-left font-bold border-b">
+                  <div className="flex gap-2">
+                    <LayoutGrid /> Category
+                  </div>
+                </th>
+                <th className="w-[25%] px-4 py-3 text-left font-bold border-b">
+                  <div className="flex gap-2">
+                    <ListTodo /> Item
+                  </div>
+                </th>
+                <th className="w-[25%] px-4 py-3 text-left font-bold border-b">
+                  <div className="flex gap-2">
+                    <Paperclip /> Result
+                  </div>
+                </th>
+                <th className="w-[25%] px-4 py-3 text-left font-bold border-b">
+                  <div className="flex gap-2">
+                    <MessageSquareText /> Comment
+                  </div>
+                </th>
+                <th className="w-[5%] px-4 py-3 text-center font-bold border-b"></th>
               </tr>
             </thead>
             <tbody>
@@ -440,74 +453,79 @@ categories.forEach(category => {
               return (
               <tr key={`${row.categoryId}-${row.itemId || 'empty'}`} className="border-b hover:bg-gray-50">
                 {isFirstInCategory && (
-                  <td className="px-4 py-3 border-r" rowSpan={categoryRowSpan}>
-                    <div>
-                      <p className="font-semibold">{row.categoryName}</p>
-                      <p className="text-xs text-gray-500">By: {row.userName}</p>
-                    </div>
-                    {/* Delete category button */}
-                      <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={() => {
-                        setDeleteTarget({
-                          id: row.categoryId,
-                          name: row.categoryName,
-                          type: 'category'
-                        });
-                        setIsDeleteModalOpen(true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                    
-                    {/* Add item button */}
-                    <div className="mt-2">
-                      {activeCategory === row.categoryId ? (
-                        <div className="flex gap-2 mt-2">
-                          <Input 
-                            size="sm"
-                            placeholder="New activity item..." 
-                            value={newItemName}
-                            onChange={(e) => setNewItemName(e.target.value)}
-                            className="text-sm py-1"
-                          />
-                          <Button 
-                            size="sm"
-                            onClick={() => addItem(row.categoryId)}
-                            className="bg-primary text-white hover:bg-primary/90 text-xs"
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => setActiveCategory(row.categoryId)}
-                          className="text-xs"
+                  <td className="px-3 py-3 space-y-5 border-r" rowSpan={categoryRowSpan}>
+                    <div className="flex justify-between">
+                      <div className="space-y-1">
+                        <p className="font-semibold">{row.categoryName}</p>
+                        <p className="text-xs text-gray-500">By: {row.userName}</p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          title="Delete Category"
+                          onClick={() => {
+                            setDeleteTarget({
+                              id: row.categoryId,
+                              name: row.categoryName,
+                              type: 'category'
+                            });
+                            setIsDeleteModalOpen(true);
+                          }}
                         >
-                          <PlusCircle className="h-3 w-3 mr-1" />
-                          Add Item
-                        </Button>
-                      )}
+                          <Trash2 className="text-red-500 hover:text-red-600"/>
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Add Item"
+                          onClick={() => setActiveCategory(row.categoryId)}
+                        >
+                          <PlusCircle className="text-primary hover:text-primary/75" />
+                        </button>
+                      </div>
                     </div>
+
+                    {activeCategory === row.categoryId ? (
+                            <div className="flex gap-2 mt-2">
+                              <Input 
+                                size="sm"
+                                placeholder="New category item..." 
+                                value={newItemName}
+                                onChange={(e) => setNewItemName(e.target.value)}
+                                className="text-sm py-1"
+                              />
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  addItem(row.categoryId);
+                                  setActiveCategory(null);
+                                }}
+                                className="bg-primary text-white hover:bg-primary/90 text-xs"
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          ) : ( <div> </div>)}
                   </td>
                 )}
                 
                 {/* Handle empty item cases */}
                 {row.itemId === null ? (
                   <>
-                    <td className="px-4 py-3 text-gray-400" colSpan={4}>No items yet. Add an item to this category.</td>
+                    <td className="px-4 py-3 text-gray-400 border-r">No items yet. Add an item to this category.</td>
+                    <td className="border-r"></td>
+                    <td className="border-r"></td>
+                    <td className="border-r"></td>
                   </>
                 ) : (
                   <>
-                    <td className="px-4 py-3">{row.itemName}</td>
+                    <td className="px-4 py-3 border-r">{row.itemName}</td>
                     
                     {isEditing ? (
                       <>
-                        <td className="px-4 py-3">
-                          <Input 
+                        <td className="px-4 py-3 border-r">
+                          <Textarea 
                             placeholder="Result..."
                             value={editingItems[row.itemId].result}
                             onChange={(e) => setEditingItems({
@@ -517,12 +535,12 @@ categories.forEach(category => {
                                 result: e.target.value
                               }
                             })}
-                            className="w-full"
+                            className="w-full h-20"
                           />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 border-r">
                           <Textarea 
-                          placeholder="Comments..."
+                          placeholder="Comment..."
                           value={editingItems[row.itemId].comment}
                           onChange={(e) => setEditingItems({
                             ...editingItems,
@@ -536,63 +554,73 @@ categories.forEach(category => {
                           disabled={isEmployee}
                           />
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <Button
-                            size="sm"
-                            onClick={() => saveResult(row.itemId, row.resultId)}
-                            className="bg-primary text-white hover:bg-primary/90"
-                          >
-                            <Save className="h-4 w-4 mr-1" />
-                            Save
-                          </Button>
+                        <td className="px-4 py-3 text-center border-r">
+                            <button
+                              type="button"
+                              title="Save"
+                              className="text-emerald-500 hover:text-emerald-600" 
+                              onClick={() => saveResult(row.itemId, row.resultId)}
+                            >
+                              <Save/>
+                            </button>
                         </td>
                       </>
-                    ) : (
+                      ) : (
                       <>
-                        <td className="px-4 py-3">
-                          {row.result ? (
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-4 w-4 text-green-600 mr-1" />
-                              <span>{row.result}</span>
+                        <td className="hover:bg-slate-100">
+                            <div
+                              title="Click to edit"
+                              className="flex items-top gap-3 px-4 py-3 border-r "
+                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                                id: row.resultId,
+                                result: row.result,
+                                comment: row.comment,
+                                updatedAt: row.updatedAt
+                              } : null)}
+                            >
+                            {row.result ? (
+                              <>
+                                <div className="min-w-[20px]">
+                                  <CheckCircle2 className="text-green-600" />
+                                </div>
+                                <span>{row.result}</span>
+                              </>
+                              ):(
+                                <span className="text-gray-400">No result yet</span>
+                              )}
                             </div>
-                          ) : (
-                            <span className="text-gray-400">No result yet</span>
-                          )}
                         </td>
-                        <td className="px-4 py-3">
-                          {row.comment || <span className="text-gray-400">No comment</span>}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                        <div className="flex space-x-2 justify-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => startEditing(row.itemId, row.resultId ? {
-                              id: row.resultId,
-                              result: row.result,
-                              comment: row.comment,
-                              updatedAt: row.updatedAt
-                            } : null)}
+                        <td className="py-3 border-r hover:bg-slate-100">
+                          <div
+                              title="Click to edit"
+                              className="flex items-top gap-3 px-4 py-3 border-r "
+                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                                id: row.resultId,
+                                result: row.result,
+                                comment: row.comment,
+                                updatedAt: row.updatedAt
+                              } : null)}
                           >
-                            <Pencil className="h-4 w-4 mr-1" />
-                            {row.result ? 'Update' : 'Add Result'}
-                          </Button>
-                          {/* Delete item button */}
-                          <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteTarget({
-                              id: row.itemId!, // non-null assertion because row.itemId exists here
-                              name: row.itemName || '',
-                              type: 'item'
-                            });
-                            setIsDeleteModalOpen(true);
-                          }}
-                        >
-                          Delete
-                        </Button>
-                        </div>
+                            {row.comment || <span className="text-gray-400">No comment</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="flex justify-center" title="Delete Item">
+                            <button
+                              type="button"
+                              className="text-red-500 hover:text-red-600" 
+                              onClick={() => {
+                                setDeleteTarget({
+                                  id: row.itemId!, // non-null assertion because row.itemId exists here
+                                  name: row.itemName || '',
+                                  type: 'item'
+                                });
+                                setIsDeleteModalOpen(true);
+                              }}
+                            >
+                              <Trash2/>
+                            </button>
+                          </div>
                         </td>
                         
                       </>
@@ -625,9 +653,10 @@ categories.forEach(category => {
               setIsDeleteModalOpen(false);
               setDeleteTarget(null);
             }}
+            entityType="category"
             name={deleteTarget ? deleteTarget.name : ""}
             title="Confirm Delete"
-            description="Are you sure you want to delete this item? This action cannot be undone."
+            description="This action cannot be undone."
             isLoading={false}
           />
         )}

@@ -31,7 +31,6 @@ export default function Page() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isCheckListDetailOpen, setIsCheckListDetailOpen] = useState(false);
   const [isDocumentTypeOpen, setIsDocumentTypeOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -92,25 +91,13 @@ export default function Page() {
       setIsDeleteLoading(false);
     }
   };
-  
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
 
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
       {/* Header & Controls */}
       <div className="mt-12 grow">
-        <div className="font-poppins font-bold text-2xl">Templates</div>
+        <div className=" font-bold text-2xl">Templates</div>
         <div className="flex justify-end items-center gap-3">
-          <Input 
-            className="w-72" 
-            type="search" 
-            placeholder="Search templates..." 
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
           <Button 
             text="+ Add Template" 
             onClick={handleAddTemplate}
@@ -136,7 +123,6 @@ export default function Page() {
               onEdit={handleEditTemplate} 
               onDelete={handleDeleteTemplate}
               onView={handleViewTemplate}
-              searchTerm={searchTerm}
             />
           </div>
         </div>

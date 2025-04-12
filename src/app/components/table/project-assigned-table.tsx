@@ -68,13 +68,10 @@ export default function ProjectAssignedTable({ employeeId }: ProjectAssignedTabl
 
   return (
     <div>
-      <table className="font-poppins w-full table-auto justify-start">
+      <table className=" w-full table-auto justify-start">
         <thead className="bg-tersier">
           <tr>
             <th className="px-4 py-2 rounded-tl-lg text-left">
-              <div className="flex items-center gap-1">Logo</div>
-            </th>
-            <th className="px-4 py-2 text-left">
               <div className="flex items-center gap-1"><TrafficCone /> Project</div>
             </th>
             <th className="px-4 py-2 text-left">
@@ -92,7 +89,6 @@ export default function ProjectAssignedTable({ employeeId }: ProjectAssignedTabl
           {paginatedProjects.length > 0 ? (
             paginatedProjects.map((project) => (
               <tr key={project.id} className="border-b-2 border-tersier">
-                <td className="px-4 py-3 justify-items-center"><div className="justify-center h-10 w-10 bg-green-300 rounded-full "></div></td>
                 <td className="px-4 py-3">{project.projectName}</td>
                 <td className="px-4 py-3">{project.projectCode}</td>
                 <td className="px-4 py-3">{new Date(project.startDate).toLocaleDateString()}</td>

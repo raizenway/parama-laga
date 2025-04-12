@@ -190,7 +190,7 @@ export default function ChecklistTable({
 
   return (
     <div className="w-full">
-      <table className="font-poppins w-full table-auto justify-start border-collapse">
+      <table className=" w-full table-auto justify-start border-collapse">
         <thead className="bg-tersier">
           <tr>
             <th className="px-4 py-2 w-3/12 rounded-tl-lg text-left">

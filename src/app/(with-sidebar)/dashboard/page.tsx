@@ -85,7 +85,7 @@ export default function Page() {
       {/* Baris 1 */}
       <div className="mt-10 flex gap-10 h-1/3 ">
         <div className="grow flex flex-col w-full h-full ">
-          <div className="flex-1/5 font-poppins font-bold underline my-2">Profile User</div>
+          <div className="flex-1/5  font-bold underline my-2">Profile User</div>
           <div className="flex-1 flex flex-wrap grow bg-gradient-primary rounded-2xl justify-start items-center">
               <img 
                 src={user?.photoUrl || "/person.png"} 
@@ -93,12 +93,12 @@ export default function Page() {
                 alt="Profile Picture"
               />
               <div className="ml-5 space-y-3">
-                <div className="font-poppins font-bold text-primary">{user?.name || "User"}</div>
+                <div className=" font-bold text-primary">{user?.name || "User"}</div>
                 <div className="flex">
-                  <div className="font-poppins font-bold text-primary">{user?.email || ""}</div>
-                  <div className="font-poppins font-bold text-primary">/{user?.role || "User"}</div>
+                  <div className=" font-bold text-primary">{user?.email || ""}</div>
+                  <div className=" font-bold text-primary">/{user?.role || "User"}</div>
                 </div>
-                <div className="font-poppins font-bold text-primary">
+                <div className=" font-bold text-primary">
                   {projects.length > 0 ? `${projects[0].projectName}` : "No active project"}
                 </div>
               </div>              
@@ -106,13 +106,13 @@ export default function Page() {
         </div>
 
         <div className="grow flex flex-col w-full h-full ">
-          <div className="flex-1/5 font-poppins font-bold underline my-2">Notification</div>
+          <div className="flex-1/5  font-bold underline my-2">Notification</div>
             <div className="p-5 flex flex-1 flex-wrap grow bg-tersier rounded-2xl justify-start items-start">
             <div className="space-y-1">
-                <div className="font-poppins text-primary">1. Segera lakukan pemeriksaan kurva S</div>
+                <div className=" text-primary">1. Segera lakukan pemeriksaan kurva S</div>
                 <div className="flex flex-wrap gap-1">
-                  <div className="font-poppins text-primary">2. Waktu pengisian checklist aktivitas</div>
-                  <div className="font-poppins text-danger font-bold">(Due: Friday 7 February 2025)</div>
+                  <div className=" text-primary">2. Waktu pengisian checklist aktivitas</div>
+                  <div className=" text-danger font-bold">(Due: Friday 7 February 2025)</div>
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function Page() {
 
       {/* Baris 2 */}
       <div className="grow">
-        <div className="font-poppins font-bold underline my-3">Table Project</div>
+        <div className=" font-bold underline my-3">Table Project</div>
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4 shadow-[0px_0px_13px_2px_rgba(0,_0,_0,_0.2)]">
           <div className="overflow-auto max-h-full w-full ">
             {isLoading ? (
@@ -134,7 +134,7 @@ export default function Page() {
                 <p className="text-red-600">{error}</p>
               </div>
             ) : (
-              <table className="font-poppins w-full table-auto justify-start">
+              <table className=" w-full table-auto justify-start">
                 <thead className="bg-tersier">
                   <tr>
                     <th className="px-4 py-2 rounded-tl-lg text-left">

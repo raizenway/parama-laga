@@ -110,7 +110,7 @@ export const MonthYearFilter = ({
             {/* Month Selection */}
             <div>
               <h3 className="font-medium text-sm mb-2">Month</h3>
-              <div className="grid grid-cols-2 gap-1 overflow-auto">
+              <div className="grid gap-1 overflow-auto">
                 {months.map(month => (
                   <button
                     key={month.value}

@@ -72,7 +72,7 @@ export default function ProjectEmployeeTable({ projectId, searchTerm = "" }: Pro
 
   return (
     <div>
-      <table className="font-poppins w-full table-auto justify-start">
+      <table className=" w-full table-auto justify-start">
         <thead className="bg-tersier">
           <tr>
             <th className="px-4 py-2 rounded-tl-lg text-left">

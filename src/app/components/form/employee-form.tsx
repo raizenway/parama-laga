@@ -264,7 +264,7 @@ export default function EmployeeForm({
           <span>Loading project data...</span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="font-poppins">
+        <form onSubmit={handleSubmit} className="">
           <div className="flex grow gap-8">
             {/* Image Upload */}
             <div

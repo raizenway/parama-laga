@@ -180,7 +180,7 @@ export default function documentTypeForm({ onClose }: { onClose: () => void }) {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       
-      <div className="font-poppins space-y-4">
+      <div className=" space-y-4">
         {/* Container with height limit and overflow */}
         <div className="max-h-80 overflow-y-auto border border-gray-300 p-2 rounded-lg">
           {filtereddocumentTypes.length > 0 ? (

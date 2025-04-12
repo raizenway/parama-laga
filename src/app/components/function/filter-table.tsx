@@ -1,4 +1,3 @@
-// components/function/filter-table.tsx
 "use client"
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, Plus, Calendar, ListChecks, Check, Copy, X } from "lucide-react";
+import { Loader2, Plus, Calendar, ListChecks, Check, Copy, X, PlusCircle } from "lucide-react";
+import DropdownSingleSelection from "@/app/components/dropdown-single-selection";
 import { toast } from "sonner";
 import ActivityTable from "@/app/components/table/activity";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import CustomButton from "@/app/components/button/button-custom";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -166,79 +168,62 @@ export default function ActivitiesPage() {
         {/* Filter section */}
         <div className="col-span-1 md:col-span-3 space-y-2">
           <label className="block text-sm font-medium text-gray-700">Project</label>
-          <select
-            className="w-full rounded-md border-gray-300 shadow-sm"
-            value={selectedProject || ''}
-            onChange={(e) => setSelectedProject(e.target.value ? parseInt(e.target.value) : null)}
-          >
-            <option value="">Select Project</option>
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.projectName}
-              </option>
-            ))}
-          </select>
+          <DropdownSingleSelection
+            options={projects.map(p => p.projectName)}
+            selectedItem={projects.find(p => p.id === selectedProject)?.projectName || null}
+            setSelectedItem={(projectName) => {
+              const project = projects.find(p => p.projectName === projectName);
+              setSelectedProject(project?.id || null);
+            }}
+          />
         </div>
-        
+
+        {/* Week section */}
         <div className="col-span-1 md:col-span-3 space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Week
-            {selectedProject && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-2 h-6 w-6 p-0"
-                onClick={handleAddWeek}
-                title="Add new week"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
           </label>
-          <select
-            className="w-full rounded-md border-gray-300 shadow-sm"
-            value={selectedWeek || ''}
-            onChange={(e) => setSelectedWeek(e.target.value ? parseInt(e.target.value) : null)}
-            disabled={!selectedProject || weeks.length === 0}
-          >
-            <option value="">Select Week</option>
-            {weeks.map(week => (
-              <option key={week.id} value={week.id}>
-                Week {week.weekNum} ({new Date(week.startDate).toLocaleDateString()} - {new Date(week.endDate).toLocaleDateString()})
-              </option>
-            ))}
-          </select>
+          
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <DropdownSingleSelection
+                options={weeks}
+                selectedItem={weeks.find(w => w.id === selectedWeek) ?? null}
+                setSelectedItem={(item) => setSelectedWeek(item?.id ?? null)}
+                isDisabled={!selectedProject || weeks.length === 0}
+                getKey={(item) => item.id}
+                renderItem={(item) => `Week ${item.weekNum}`}
+              />
+            </div>
+            
+            {selectedProject && (
+                <Button
+                  variant="outline"
+                  className="rounded-full 2-12 h"
+                  onClick={handleAddWeek}
+                  title="Add new week"
+                >
+                  <Plus />
+                </Button>
+              )}
+          </div>
         </div>
-        
+
+        {/* Employee section */}
         {isManagerOrAdmin && (
           <div className="col-span-1 md:col-span-3 space-y-2">
             <label className="block text-sm font-medium text-gray-700">Employee</label>
-            <select
-              className="w-full rounded-md border-gray-300 shadow-sm"
-              value={selectedEmployee || ''}
-              onChange={(e) => setSelectedEmployee(e.target.value ? parseInt(e.target.value) : null)}
-              disabled={!selectedProject || employees.length === 0}
-            >
-              <option value="">All Employees</option>
-              {employees.map(employee => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.name} ({employee.personnelId})
-                </option>
-              ))}
-            </select>
+            <DropdownSingleSelection
+              options={employees.map(e => e.name)}
+              selectedItem={employees.find(e => e.id === selectedEmployee)?.name || null}
+              setSelectedItem={(employeeName) => {
+                const employee = employees.find(e => e.name === employeeName);
+                setSelectedEmployee(employee?.id || null);
+              }}
+              isDisabled={!selectedProject || employees.length === 0}
+            />
           </div>
         )}
-        
-        <div className="col-span-1 md:col-span-3 flex items-end">
-          <Button 
-            className="w-full bg-primary text-white hover:bg-primary/90"
-            disabled={!selectedWeek}
-            onClick={() => setRefreshTrigger(prev => prev + 1)}
-          >
-            <ListChecks className="mr-2 h-4 w-4" />
-            View Activities
-          </Button>
-        </div>
       </div>
       
       {/* Activities display */}

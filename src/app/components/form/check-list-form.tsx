@@ -211,7 +211,7 @@ const updateCriteria = async (id: number) => {
         className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
       />
       
-      <div className="font-poppins space-y-2">
+      <div className=" space-y-2">
         <div className="max-h-80 overflow-y-auto border border-gray-300 p-2 rounded-lg">
           {filteredChecklists.length > 0 ? (
             filteredChecklists.map((checklist) => (
@@ -292,7 +292,7 @@ const updateCriteria = async (id: number) => {
             placeholder="New check criteria"
             value={newCriteria}
             onChange={(e) => setNewCriteria(e.target.value)}
-            className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+            className="w-full p-2 border text-sm border-tersier rounded-md outline-none focus:border-indigo-400"
           />
           <div className="flex items-center gap-2">
             <Info className="text-gray-400" size={16} />
@@ -301,7 +301,7 @@ const updateCriteria = async (id: number) => {
               placeholder="Hint (optional)"
               value={newHint}
               onChange={(e) => setNewHint(e.target.value)}
-              className="w-full p-2 border border-tersier rounded-md outline-none focus:border-indigo-400"
+              className="w-full p-2 border text-sm border-tersier rounded-md outline-none focus:border-indigo-400"
             />
           </div>
           <Button

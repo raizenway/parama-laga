@@ -7,7 +7,6 @@ import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
 import TableFilter from "@/app/components/function/filter-table";
 
-// Definisi tipe data untuk karyawan
 type Employee = {
   id: string;
   name: string;
@@ -47,7 +46,6 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
   const roleOptions = useMemo(() => {
     const uniqueRoles = [...new Set(employees.map(e => e.role))];
     return [
-      { value: "", label: "All Roles" },
       ...uniqueRoles.map(role => ({ value: role, label: role }))
     ];
   }, [employees]);
@@ -55,7 +53,6 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
   // Generate status options for filter
   const statusOptions = useMemo(() => {
     return [
-      { value: "", label: "All Statuses" },
       { value: "active", label: "Active" },
       { value: "inactive", label: "Inactive" }
     ];
@@ -71,7 +68,6 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
     });
     
     return [
-      { value: "", label: "All Projects" },
       ...[...projectSet].map(project => ({ value: project, label: project }))
     ];
   }, [employees]);
@@ -166,7 +162,7 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
         </div>
       </div>
 
-      <table className="w-full border-collapse font-poppins">
+      <table className="w-full border-collapse ">
         {/* HEADER */}
         <thead className="bg-tersier text-left">
           <tr className="text-black">

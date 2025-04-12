@@ -11,7 +11,7 @@ import { toast } from "sonner";
 type ProjectStatus = "Pending" | "Ongoing" | "Completed" | "Delayed";
 
 const projectStatusOptions = [
-  { value: "Pending", label: "Pending", color: "text-yellow-500 hover:text-yellow-600 border-yellow-300" },
+  { value: "Pending", label: "Pending", color: "text-orange-500 hover:text-orange-600 border-orange-500" },
   { value: "Ongoing", label: "Ongoing", color: "text-blue-500 hover:text-blue-600 border-blue-300" },
   { value: "Completed", label: "Completed", color: "text-emerald-500 hover:text-emerald-600 border-green-300" },
   { value: "Delayed", label: "Delayed", color: "text-red-500 hover:text-red-600 border-red-300" }
@@ -193,23 +193,14 @@ export default function ProjectForm({
   };
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white px-3">
       {isLoading ? (
         <div className="flex justify-center items-center h-32">
           <Loader2 className="h-6 w-6 animate-spin mr-2" />
           <span>Loading employee data...</span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="font-poppins space-y-5">
-          <div className="flex grow gap-8">
-            <div className="w-32 h-32 rounded-full overflow-hidden">
-              <img 
-                src="/kai.png" 
-                alt="Project" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
-
+        <form onSubmit={handleSubmit} className=" space-y-5">
             <div className="flex flex-col grow gap-4">
               {/* PROJECT INFO */}  
               <div>
@@ -304,7 +295,6 @@ export default function ProjectForm({
                 </Button>
               )}
             </div>
-          </div>
         </form>
       )}
     </div>

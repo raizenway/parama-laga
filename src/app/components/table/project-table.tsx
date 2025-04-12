@@ -143,7 +143,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
         </div>
       </div>
 
-      <table className="font-poppins w-full table-auto justify-start">
+      <table className=" w-full table-auto justify-start">
         <thead className="bg-tersier">
           <tr className="text-black">
             {[

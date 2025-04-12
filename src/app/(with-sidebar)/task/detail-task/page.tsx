@@ -349,18 +349,18 @@ export default function DetailTaskPage() {
   return (
     <div className="p-8">
       <div className="space-y-5 p-7 py-8 rounded-lg bg-zinc-50 shadow-[0px_0px_13px_2px_rgba(0,_0,_0,_0.15)]">
-        <button onClick={() => router.back()} className="font-poppins flex gap-2">
+        <button onClick={() => router.back()} className=" flex gap-2">
           <ChevronLeft /> Back
         </button>
         
         {/* Task Name - Now editable */}
         <div className="space-y-2">
-          <label htmlFor="taskName" className="font-poppins font-medium">Task Name</label>
+          <label htmlFor="taskName" className=" font-medium">Task Name</label>
           <Input 
             id="taskName"
             value={taskName}
             onChange={handleTaskNameChange}
-            className="font-poppins text-xl font-semibold"
+            className=" text-xl font-semibold"
             placeholder="Enter task name"
           />
         </div>

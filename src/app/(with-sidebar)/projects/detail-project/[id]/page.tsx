@@ -97,7 +97,7 @@ export default function ProjectDetailPage() {
   return (
     <div className="p-8 bg-white rounded-lg shadow-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-poppins font-bold text-2xl">Project Details</h1>
+        <h1 className=" font-bold text-2xl">Project Details</h1>
         <Button onClick={handleBack} variant="outline" className="flex items-center gap-2">
           <ArrowLeft size={16} />
           Back
@@ -107,7 +107,7 @@ export default function ProjectDetailPage() {
       {/* Project details section */}
       <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="p-6">
-          <div className="font-poppins">
+          <div className="">
             <div className="flex flex-wrap md:flex-nowrap gap-8">
               {/* Project Logo */}
               <div className="shrink-0 flex flex-col items-center">

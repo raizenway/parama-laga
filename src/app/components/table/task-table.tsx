@@ -57,17 +57,17 @@ export default function TaskTable({
 
   // Generate filter options
   const documentTypeOptions = useMemo(() => 
-    [{ value: "", label: "All Types" }, ...getDocumentTypeOptions(tasks)], 
+    [...getDocumentTypeOptions(tasks)], 
     [tasks]
   );
 
   const projectOptions = useMemo(() => 
-    [{ value: "", label: "All Projects" }, ...getProjectOptions(tasks)], 
+    [ ...getProjectOptions(tasks)], 
     [tasks]
   );
 
   const assigneeOptions = useMemo(() => 
-    [{ value: "", label: "All Assignees" }, ...getAssigneeOptions(tasks)], 
+    [...getAssigneeOptions(tasks)], 
     [tasks]
   );
 
@@ -242,7 +242,7 @@ export default function TaskTable({
           <input
             type="text"
             placeholder="Filter by name..."
-            className="px-3 py-2 border rounded-md text-sm w-full"
+            className="px-2 py-1 border rounded-md text-sm w-full"
             value={filters.taskName}
             onChange={(e) => handleFilterChange("taskName", e.target.value)}
           />
@@ -296,7 +296,7 @@ export default function TaskTable({
       </div>
     </div>
 
-    <table className="font-poppins w-full table-auto justify-start">
+    <table className=" w-full table-auto justify-start">
       <thead className="bg-tersier">
         <tr>
           <th className="px-4 py-2 w-[5%] text-center rounded-tl-lg">

@@ -62,8 +62,6 @@ export default function Page() {
     }
   };
 
-  
-
   useEffect(() => {
     fetchEmployees(debouncedSearchQuery);
   }, [debouncedSearchQuery]);
@@ -88,12 +86,6 @@ export default function Page() {
 
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
-
-   // Handle search input change
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    };
-
 
   // Handle edit button click
   const handleEdit = (employee: Employee) => {
@@ -189,15 +181,8 @@ export default function Page() {
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5">
       <div className="mt-12 grow">
-        <div className="font-poppins font-bold text-2xl">Employees</div>
+        <div className=" font-bold text-2xl">Employees</div>
         <div className="flex justify-end items-center gap-3">
-          <Input 
-            className="w-72" 
-            type="text" 
-            placeholder="Search employee name..."
-            value={searchQuery} 
-            onChange={handleSearchChange}
-          />
           <AddButton text="+ Add Employee" onClick={handleAdd} />
         </div>
 
