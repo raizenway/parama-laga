@@ -1,6 +1,5 @@
 import ProjectForm from "@/app/components/form/project-form";
 import Modal from "./modal";
-import { useEffect } from "react";
 
 export default function ProjectModal({ 
   open, 

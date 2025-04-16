@@ -10,8 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Unauthorized' });
   }
   
-  const userId = (session.user as any).id;
-  
   // POST: Create a new activity result
   if (req.method === 'POST') {
     try {

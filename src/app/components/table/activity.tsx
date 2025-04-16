@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Save, Delete, CalendarClock, User, CheckCircle2, Pencil, NotebookPen, Trash2, List, ListTodo, LayoutGrid, Paperclip, MessageSquareText } from "lucide-react";
+import { Loader2, PlusCircle, Save, CheckCircle2, NotebookPen, Trash2, ListTodo, LayoutGrid, Paperclip, MessageSquareText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,8 +61,6 @@ export default function ActivityTable({
   const [editingItems, setEditingItems] = useState<Record<number, { result: string, comment: string }>>({});
   
   // State to delete 
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -71,13 +69,6 @@ export default function ActivityTable({
     type: 'category' | 'item';
   } | null>(null);
 
-  // Fetch activities
-  useEffect(() => {
-    if (projectId && weekId) {
-      fetchActivities();
-    }
-  }, [projectId, weekId, employeeId, refreshTrigger]);
-  
   const fetchActivities = async () => {
     // ... existing fetch implementation ...
     setIsLoading(true);
@@ -101,6 +92,13 @@ export default function ActivityTable({
       setIsLoading(false);
     }
   };
+  
+    // Fetch activities
+    useEffect(() => {
+      if (projectId && weekId) {
+        fetchActivities();
+      }
+    }, [projectId, weekId, employeeId, refreshTrigger, fetchActivities]);
   
 // Add a new category
 const addCategory = async () => {
@@ -436,7 +434,6 @@ categories.forEach(category => {
 
               // Group rows by category
               const isFirstInCategory = index === 0 || tableRows[index - 1].categoryId !== row.categoryId;
-              const isCategorySpanned = index < tableRows.length - 1 && tableRows[index + 1].categoryId === row.categoryId;
 
               // Count how many rows this category spans
               let categoryRowSpan = 1;

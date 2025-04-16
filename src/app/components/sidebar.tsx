@@ -3,13 +3,11 @@ import "../globals.css";
 import SidebarFunction, { SidebarMenu } from "./sidebar-function";
 import { SidebarItem } from "./sidebar-function";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; // Add this import
 import {
   CircleCheckBig,
   TrafficCone,
-  ChartSpline,
   Settings2,
   UserCircle,
   FileCheck2,
@@ -44,9 +42,6 @@ const Sidebar = () => {
       setActiveSubItem(submenu);
       router.push(path);
     };
-    
-    const pathname = usePathname();
-    const isAuthenticationPage = pathname?.startsWith("/authentication");
 
     return (
         <div className="md: w-72 bg-white h-screen flex-1 fixed border-r">

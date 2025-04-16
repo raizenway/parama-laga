@@ -98,10 +98,12 @@ export default function ProjectEmployeeTable({ projectId, searchTerm = "" }: Pro
               <tr key={employee.id} className="border-b-2 border-tersier">
                 <td className="px-4 py-3 justify-items-center">
                   <div className="flex justify-center">
-                    <img 
+                    <image 
                       src={employee.photoUrl || "/person.png"} 
                       alt={employee.name} 
                       className="h-10 w-10 rounded-full object-cover"
+                      width={25}
+                      height={25}
                     />
                   </div>
                 </td>

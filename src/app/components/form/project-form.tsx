@@ -30,7 +30,7 @@ export default function ProjectForm({
 }) {
   const [status, setStatus] = useState<ProjectStatus>("Pending");
   const [assignedEmployees, setAssignedEmployees] = useState<string[]>([]);
-  const [availableEmployees, setAvailableEmployees] = useState<string[]>([]);
+  const [setAvailableEmployees] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     projectName: "",
@@ -159,7 +159,7 @@ export default function ProjectForm({
       let responseData;
       try {
         responseData = await response.json();
-      } catch (e) {
+      } catch {
         responseData = {};
       }
       

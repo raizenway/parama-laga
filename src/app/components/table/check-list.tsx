@@ -133,7 +133,7 @@ export default function ChecklistTable({
       setNewCriteria("");
       setNewHint("");
       toast.success("New checklist item added");
-    } catch (error) {
+    } catch{
       toast.error("Failed to add checklist item");
     } finally {
       setIsSaving(false);
@@ -160,7 +160,7 @@ export default function ChecklistTable({
       setProgressItems(prev => prev.filter(p => p.id !== item.id));
       setOriginalItems(prev => prev.filter(p => p.id !== item.id));
       toast.success("Item deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete item");
     } finally {
       setIsSaving(false);

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { FileText, Info, Loader2 } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 
 type Checklist = {
   id: number;
@@ -30,8 +30,8 @@ export default function TemplateForm({
   const [newCriteria, setNewCriteria] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [newHint, setNewHint] = useState("");
-  const [checklists, setChecklists] = useState<Checklist[]>([]);
-  const [filteredChecklists, setFilteredChecklists] = useState<Checklist[]>([]);
+  const [setChecklists] = useState<Checklist[]>([]);
+  const [setFilteredChecklists] = useState<Checklist[]>([]);
   
 
 
@@ -62,7 +62,6 @@ export default function TemplateForm({
       
       // Set selected checklists based on template's existing associations
       if (template.templateChecklists) {
-        const selectedIds = template.templateChecklists.map(tc => tc.checklist.id);
         setSelectedChecklists(template.templateChecklists.map(tc => tc.checklist));
       }
     }

@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const { projectId, weekId, employeeId } = req.query;
       
-      let whereClause: any = {};
+      const whereClause: any = {};
       
       // Filter by project
       if (projectId && typeof projectId === 'string') {

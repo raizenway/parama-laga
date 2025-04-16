@@ -182,7 +182,7 @@ async function createEmployee(req: NextApiRequest, res: NextApiResponse) {
             
             return user;
         });
-        // Return new user without password
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = newUser;
         return res.status(201).json(userWithoutPassword);
     } catch (error) {
@@ -299,8 +299,8 @@ async function updateEmployee(req: NextApiRequest, res: NextApiResponse) {
             
             return user;
         });
-
-        // Return updated user without password
+        
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = updatedUser;
         return res.status(200).json(userWithoutPassword);
     } catch (error) {

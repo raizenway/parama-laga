@@ -10,8 +10,6 @@ import CheckListTable from "@/app/components/table/check-list";
 import TaskUpdateConfirmation from "@/app/components/modal/task-update-confirmation";
 import { Input } from "@/components/ui/input";
 
-const statuses = ["Done", "On Going", "To Do"];
-
 type Task = {
   id: number;
   taskName: string;
@@ -204,7 +202,7 @@ export default function DetailTaskPage() {
 
   useEffect(() => {
     fetchTaskDetails();
-  }, [taskId, router, isManagerOrAdmin]);
+  }, [taskId, router, isManagerOrAdmin, fetchTaskDetails]);
 
   // Handle task name change
   const handleTaskNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

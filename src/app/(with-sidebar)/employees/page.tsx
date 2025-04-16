@@ -1,6 +1,5 @@
 "use client";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Input } from "@/components/ui/input";
 import EmployeeModal from "@/app/components/modal/employee-modal";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import { useState, useEffect } from "react";
@@ -27,11 +26,11 @@ export default function Page() {
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
 
@@ -132,8 +131,7 @@ export default function Page() {
       // console.log("Delete response status:", response.status);
       
       if (response.ok) {
-        const data = await response.json().catch(() => ({ message: "Success but no JSON returned" }));
-        // console.log("Delete successful:", data);
+        await response.json().catch(() => ({ message: "Success but no JSON returned" }));
         
         // Add success toast notification
         toast.success(`Employee Deleted`, {

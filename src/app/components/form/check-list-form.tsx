@@ -186,9 +186,10 @@ const updateCriteria = async (id: number) => {
       setChecklists(checklists.filter(cl => cl.id !== id));
       setFilteredChecklists(filteredChecklists.filter(cl => cl.id !== id));
       toast.success("Checklist deleted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       console.error("Error deleting checklist:", error);
-      toast.error(error.message || "Failed to delete checklist");
+      toast.error(err.message || "Failed to delete checklist");
     }
   };
 

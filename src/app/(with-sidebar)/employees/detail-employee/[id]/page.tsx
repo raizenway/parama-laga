@@ -6,6 +6,7 @@ import TaskTable from "@/app/components/table/task-table";
 import ProjectTable from "@/app/components/table/project-assigned-table";
 import { Loader2, ArrowLeft, Mail, User, CalendarDays, BadgeCheck, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 type Employee = {
   id: string;
@@ -94,10 +95,12 @@ export default function EmployeeDetailPage() {
             <div className="flex flex-wrap md:flex-nowrap gap-8">
               {/* Employee Photo */}
               <div className="shrink-0 flex flex-col items-center">
-                <img
+                <Image
                   src={employee.photoUrl || "/person.png"}
                   alt={employee.name}
                   className="rounded-full h-36 w-36 border border-gray-300 object-cover shadow-sm"
+                  width={125}
+                  height={125}
                 />
                 <div className="mt-4 text-center">
                   {/* Alternative to Badge */}

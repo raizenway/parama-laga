@@ -222,7 +222,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       userId, 
       progresses,
       assignee,
-      status
     } = req.body;
 
     if (!id) {

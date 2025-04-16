@@ -6,6 +6,7 @@ import ProjectAssigning from "../dropdown-multiple-selection";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 // Define the status type based on Prisma schema
 type UserStatus = "active" | "inactive";
@@ -58,7 +59,7 @@ export default function EmployeeForm({
     });
     
     setProjectPositions(newPositions);
-  }, [multipleProjects, defaultRole]);
+  }, [multipleProjects, defaultRole, projectPositions]);
 
   // Fetch projects from the database
   useEffect(() => {
@@ -209,7 +210,7 @@ export default function EmployeeForm({
       let responseData;
       try {
         responseData = await response.json();
-      } catch (e) {
+      } catch {
         responseData = {};
       }
       
@@ -272,10 +273,12 @@ export default function EmployeeForm({
               className="relative cursor-pointer group shrink-0"
               onClick={() => fileInputRef.current?.click()}
             >
-              <img
+              <Image
                 src={image}
                 alt="Employee"
                 className="rounded-full h-32 w-32 border border-gray-300"
+                width={125}
+                height={125}
               />
               <div className="absolute inset-0 h-32 w-32 bg-opacity-50 rounded-full hidden group-hover:flex items-center justify-center hover:bg-black hover:bg-opacity-50 hover:transition">
                 <span className="text-white text-xs">Change Photo</span>

@@ -1,9 +1,6 @@
 "use client";
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import LoginForm from '@/app/components/form/login-form';
@@ -60,7 +57,7 @@ export default function Authentication() {
         {/* Form */}
         <div className='flex items-center justify-center'>
           <div className="w-full max-w-sm text-white flex flex-col items-center">
-            <img src="/parama.png" alt="Parama" className="" />
+            <Image src="/parama.png" width={300} height={73} alt="Parama" className="" />
 
             {isRecovering? (
               <PasswordRecovery 

@@ -1,5 +1,5 @@
 "use client"
-import { CalendarCheck2, FileCheck2, Eye, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
+import { CalendarCheck2, FileCheck2, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useState, useEffect, useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -14,22 +14,17 @@ import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOp
 type TaskTableProps = {
   searchTerm?: string;
   onEdit?: (task: Task) => void;
-  onDelete?: (task: Task) => void;
   refreshTrigger?: number;
   onTaskDeleted?: () => void;
-  userRole?: string | null;
   employeeId?: string;
   projectId?: string;
   hideAssignedColumn?: boolean;
 };
 
 export default function TaskTable({ 
-  searchTerm = "", 
-  onEdit, 
-  onDelete,
+  searchTerm = "",
   refreshTrigger = 0,
   onTaskDeleted,
-  userRole = null,
   employeeId = null,
   projectId = null,
   hideAssignedColumn = false
@@ -163,19 +158,11 @@ export default function TaskTable({
 
   useEffect(() => {
     fetchTasks(debouncedSearchQuery);
-  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId]);
+  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId, fetchTasks]);
 
   const handleFilterChange = (column: string, value: string) => {
     setFilters(prev => ({ ...prev, [column]: value }));
     setCurrentPage(1); // Reset ke halaman pertama saat filter berubah
-  };
-
-  const handleEdit = (task: Task) => {
-    if (onEdit) {
-      onEdit(task);
-    } else {
-      router.push(`/task/detail-task?id=${task.id}`);
-    }
   };
   
   const handleDeleteTask = (task: Task) => {

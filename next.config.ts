@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
     buildActivity: false,
     appIsrStatus: false,
   },
+  images: {
+    domains: ['randomuser.me'],
+  }
 };
 
 export default nextConfig;

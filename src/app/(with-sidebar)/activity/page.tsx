@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, Plus, Calendar, ListChecks, Check, Copy, X, PlusCircle } from "lucide-react";
+import { Plus, Calendar, Copy, X } from "lucide-react";
 import DropdownSingleSelection from "@/app/components/dropdown-single-selection";
 import { toast } from "sonner";
 import ActivityTable from "@/app/components/table/activity";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import CustomButton from "@/app/components/button/button-custom";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -46,12 +44,11 @@ export default function ActivitiesPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshTrigger] = useState(0);
   
   // New week creation states
   const [isNewWeekModalOpen, setIsNewWeekModalOpen] = useState(false);

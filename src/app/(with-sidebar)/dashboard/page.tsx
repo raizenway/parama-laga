@@ -10,6 +10,7 @@ import {
   Clock,
   Loader2
 } from "lucide-react";
+import Image from "next/image";
 
 // Tipe data untuk projects
 type Project = {
@@ -87,9 +88,11 @@ export default function Page() {
         <div className="grow flex flex-col w-full h-full ">
           <div className="flex-1/5  font-bold underline my-2">Profile User</div>
           <div className="flex-1 flex flex-wrap grow bg-gradient-primary rounded-2xl justify-start items-center">
-              <img 
+              <Image 
                 src={user?.photoUrl || "/person.png"} 
-                className="ml-5 min-w-[125px] w-1/5 aspect-square rounded-full object-cover" 
+                className="ml-5 min-w-[125px] w-1/5 aspect-square rounded-full object-cover"
+                width={125}
+                height={125}
                 alt="Profile Picture"
               />
               <div className="ml-5 space-y-3">

@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import TaskTable from "@/app/components/table/task-table";
 import EmployeeTable from "@/app/components/table/project-employee-table";
-import { Loader2, ArrowLeft, Building2, CreditCard, CalendarDays, User, CalendarCheck2, CalendarClock, Clock } from "lucide-react";
+import { Loader2, ArrowLeft, Building2, CreditCard, CalendarDays, User, CalendarCheck2, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Project = {
@@ -109,37 +109,18 @@ export default function ProjectDetailPage() {
         <div className="p-6">
           <div className="">
             <div className="flex flex-wrap md:flex-nowrap gap-8">
-              {/* Project Logo */}
-              <div className="shrink-0 flex flex-col items-center">
-                <img
-                  src="/kai.png"
-                  alt={project.projectName}
-                  className="rounded-full h-36 w-36 border border-gray-300 object-cover shadow-sm"
-                />
-                <div className="mt-4 text-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(project.status.statusName)}`}>
-                    {project.status.statusName}
-                  </span>
-                </div>
-              </div>
-
               <div className="flex flex-col grow space-y-5 w-full">
                 {/* PROJECT IDENTITY */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="relative space-y-2">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Building2 size={18} />
                       <label className="text-sm font-medium">Project Name</label>
                     </div>
                     <Input value={project.projectName} readOnly className="bg-gray-50" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <CreditCard size={18} />
-                      <label className="text-sm font-medium">Project Code</label>
-                    </div>
-                    <Input value={project.projectCode} readOnly className="bg-gray-50" />
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium absolute right-2 top-6 ${getStatusColor(project.status.statusName)}`}>
+                          {project.status.statusName}
+                    </span>
                   </div>
                   
                   <div className="space-y-2">
@@ -148,6 +129,14 @@ export default function ProjectDetailPage() {
                       <label className="text-sm font-medium">Project Owner</label>
                     </div>
                     <Input value={project.projectOwner} readOnly className="bg-gray-50" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <CreditCard size={18} />
+                      <label className="text-sm font-medium">Project Code</label>
+                    </div>
+                    <Input value={project.projectCode} readOnly className="bg-gray-50" />
                   </div>
 
                   <div className="space-y-2 col-span-1 md:col-span-2">
