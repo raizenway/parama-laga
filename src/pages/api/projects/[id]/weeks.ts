@@ -97,7 +97,7 @@ else if (req.method === 'POST') {
     // Copy categories and items if requested and if there's a previous week
     if (copyFromPreviousWeek && latestWeek) {
       // Get categories from the previous week, filtered by employee if specified
-      let whereClause: any = { 
+      const whereClause: any = { 
         weekId: latestWeek.id,
         projectId
       };

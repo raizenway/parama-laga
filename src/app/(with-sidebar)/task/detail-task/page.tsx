@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -106,7 +106,7 @@ export default function DetailTaskPage() {
   const [originalAssignee, setOriginalAssignee] = useState<string | null>(null);
 
   // Fetch task details
-  const fetchTaskDetails = async () => {
+  const fetchTaskDetails = useCallback(async () => {
     if (!taskId) {
       toast.error("Task ID is missing");
       router.push('/task');
@@ -198,7 +198,7 @@ export default function DetailTaskPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTaskDetails();
