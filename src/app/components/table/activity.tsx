@@ -73,6 +73,7 @@ export default function ActivityTable({
     // ... existing fetch implementation ...
     setIsLoading(true);
     setError(null);
+    setCategories([])      
     try {
       let url = `/api/activities?projectId=${projectId}&weekId=${weekId}`;
       if (employeeId) url += `&employeeId=${employeeId}`;
@@ -92,13 +93,12 @@ export default function ActivityTable({
       setIsLoading(false);
     }
   };
-  
     // Fetch activities
-    useEffect(() => {
-      if (projectId && weekId) {
-        fetchActivities();
-      }
-    }, [projectId, weekId, employeeId, refreshTrigger, fetchActivities]);
+     useEffect(() => {
+         if (projectId && weekId) {
+           fetchActivities();
+         }
+       }, [projectId, weekId, employeeId, refreshTrigger]);
   
 // Add a new category
 const addCategory = async () => {

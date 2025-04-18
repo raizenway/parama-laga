@@ -183,7 +183,7 @@ export default function TaskTable({
   }
 
   const handleView = (task: Task) => {
-    router.push(`/task/detail-task?id=${task.id}`);
+    router.push(`/task/detail-task/${task.id}`);
   };
 
   if (isLoading) {
