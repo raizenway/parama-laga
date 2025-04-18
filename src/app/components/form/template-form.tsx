@@ -142,15 +142,37 @@ export default function TemplateForm({
     e.preventDefault();
     if (mode === 'view') return;
     setIsSubmitting(true);
+  
     try {
-      // Implement your submit logic here, e.g., call API to create/update template
-      // Example:
-      // await submitTemplate({ templateName, selectedChecklists });
+      const url =
+        mode === 'create'
+          ? '/api/templates'
+          : `/api/templates/${template?.id}`;
+      const method = mode === 'create' ? 'POST' : 'PUT';
+  
+      const body = {
+        templateName,
+        checklistIds: selectedChecklists.map((c) => c.id.toString()),
+      };
+  
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save template');
+      }
+  
       toast.success(mode === 'create' ? 'Template created!' : 'Template updated!');
       onSuccess();
       onClose();
-    } catch {
-      toast.error('Failed to submit template');
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast.error('Error', {
+        description: (error as Error).message,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -201,6 +223,7 @@ export default function TemplateForm({
       </div>
 
       {/* Add new checklist */}
+      {mode !== 'view' && (
       <div className="space-y-2">
           <Input
             type="text"
@@ -235,6 +258,7 @@ export default function TemplateForm({
             )}
           </Button>
         </div>
+        )}
 
       {mode !== 'view' && (
         <div className="flex justify-end gap-2">
