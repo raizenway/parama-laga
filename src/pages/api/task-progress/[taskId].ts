@@ -2,9 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { prisma } from '@/lib/prisma';
+import { AuthOptions } from 'next-auth';
+import { TaskStatus } from '@prisma/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
   
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -97,7 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (allTaskProgress.length > 0) {
         const allCompleted = allTaskProgress.every(p => p.checked);
         const anyChecked = allTaskProgress.some(p => p.checked);
-        let newStatus: string;
+        let newStatus: TaskStatus;
         let completedDate: Date | null = null;
         
         if (allCompleted) {

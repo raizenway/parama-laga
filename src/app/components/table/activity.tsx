@@ -486,7 +486,7 @@ categories.forEach(category => {
                     {activeCategory === row.categoryId ? (
                             <div className="flex gap-2 mt-2">
                               <Input 
-                                size="sm"
+                                // size="sm"
                                 placeholder="New category item..." 
                                 value={newItemName}
                                 onChange={(e) => setNewItemName(e.target.value)}
@@ -527,8 +527,8 @@ categories.forEach(category => {
                             value={editingItems[row.itemId].result}
                             onChange={(e) => setEditingItems({
                               ...editingItems,
-                              [row.itemId]: {
-                                ...editingItems[row.itemId],
+                              [row.itemId as number]: {
+                                ...editingItems[row.itemId as number],
                                 result: e.target.value
                               }
                             })}
@@ -541,8 +541,8 @@ categories.forEach(category => {
                           value={editingItems[row.itemId].comment}
                           onChange={(e) => setEditingItems({
                             ...editingItems,
-                            [row.itemId]: {
-                            ...editingItems[row.itemId],
+                            [row.itemId as number]: {
+                            ...editingItems[row.itemId as number],
                             comment: e.target.value
                             }
                           })}
@@ -556,7 +556,7 @@ categories.forEach(category => {
                               type="button"
                               title="Save"
                               className="text-emerald-500 hover:text-emerald-600" 
-                              onClick={() => saveResult(row.itemId, row.resultId)}
+                              onClick={() => saveResult(row.itemId as number, row.resultId)}
                             >
                               <Save/>
                             </button>
@@ -568,7 +568,7 @@ categories.forEach(category => {
                             <div
                               title="Click to edit"
                               className="flex items-top gap-3 px-4 py-3 border-r "
-                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                              onClick={() => startEditing(row.itemId as number, row.resultId ? {
                                 id: row.resultId,
                                 result: row.result,
                                 comment: row.comment,
@@ -591,7 +591,7 @@ categories.forEach(category => {
                           <div
                               title="Click to edit"
                               className="flex items-top gap-3 px-4 py-3 border-r "
-                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                              onClick={() => startEditing(row.itemId as number, row.resultId ? {
                                 id: row.resultId,
                                 result: row.result,
                                 comment: row.comment,

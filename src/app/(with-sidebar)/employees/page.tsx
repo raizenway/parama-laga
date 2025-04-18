@@ -17,6 +17,9 @@ type Employee = {
   position: string;
   projects: string[];
   dateAdded: string;
+  status: string;
+  role: string;
+  roleAccess: any; // Adjust the type as needed based on your requirements
 };
 
 export default function Page() {

@@ -21,17 +21,19 @@ type Employee = {
 };
 
 export default function EmployeeDetailPage() {
-  const params = useParams();
+  const{id} = useParams() ?? {};
   const router = useRouter();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // if there's no id, don't try to fetch
+    if (!id) return;
     const fetchEmployee = async () => {
       try {
         setIsLoading(true);
-        const employeeId = params.id;
+        const employeeId = id;
         const response = await fetch(`/api/employee/${employeeId}`);
         
         if (!response.ok) {
@@ -47,11 +49,8 @@ export default function EmployeeDetailPage() {
         setIsLoading(false);
       }
     };
-
-    if (params.id) {
-      fetchEmployee();
-    }
-  }, [params.id]);
+    fetchEmployee();
+  }, [id]);
 
   const handleBack = () => {
     router.back();

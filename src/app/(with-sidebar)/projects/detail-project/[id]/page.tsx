@@ -21,7 +21,7 @@ type Project = {
 };
 
 export default function ProjectDetailPage() {
-  const params = useParams();
+  const { id } = useParams() ?? {};
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +31,8 @@ export default function ProjectDetailPage() {
     const fetchProject = async () => {
       try {
         setIsLoading(true);
-        const projectId = params.id;
+        if (!id) return;
+        const projectId = id;
         const response = await fetch(`/api/projects/${projectId}`);
         
         if (!response.ok) {
@@ -48,10 +49,8 @@ export default function ProjectDetailPage() {
       }
     };
 
-    if (params.id) {
-      fetchProject();
-    }
-  }, [params.id]);
+    fetchProject();
+  }, [id]);
 
   const handleBack = () => {
     router.back();

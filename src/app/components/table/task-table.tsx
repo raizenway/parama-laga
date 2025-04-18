@@ -16,9 +16,10 @@ type TaskTableProps = {
   onEdit?: (task: Task) => void;
   refreshTrigger?: number;
   onTaskDeleted?: () => void;
-  employeeId?: string;
-  projectId?: string;
+  employeeId?: string | null;
+  projectId?: string | null;
   hideAssignedColumn?: boolean;
+  userRole?: string | null;    
 };
 
 export default function TaskTable({ 

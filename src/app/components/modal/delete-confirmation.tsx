@@ -24,7 +24,7 @@ export default function DeleteConfirmation({
   isLoading = false 
 }: DeleteConfirmationProps) {
   return (
-    <Modal open={open} onClose={onClose} title={title} width="w-1/3">
+    <Modal open={open} onClose={onClose} title={title} width="w-1/3" closeType="cross"  >
       <div className=" text-center">
         <div className="justify-items-center">
           <Trash2 className="text-red-500" size={75}/>

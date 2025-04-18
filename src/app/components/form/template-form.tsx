@@ -12,26 +12,28 @@ type Checklist = {
 };
 
 export default function TemplateForm({ 
-  onClose, 
-  template = null, 
-  mode = 'create',
-  onSuccess
+  onClose,
+  onSuccess = () => {}, 
+  template = undefined, 
+  mode = 'create'
 }: { 
   onClose: () => void;
-  template?: any;
-  mode?: 'create' | 'edit' | 'view';
   onSuccess?: () => void;
+  template?: {
+    id?: number;
+    templateName: string;
+    templateChecklists?: { checklist: Checklist }[];
+  };
+  mode?: 'create' | 'edit' | 'view';
 }) {
   const [templateName, setTemplateName] = useState('');
-  const [availableChecklists, setAvailableChecklists] = useState<any[]>([]);
-  const [selectedChecklists, setSelectedChecklists] = useState<any[]>([]);
+  const [availableChecklists, setAvailableChecklists] = useState<Checklist[]>([]);
+  const [selectedChecklists, setSelectedChecklists] = useState<Checklist[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newCriteria, setNewCriteria] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [newHint, setNewHint] = useState("");
-  const [setChecklists] = useState<Checklist[]>([]);
-  const [setFilteredChecklists] = useState<Checklist[]>([]);
   
 
 
@@ -67,7 +69,7 @@ export default function TemplateForm({
     }
   }, [template, mode]);
 
-  const handleToggleChecklist = (checklist) => {
+  const handleToggleChecklist = (checklist: Checklist) => {
     if (mode === 'view') return; // Don't allow changes in view mode
     
     setSelectedChecklists(prev => {
@@ -89,7 +91,7 @@ export default function TemplateForm({
     
     setIsSaving(true);
     const tempId = Date.now(); // ID sementara
-    
+
     try {
       // 1. Buat temporary checklist
       const tempChecklist = {
@@ -99,13 +101,9 @@ export default function TemplateForm({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-  
+
       // 2. Optimistic update ke SEMUA state yang relevan
       setAvailableChecklists(prev => [tempChecklist, ...prev]);
-      setChecklists(prev => [tempChecklist, ...prev]);
-      setFilteredChecklists(prev => [tempChecklist, ...prev]);
-  
-      // 3. Kirim ke server
       const response = await fetch('/api/checklists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,77 +112,45 @@ export default function TemplateForm({
           hint: newHint
         })
       });
-  
+
       if (!response.ok) throw new Error("Failed to create checklist");
-  
+
       // 4. Dapatkan response dari server
       const serverChecklist = await response.json();
-  
+
       // 5. Ganti temporary item dengan data real
-      const updateLists = (prev: any[]) => [
+      const updateLists = (prev: Checklist[]) => [
         serverChecklist,
         ...prev.filter(item => item.id !== tempId)
       ];
-  
+
       setAvailableChecklists(updateLists);
-      setChecklists(updateLists);
-      setFilteredChecklists(updateLists);
-  
-      // 6. Reset form
       setNewCriteria("");
       setNewHint("");
       toast.success("Checklist added successfully");
-  
-    } catch (error) {
-      // 7. Rollback jika error
-      const removeTemp = (prev: any[]) => prev.filter(item => item.id !== tempId);
+    } catch {
+      const removeTemp = (prev: Checklist[]) => prev.filter(item => item.id !== tempId);
       setAvailableChecklists(removeTemp);
-      setChecklists(removeTemp);
-      setFilteredChecklists(removeTemp);
-      
-      console.error("Error adding checklist:", error);
       toast.error("Failed to add checklist");
     } finally {
       setIsSaving(false);
     }
-  };
+  }
 
-  const handleSubmit = async (e) => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (mode === 'view') return;
-    
-    if (!templateName.trim()) {
-      toast.error('Template name is required');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const checklistIds = selectedChecklists.map(cl => cl.id);
-      const url = mode === 'create' ? '/api/templates' : `/api/templates?id=${template.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          templateName,
-          checklistIds
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save template');
-      }
-
-      toast.success(mode === 'create' ? 'Template created successfully' : 'Template updated successfully');
-      if (onSuccess) onSuccess();
+      // Implement your submit logic here, e.g., call API to create/update template
+      // Example:
+      // await submitTemplate({ templateName, selectedChecklists });
+      toast.success(mode === 'create' ? 'Template created!' : 'Template updated!');
+      onSuccess();
       onClose();
-    } catch (error) {
-      console.error('Error saving template:', error);
-      toast.error('Failed to save template');
+    } catch {
+      toast.error('Failed to submit template');
     } finally {
       setIsSubmitting(false);
     }

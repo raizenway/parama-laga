@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
+import { AuthOptions } from 'next-auth';
 
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
 
   // Check if user is logged in
   if (!session) {
@@ -56,7 +57,7 @@ async function getDocumentTypes(req: NextApiRequest, res: NextApiResponse) {
     const searchQuery = search as string || '';
     const whereCondition = searchQuery
       ? {
-          name: { contains: searchQuery, mode: 'insensitive' }
+          name: { contains: searchQuery, mode: Prisma.QueryMode.insensitive }
         }
       : {};
 

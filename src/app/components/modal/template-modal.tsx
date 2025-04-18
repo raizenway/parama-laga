@@ -26,7 +26,7 @@ type TemplateModalProps = {
 export default function TemplateModal({ 
   open, 
   onClose, 
-  template = null,
+  template,
   mode = 'create',
   onTemplateChange = () => {}
 }: TemplateModalProps) {
@@ -40,7 +40,7 @@ export default function TemplateModal({
     >
       <TemplateForm 
         onClose={onClose} 
-        template={template} 
+        template={template ?? undefined}  
         mode={mode}
         onSuccess={onTemplateChange}
       />

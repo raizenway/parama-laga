@@ -2,9 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '../../auth/[...nextauth]';
+import { AuthOptions } from 'next-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
   
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -58,9 +59,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Apply search filter if provided
     const filteredEmployees = searchQuery
       ? employees.filter(emp => 
-          emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (emp.personnelId && emp.personnelId.toLowerCase().includes(searchQuery.toLowerCase()))
+          (emp.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (emp.email ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (emp.personnelId ?? '').toLowerCase().includes(searchQuery.toLowerCase())
         )
       : employees;
 

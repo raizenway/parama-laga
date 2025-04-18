@@ -24,6 +24,12 @@ type Project = {
     statusName: string;
   };
 };
+type UserWithRole = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+};
 
 export default function Page() {
   const { data: session, status } = useSession();
@@ -31,6 +37,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const user = session?.user as UserWithRole;
   useEffect(() => {
     // Hanya ambil data jika session sudah loaded
     if (status === "authenticated") {
@@ -79,8 +86,6 @@ export default function Page() {
     );
   }
 
-  const user = session?.user;
-
   return (
     <div className="mx-8 h-screen flex-wrap space-y-5 ">
       {/* Baris 1 */}
@@ -89,7 +94,7 @@ export default function Page() {
           <div className="flex-1/5  font-bold underline my-2">Profile User</div>
           <div className="flex-1 flex flex-wrap grow bg-gradient-primary rounded-2xl justify-start items-center">
               <Image 
-                src={user?.photoUrl || "/person.png"} 
+                src={user?.image || "/person.png"} 
                 className="ml-5 min-w-[125px] w-1/5 aspect-square rounded-full object-cover"
                 width={125}
                 height={125}

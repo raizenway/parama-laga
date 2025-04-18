@@ -79,7 +79,7 @@ export default function StatusDropdown<T extends string>({
               <DropdownMenuContent className="w-[var(--radix-popper-anchor-width)]">
                 <DropdownMenuLabel>{label}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
+                <DropdownMenuRadioGroup value={status} onValueChange={(value) => setStatus(value as T)}>
                   {options.map((option) => (
                     <DropdownMenuRadioItem key={option.value} value={option.value}>
                       {option.label}

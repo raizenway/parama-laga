@@ -67,8 +67,8 @@ export default function CheckListForm({ onClose }: { onClose: () => void }) {
     }
     
     setIsSaving(true);
+    const tempId = Date.now();
     try {
-      const tempId = Date.now();
       
       const tempChecklist = {
         id: tempId,

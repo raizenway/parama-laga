@@ -40,8 +40,8 @@ export const getProjectOptions = (tasks: Task[]) => {
 export const getAssigneeOptions = (tasks: Task[]) => {
   const options = getUniqueOptions(
     tasks.filter(task => task.user),
-    task => task.user.id.toString(),
-    task => task.user.name
+    task => task.user?.id.toString() ?? "",
+    task => task.user?.name ?? ""
   );
   
   // Add unassigned option if any tasks are unassigned

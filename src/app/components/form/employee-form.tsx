@@ -26,7 +26,7 @@ export default function EmployeeForm({
   const [projectPositions, setProjectPositions] = useState<Record<string, string>>({});
   // This will be stored in User.role field
   const [defaultRole, setDefaultRole] = useState("");
-  const [status, setStatus] = useState<UserStatus>("active");
+  const [status, setEmployeeStatus] = useState<UserStatus>("active");
   const [image, setImage] = useState("/person.png");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [multipleProjects, setMultipleProjects] = useState<string[]>([]);
@@ -111,7 +111,7 @@ export default function EmployeeForm({
       setMultipleProjects(employee.projects || []);
       
       if (employee.status && (employee.status === "active" || employee.status === "inactive")) {
-        setStatus(employee.status);
+        setEmployeeStatus(employee.status);
       }
       
       setFormData({
@@ -125,7 +125,7 @@ export default function EmployeeForm({
       setProjectPositions({});
       setImage("/person.png");
       setMultipleProjects([]);
-      setStatus("active");
+      setEmployeeStatus("active");
       setFormData({
         name: "",
         email: "",
@@ -253,7 +253,7 @@ export default function EmployeeForm({
     }
   };
 
-  const userStatusOptions = [
+  const userStatusOptions: Array<{ value: UserStatus; label: string; color: string }> = [
     { value: "active", label: "Active", color: "text-emerald-500 hover:text-emerald-600 border-green-300" },
     { value: "inactive", label: "Inactive", color: "text-red-500 hover:text-red-600 border-red-300" }
   ];
@@ -324,7 +324,7 @@ export default function EmployeeForm({
               />
               <StatusDropdown 
                 status={status} 
-                setStatus={setStatus} 
+                setStatus={(value: UserStatus) => setEmployeeStatus(value)}
                 options={userStatusOptions} 
                 label="Employee Status"
                 disabled={mode === "view"}
@@ -373,8 +373,7 @@ export default function EmployeeForm({
                 options={availableProjects}
                 selectedItems={multipleProjects}
                 setSelectedItems={setMultipleProjects}
-                disabled={mode=== "view"} // Disable selection in view mode
-                className={mode === "view" ? "bg-gray-50" : ""}
+                disabled={mode === "view"} // Disable selection in view mode
               />
               {multipleProjects.length <= 0 && (
                 <div className="text-amber-500 text-sm mb-2">

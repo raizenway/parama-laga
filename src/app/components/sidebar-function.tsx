@@ -32,7 +32,7 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
                 </ul>
                 <div className="border-t flex p-3">
                     <Image
-                        src={session?.user?.photoUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
+                        src={session?.user?.image || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
                         alt="User Avatar"
                         className="w-10 h-10 rounded-md object-cover"
                         width={25}

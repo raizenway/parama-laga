@@ -2,12 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { PrismaClient } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
-
+import { AuthOptions } from 'next-auth';
 
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
 
   // Check if user is logged in
   if (!session) {
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function getTasks(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id, search } = req.query;
-    const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res, authOptions as AuthOptions);
     const userRole = (session?.user as any)?.role;
     const userId = (session?.user as any)?.id;
     
@@ -135,7 +135,7 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
 async function createTask(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { taskName, documentTypeId, templateId, projectId, userId } = req.body;
-    const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res, authOptions as AuthOptions);
     const userRole = (session?.user as any)?.role;
     const currentUserId = (session?.user as any)?.id;
 

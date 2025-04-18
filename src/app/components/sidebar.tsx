@@ -25,7 +25,10 @@ const Sidebar = () => {
     const { data: session } = useSession(); // Get session data
     
     // Check if user is admin or project manager
-    const isPMOrAdmin = session?.user?.role === 'admin' || session?.user?.role === 'project_manager';
+    const user = session?.user as { role?: string };
+
+    const isPMOrAdmin = user?.role === "admin" || user?.role === "project_manager";
+
     
     const handleItemClick = (menu: string, path: string) => {
       if (menu === "PM Options") setIsPMOpen(!isPMOpen);
