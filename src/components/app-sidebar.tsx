@@ -14,8 +14,6 @@ import {
   SquareTerminal,
 } from "lucide-react"
 
-import Parama from "/parama.png"
-
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"

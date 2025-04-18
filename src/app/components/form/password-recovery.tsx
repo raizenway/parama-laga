@@ -10,7 +10,7 @@ interface PasswordRecoveryProps {
     error: string | null;
   }
 
-export default function({ handleSubmit, email, setEmail, isLoading, error }: PasswordRecoveryProps) {
+export default function PasswordRecovery({ handleSubmit, email, setEmail, isLoading, error }: PasswordRecoveryProps) {
     return (
       <>
         <div className="mb-5 flex flex-col items-center">

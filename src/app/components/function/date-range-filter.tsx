@@ -21,8 +21,8 @@ export const DateRangeFilter = ({
   const currentYear = new Date().getFullYear()
 
   // Generate options untuk 2 tahun terakhir dan tahun depan
-  const generateOptions = () => {
-    const options = []
+  const generateOptions = ():{ value: string; label: string }[] => {
+    const options: { value: string; label: string }[] = []
     const years = [currentYear - 1, currentYear, currentYear + 1]
     
     years.forEach(year => {

@@ -1,7 +1,5 @@
 "use client"
-  
 import { useState, useCallback, useEffect } from "react";
-import { Input } from "@/components/ui/input"
 import AddButton from "@/app/components/button/button-custom";
 import TaskTable from "@/app/components/table/task-table";
 import TaskModal from "@/app/components/modal/task-modal";
@@ -11,7 +9,7 @@ import { Loader2 } from "lucide-react";
 export default function Page() {
   const { data: session, status } = useSession();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,19 +29,11 @@ export default function Page() {
     setRefreshCounter(prev => prev + 1);
   }, []);
   
-  // Handle search input changes
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-  
   // Function to call when a task is saved/updated
   const handleTaskSaved = () => {
     setIsDetailOpen(false);
     refreshTasks();
   };
-  
-  // Check if user is admin or project_manager
-  const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
     
   if (isLoading) {
     return (

@@ -9,6 +9,7 @@ interface DropdownSingleSelectionProps<T> {
   isDisabled?: boolean;
   getKey?: (item: T) => string | number;
   renderItem?: (item: T) => React.ReactNode;
+  placeholder?: string;
 }
 
 export default function DropdownSingleSelection<T>({
@@ -17,7 +18,8 @@ export default function DropdownSingleSelection<T>({
   setSelectedItem,
   isDisabled = false,
   getKey = (item) => String(item),
-  renderItem = (item) => String(item)
+  renderItem = (item) => String(item),
+  placeholder = "Click to Select",
 }: DropdownSingleSelectionProps<T>) {
   const handleSelect = (value: T) => {
     setSelectedItem(selectedItem === value ? null : value);
@@ -33,7 +35,7 @@ export default function DropdownSingleSelection<T>({
                 selectedItem ? "" : "text-opacity-40 text-black"
               } overflow-hidden text-ellipsis whitespace-nowrap`}
             >
-              {selectedItem ? renderItem(selectedItem) : "Click to Select"}
+              {selectedItem ? renderItem(selectedItem) : placeholder}
             </span>
             <ChevronDown className="text-slate-500 ml-2 h-4 w-4" />
           </Button>

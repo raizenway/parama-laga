@@ -1,6 +1,8 @@
-"use client"
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+"use client";
+// export const dynamic = "force-dynamic";
+// import { Suspense } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter} from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -9,8 +11,6 @@ import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
 import TaskUpdateConfirmation from "@/app/components/modal/task-update-confirmation";
 import { Input } from "@/components/ui/input";
-
-const statuses = ["Done", "On Going", "To Do"];
 
 type Task = {
   id: number;
@@ -74,10 +74,15 @@ type Project = {
   projectName: string;
 };
 
-export default function DetailTaskPage() {
+type DetailTaskClientProps = {
+  taskId: string;
+};
+
+
+export default function DetailTaskClient({ taskId }: DetailTaskClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const taskId = searchParams.get('id');
+  // guard against null
+  // const taskId = searchParams?.get('id');
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role;
   const isManagerOrAdmin = userRole === 'admin' || userRole === 'project_manager';
@@ -108,7 +113,7 @@ export default function DetailTaskPage() {
   const [originalAssignee, setOriginalAssignee] = useState<string | null>(null);
 
   // Fetch task details
-  const fetchTaskDetails = async () => {
+  const fetchTaskDetails = useCallback(async () => {
     if (!taskId) {
       toast.error("Task ID is missing");
       router.push('/task');
@@ -200,11 +205,11 @@ export default function DetailTaskPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [taskId, isManagerOrAdmin]);
 
   useEffect(() => {
     fetchTaskDetails();
-  }, [taskId, router, isManagerOrAdmin]);
+  }, [fetchTaskDetails]);
 
   // Handle task name change
   const handleTaskNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,7 +268,14 @@ export default function DetailTaskPage() {
         taskStatus = "OnGoing";
       }
       
-      const payload = {
+      const payload: {
+        taskName: string;
+        documentTypeId: number;
+        projectId: number;
+        taskStatus: string;
+        completedDate: Date | null;
+        userId?: number; // Add optional userId property
+      } = {
         taskName: taskName.trim(),
         documentTypeId,
         projectId,
@@ -422,13 +434,16 @@ export default function DetailTaskPage() {
         <div className="justify-items-end pt-2">
           <SubmitButton   
             text={hasUnsavedChanges() ? "Submit Changes" : "No Changes"}
-            onClick={handleSubmitClick}
-            color='bg-primary'
-            hoverColor='hover:bg-indigo-900'
+            onClick={() => {
+              if (!isSaving && hasUnsavedChanges()) {
+                handleSubmitClick();
+              }
+            }}
+            color={isSaving || !hasUnsavedChanges() ? 'bg-gray-400' : 'bg-primary'}
+            hoverColor={isSaving || !hasUnsavedChanges() ? 'hover:bg-gray-500' : 'hover:bg-indigo-900'}
             textColor="text-zinc-100"
             width="w-full md:w-1/5"
             height="h-12"
-            disabled={isSaving || !hasUnsavedChanges()}
           />
         </div>
       </div>
@@ -449,6 +464,5 @@ export default function DetailTaskPage() {
           </>
         }
       />
-    </div>
-  );
+    </div>);
 }

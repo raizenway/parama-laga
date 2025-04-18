@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
 import TableFilter from "@/app/components/function/filter-table";
+import Image from "next/image";
 
 type Employee = {
   id: string;
@@ -198,7 +199,7 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
                 <td className="px-4 py-3">
                   <div className="h-10 w-10 bg-green-300 rounded-full mx-auto overflow-hidden">
                     {employee.photoUrl ? (
-                      <img src={employee.photoUrl} alt={employee.name} className="w-full h-full object-cover" />
+                      <Image src={employee.photoUrl} alt={employee.name} className="w-full h-full object-cover" width={25} height={25} />
                     ) : (
                       <div className="flex items-center justify-center h-full w-full bg-blue-200 text-blue-800 font-bold">
                         {employee.name.charAt(0)}

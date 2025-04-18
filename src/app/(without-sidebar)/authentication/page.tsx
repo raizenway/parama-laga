@@ -1,16 +1,11 @@
 "use client";
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import LoginForm from '@/app/components/form/login-form';
 import PasswordRecovery from '@/app/components/form/password-recovery';
 
 export default function Authentication() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -42,9 +37,12 @@ export default function Authentication() {
       if (result?.error) {
         setError("Email atau password salah");
       } else if (result?.ok) {
-        // Redirect ke dashboard jika login berhasil
-        router.push("/dashboard");
-        // Optional: tambahkan router.refresh() jika ingin me-refresh data pada halaman
+        await signIn("credentials", {
+          email,
+          password,
+          redirect: true,
+          callbackUrl: "/dashboard",
+        });
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -60,7 +58,7 @@ export default function Authentication() {
         {/* Form */}
         <div className='flex items-center justify-center'>
           <div className="w-full max-w-sm text-white flex flex-col items-center">
-            <img src="/parama.png" alt="Parama" className="" />
+            <Image src="/parama.png" width={300} height={73} alt="Parama" className="" />
 
             {isRecovering? (
               <PasswordRecovery 

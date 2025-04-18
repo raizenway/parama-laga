@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck2, CalendarClock, Clock, CreditCard, Eye, MoveDown, PencilLine, TrafficCone, Trash2, Zap, CircleArrowRight} from "lucide-react"
+import { Building2, CalendarCheck2, CalendarClock, Clock, CreditCard, Eye, PencilLine, TrafficCone, Trash2, Zap, CircleArrowRight} from "lucide-react"
 import { useMemo, useState } from "react";
 import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
@@ -74,11 +74,6 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
     setFilters(prev => ({ ...prev, [column]: value }));
     setCurrentPage(1);
   };
-
-  const handleDateFilterChange = (type: 'startDate' | 'endDate', value: string) => {
-    setFilters(prev => ({ ...prev, [type]: value }))
-    setCurrentPage(1)
-  }
 
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 

@@ -2,9 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { AuthOptions } from 'next-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
   
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -18,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const { projectId, weekId, employeeId } = req.query;
       
-      let whereClause: any = {};
+      const whereClause: any = {};
       
       // Filter by project
       if (projectId && typeof projectId === 'string') {
@@ -125,6 +126,12 @@ else if (req.method === 'POST') {
 }
 else if(req.method === 'DELETE'){
     try {
+      const { id } = req.query;
+      
+      if (!id || typeof id !== 'string') {
+        return res.status(400).json({ message: 'Invalid or missing ID' });
+      }
+      
       // Delete the category. Ensure cascade delete is configured in your schema if needed.
       const deletedCategory = await prisma.activityCategory.delete({
         where: { id: parseInt(id) }

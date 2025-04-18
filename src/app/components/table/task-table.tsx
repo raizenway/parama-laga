@@ -1,5 +1,5 @@
 "use client"
-import { CalendarCheck2, FileCheck2, Eye, PencilLine, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
+import { CalendarCheck2, FileCheck2, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useState, useEffect, useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -14,22 +14,18 @@ import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOp
 type TaskTableProps = {
   searchTerm?: string;
   onEdit?: (task: Task) => void;
-  onDelete?: (task: Task) => void;
   refreshTrigger?: number;
   onTaskDeleted?: () => void;
-  userRole?: string | null;
-  employeeId?: string;
-  projectId?: string;
+  employeeId?: string | null;
+  projectId?: string | null;
   hideAssignedColumn?: boolean;
+  userRole?: string | null;    
 };
 
 export default function TaskTable({ 
-  searchTerm = "", 
-  onEdit, 
-  onDelete,
+  searchTerm = "",
   refreshTrigger = 0,
   onTaskDeleted,
-  userRole = null,
   employeeId = null,
   projectId = null,
   hideAssignedColumn = false
@@ -87,7 +83,6 @@ export default function TaskTable({
   };
   
 
-
   // Filter tasks berdasarkan kriteria
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -122,60 +117,48 @@ export default function TaskTable({
     currentPage * itemsPerPage
   );
 
-  // Fetch tasks
-  const fetchTasks = async (query = "") => {
-    setIsLoading(true);
-    try {
-      let url;
-      if (projectId) {
-        url = query 
-          ? `/api/projects/${projectId}/tasks?search=${encodeURIComponent(query)}`
-          : `/api/projects/${projectId}/tasks`;
-      } else if (employeeId) {
-        url = query 
-          ? `/api/employee/${employeeId}/tasks?search=${encodeURIComponent(query)}`
-          : `/api/employee/${employeeId}/tasks`;
-      } else {
-        url = query 
-          ? `/api/tasks?search=${encodeURIComponent(query)}` 
-          : "/api/tasks";
-      }
-
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
-      }
-      
-      const data = await response.json();
-      setTasks(data);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching tasks:", err);
-      setError("Failed to load tasks");
-      toast.error("Error", {
-        description: "Failed to load tasks. Please try again later."
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchTasks(debouncedSearchQuery);
-  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId]);
+    let mounted = true
+    const controller = new AbortController()
+
+    async function load() {
+      setIsLoading(true)
+      try {
+        const qs = debouncedSearchQuery ? `?search=${encodeURIComponent(debouncedSearchQuery)}` : ""
+        const url = projectId
+          ? `/api/projects/${projectId}/tasks${qs}`
+          : employeeId
+            ? `/api/employee/${employeeId}/tasks${qs}`
+            : `/api/tasks${qs}`
+
+        const res = await fetch(url, { signal: controller.signal })
+        if (!res.ok) throw new Error("Failed to fetch tasks")
+        const data = await res.json()
+        if (mounted) {
+          setTasks(data)
+          setError(null)
+        }
+      } catch (e: any) {
+        if (mounted) {
+          console.error(e)
+          setError(e.message)
+          toast.error("Error loading tasks", { description: e.message })
+        }
+      } finally {
+        if (mounted) setIsLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      mounted = false
+      controller.abort()
+    }
+  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId])
 
   const handleFilterChange = (column: string, value: string) => {
     setFilters(prev => ({ ...prev, [column]: value }));
     setCurrentPage(1); // Reset ke halaman pertama saat filter berubah
-  };
-
-  const handleEdit = (task: Task) => {
-    if (onEdit) {
-      onEdit(task);
-    } else {
-      router.push(`/task/detail-task?id=${task.id}`);
-    }
   };
   
   const handleDeleteTask = (task: Task) => {
@@ -184,35 +167,23 @@ export default function TaskTable({
   };
 
   const confirmDeleteTask = async () => {
-    if (!selectedTask) return;
-    
-    setIsDeleting(true);
+    if (!selectedTask) return
+    setIsDeleting(true)
     try {
-      const response = await fetch(`/api/tasks/${selectedTask.id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete task');
-      }
-      
-      toast.success('Task deleted successfully');
-      fetchTasks(debouncedSearchQuery);
-      onTaskDeleted?.();
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      toast.error('Failed to delete task', { 
-        description: error instanceof Error ? error.message : 'Unknown error occurred' 
-      });
+      const res = await fetch(`/api/tasks/${selectedTask.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Delete failed")
+      toast.success("Task deleted")
+      onTaskDeleted?.()     // trigger parent refreshTrigger
+    } catch (err: any) {
+      toast.error("Delete error", { description: err.message })
     } finally {
-      setIsDeleting(false);
-      setIsDeleteModalOpen(false);
+      setIsDeleting(false)
+      setIsDeleteModalOpen(false)
     }
-  };
+  }
 
   const handleView = (task: Task) => {
-    router.push(`/task/detail-task?id=${task.id}`);
+    router.push(`/task/detail-task/${task.id}`);
   };
 
   if (isLoading) {

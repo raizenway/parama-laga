@@ -1,7 +1,6 @@
 "use client"
 import { useDebounce } from "@/hooks/useDebounce";
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import ProjectTable from "@/app/components/table/project-table";
 // import AddButton from "@/app/components/button/add-button";
 import AddButton from "@/app/components/button/button-custom";
@@ -33,7 +32,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   // Fetch projects
   const fetchProjects = async (query="") => {
@@ -107,7 +106,7 @@ export default function Page() {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         } catch (e) {
-          // If response can't be parsed as JSON
+          console.error("Gagal parse error response:", e);
         }
         
         // Show error toast notification

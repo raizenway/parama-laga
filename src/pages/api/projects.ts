@@ -1,13 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
+import { AuthOptions } from 'next-auth';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
 
   // Check if user is logged in
   if (!session) {
@@ -41,19 +43,18 @@ export default async function handler(
 async function getProjects(req: NextApiRequest, res: NextApiResponse) {
   try {
     const searchQuery = req.query.search as string || '';
-    const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res, authOptions as AuthOptions);
     const userRole = (session?.user as any)?.role;
     const userId = (session?.user as any)?.id;
-
       // Build the search condition
       const searchCondition = searchQuery
       ? {
-          projectName: { contains: searchQuery, mode: 'insensitive' }
+          projectName: { contains: searchQuery, mode: Prisma.QueryMode.insensitive }
         }
       : {};
     
     // Build the role-based condition
-    const roleCondition = {};
+    const roleCondition: Record<string, any> = {};
     if (userRole !== 'admin' && userRole !== 'project_manager' && userId) {
       // Get only projects where this user is assigned
       roleCondition['projectUsers'] = {
@@ -143,7 +144,7 @@ async function createProject(req: NextApiRequest, res: NextApiResponse) {
 
     try {
       // Use a transaction to ensure data consistency
-      let projectId: number;
+      let projectId: number = -1; // Initialize with a default value
       await prisma.$transaction(async (tx) => {
         // Create new project
         const project = await tx.project.create({

@@ -20,7 +20,7 @@ export default function TaskUpdateConfirmation({
   isLoading = false 
 }: TaskUpdateConfirmationProps) {
   return (
-    <Modal open={open} onClose={onClose} title={title}>
+    <Modal open={open} onClose={onClose} title={title}  closeType="cross"  >
       <div className="p-4 text-center">
         {/* Remove the wrapping <p> tag since description may contain p tags */}
         <div className="mb-4">

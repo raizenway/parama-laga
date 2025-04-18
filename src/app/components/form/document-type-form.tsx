@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash, Check, Loader2, FileCheck2, FileText } from "lucide-react";
+import { Trash, Check, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 type documentType = {
@@ -12,7 +12,7 @@ type documentType = {
   updatedAt?: string | null;
 };
 
-export default function documentTypeForm({ onClose }: { onClose: () => void }) {
+export default function DocumentTypeForm({ onClose }: { onClose: () => void }) {
   const [documentTypes, setdocumentTypes] = useState<documentType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -156,9 +156,10 @@ export default function documentTypeForm({ onClose }: { onClose: () => void }) {
       setdocumentTypes(documentTypes.filter(cl => cl.id !== id));
       setFilteredDocumentTypes(filtereddocumentTypes.filter(cl => cl.id !== id));
       toast.success("Document type deleted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       console.error("Error deleting documentType:", error);
-      toast.error(error.message || "Failed to delete document type");
+      toast.error(err.message || "Failed to delete document type");
     }
   };
 

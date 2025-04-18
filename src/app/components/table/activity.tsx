@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Save, Delete, CalendarClock, User, CheckCircle2, Pencil, NotebookPen, Trash2, List, ListTodo, LayoutGrid, Paperclip, MessageSquareText } from "lucide-react";
+import { Loader2, PlusCircle, Save, CheckCircle2, NotebookPen, Trash2, ListTodo, LayoutGrid, Paperclip, MessageSquareText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,8 +61,6 @@ export default function ActivityTable({
   const [editingItems, setEditingItems] = useState<Record<number, { result: string, comment: string }>>({});
   
   // State to delete 
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -71,17 +69,11 @@ export default function ActivityTable({
     type: 'category' | 'item';
   } | null>(null);
 
-  // Fetch activities
-  useEffect(() => {
-    if (projectId && weekId) {
-      fetchActivities();
-    }
-  }, [projectId, weekId, employeeId, refreshTrigger]);
-  
   const fetchActivities = async () => {
     // ... existing fetch implementation ...
     setIsLoading(true);
     setError(null);
+    setCategories([])      
     try {
       let url = `/api/activities?projectId=${projectId}&weekId=${weekId}`;
       if (employeeId) url += `&employeeId=${employeeId}`;
@@ -101,6 +93,12 @@ export default function ActivityTable({
       setIsLoading(false);
     }
   };
+    // Fetch activities
+     useEffect(() => {
+         if (projectId && weekId) {
+           fetchActivities();
+         }
+       }, [projectId, weekId, employeeId, refreshTrigger]);
   
 // Add a new category
 const addCategory = async () => {
@@ -436,7 +434,6 @@ categories.forEach(category => {
 
               // Group rows by category
               const isFirstInCategory = index === 0 || tableRows[index - 1].categoryId !== row.categoryId;
-              const isCategorySpanned = index < tableRows.length - 1 && tableRows[index + 1].categoryId === row.categoryId;
 
               // Count how many rows this category spans
               let categoryRowSpan = 1;
@@ -489,7 +486,7 @@ categories.forEach(category => {
                     {activeCategory === row.categoryId ? (
                             <div className="flex gap-2 mt-2">
                               <Input 
-                                size="sm"
+                                // size="sm"
                                 placeholder="New category item..." 
                                 value={newItemName}
                                 onChange={(e) => setNewItemName(e.target.value)}
@@ -530,8 +527,8 @@ categories.forEach(category => {
                             value={editingItems[row.itemId].result}
                             onChange={(e) => setEditingItems({
                               ...editingItems,
-                              [row.itemId]: {
-                                ...editingItems[row.itemId],
+                              [row.itemId as number]: {
+                                ...editingItems[row.itemId as number],
                                 result: e.target.value
                               }
                             })}
@@ -544,8 +541,8 @@ categories.forEach(category => {
                           value={editingItems[row.itemId].comment}
                           onChange={(e) => setEditingItems({
                             ...editingItems,
-                            [row.itemId]: {
-                            ...editingItems[row.itemId],
+                            [row.itemId as number]: {
+                            ...editingItems[row.itemId as number],
                             comment: e.target.value
                             }
                           })}
@@ -559,7 +556,7 @@ categories.forEach(category => {
                               type="button"
                               title="Save"
                               className="text-emerald-500 hover:text-emerald-600" 
-                              onClick={() => saveResult(row.itemId, row.resultId)}
+                              onClick={() => saveResult(row.itemId as number, row.resultId)}
                             >
                               <Save/>
                             </button>
@@ -571,7 +568,7 @@ categories.forEach(category => {
                             <div
                               title="Click to edit"
                               className="flex items-top gap-3 px-4 py-3 border-r "
-                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                              onClick={() => startEditing(row.itemId as number, row.resultId ? {
                                 id: row.resultId,
                                 result: row.result,
                                 comment: row.comment,
@@ -594,7 +591,7 @@ categories.forEach(category => {
                           <div
                               title="Click to edit"
                               className="flex items-top gap-3 px-4 py-3 border-r "
-                              onClick={() => startEditing(row.itemId, row.resultId ? {
+                              onClick={() => startEditing(row.itemId as number, row.resultId ? {
                                 id: row.resultId,
                                 result: row.result,
                                 comment: row.comment,

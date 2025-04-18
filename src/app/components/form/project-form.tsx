@@ -30,6 +30,7 @@ export default function ProjectForm({
 }) {
   const [status, setStatus] = useState<ProjectStatus>("Pending");
   const [assignedEmployees, setAssignedEmployees] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableEmployees, setAvailableEmployees] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -159,7 +160,7 @@ export default function ProjectForm({
       let responseData;
       try {
         responseData = await response.json();
-      } catch (e) {
+      } catch {
         responseData = {};
       }
       

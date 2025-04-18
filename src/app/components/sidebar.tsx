@@ -3,13 +3,11 @@ import "../globals.css";
 import SidebarFunction, { SidebarMenu } from "./sidebar-function";
 import { SidebarItem } from "./sidebar-function";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; // Add this import
 import {
   CircleCheckBig,
   TrafficCone,
-  ChartSpline,
   Settings2,
   UserCircle,
   FileCheck2,
@@ -27,7 +25,10 @@ const Sidebar = () => {
     const { data: session } = useSession(); // Get session data
     
     // Check if user is admin or project manager
-    const isPMOrAdmin = session?.user?.role === 'admin' || session?.user?.role === 'project_manager';
+    const user = session?.user as { role?: string };
+
+    const isPMOrAdmin = user?.role === "admin" || user?.role === "project_manager";
+
     
     const handleItemClick = (menu: string, path: string) => {
       if (menu === "PM Options") setIsPMOpen(!isPMOpen);
@@ -44,9 +45,6 @@ const Sidebar = () => {
       setActiveSubItem(submenu);
       router.push(path);
     };
-    
-    const pathname = usePathname();
-    const isAuthenticationPage = pathname?.startsWith("/authentication");
 
     return (
         <div className="md: w-72 bg-white h-screen flex-1 fixed border-r">
@@ -76,7 +74,7 @@ const Sidebar = () => {
                     },
                     {
                       icon: <Activity size={16} />,
-                      text: "Activiy",
+                      text: "Activity",
                       active: activeSubItem === "Activity",
                       onClick: () => handleSubItemClick("Activity", "/activity"),
                     }

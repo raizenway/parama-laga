@@ -14,7 +14,7 @@ interface LoginFormProps {
     error: string | null;
   }
 
-export default function({ handleSubmit, email, setEmail, password, setPassword, isLoading, error }: LoginFormProps) {
+export default function LoginForm({ handleSubmit, email, setEmail, password, setPassword, isLoading, error }: LoginFormProps) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (

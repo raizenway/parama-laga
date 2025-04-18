@@ -1,8 +1,8 @@
 // components/table/DataTableFilter.tsx
 "use client"
-import { ChevronDown, ChevronUp, X, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useState } from "react";
-import { FilterConfig, FilterOption } from "@/app/types/filter"
+import { FilterConfig } from "@/app/types/filter"
 
 interface DataTableFilterProps {
   config: FilterConfig;

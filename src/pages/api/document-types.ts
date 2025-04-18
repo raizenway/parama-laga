@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
+import { AuthOptions } from 'next-auth';
 
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
 
   // Check if user is logged in
   if (!session) {
@@ -25,10 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (req.method) {
     case 'POST':
       return createDocumentType(req, res);
-    case 'PUT':
-      return updateDocumentType(req, res);
-    case 'DELETE':
-      return deleteDocumentType(req, res);
     default:
       return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -56,7 +53,7 @@ async function getDocumentTypes(req: NextApiRequest, res: NextApiResponse) {
     const searchQuery = search as string || '';
     const whereCondition = searchQuery
       ? {
-          name: { contains: searchQuery, mode: 'insensitive' }
+          name: { contains: searchQuery, mode: Prisma.QueryMode.insensitive }
         }
       : {};
 
@@ -100,77 +97,6 @@ async function createDocumentType(req: NextApiRequest, res: NextApiResponse) {
     return res.status(201).json(documentType);
   } catch (error) {
     console.error('Error creating document type:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
-  }
-}
-
-// Function to update an existing document type
-async function updateDocumentType(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { id } = req.query;
-    const { name } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Document type ID is required' });
-    }
-
-    if (!name) {
-      return res.status(400).json({ message: 'Document type name is required' });
-    }
-
-    // Check if document type with the same name already exists (excluding current one)
-    const existingDocType = await prisma.documentType.findFirst({
-      where: { 
-        AND: [
-          { name: { equals: name, mode: 'insensitive' } },
-          { id: { not: parseInt(id as string) } }
-        ]
-      }
-    });
-
-    if (existingDocType) {
-      return res.status(409).json({ message: 'Document type with this name already exists' });
-    }
-
-    const documentType = await prisma.documentType.update({
-      where: { id: parseInt(id as string) },
-      data: { name }
-    });
-
-    return res.status(200).json(documentType);
-  } catch (error) {
-    console.error('Error updating document type:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
-  }
-}
-
-// Function to delete a document type
-async function deleteDocumentType(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { id } = req.query;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Document type ID is required' });
-    }
-
-    // Check if document type is being used by any task
-    const tasksUsingDocType = await prisma.task.findFirst({
-      where: { documentTypeId: parseInt(id as string) }
-    });
-
-    if (tasksUsingDocType) {
-      return res.status(400).json({ 
-        message: 'Cannot delete document type that is in use by tasks' 
-      });
-    }
-
-    const documentType = await prisma.documentType.delete({
-      where: { id: parseInt(id as string) }
-    });
-
-    return res.status(200).json(documentType);
-  } catch (error) {
-    console.error('Error deleting document type:', error);
     return res.status(500).json({ message: 'Internal server error', error });
   }
 }

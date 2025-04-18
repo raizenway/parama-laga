@@ -2,9 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { prisma } from '@/lib/prisma';
+import { AuthOptions } from 'next-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
   
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -64,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // PUT: Update a task
   else if (req.method === 'PUT') {
     try {
-      const { taskName, documentTypeId, status, assignees, projectId } = req.body;
+      const { taskName, documentTypeId, assignees, projectId } = req.body;
       
       const existingTask = await prisma.task.findUnique({
         where: { id: taskId },

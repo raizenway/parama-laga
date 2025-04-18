@@ -5,14 +5,26 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/",
-        destination: "/authentication", // Replace with your desired path
-        permanent: true, // true for 308 status code, false for 307
+        destination: "/authentication",
+        permanent: true,
       },
     ];
   },
   devIndicators: {
     buildActivity: false,
     appIsrStatus: false,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com', 
+      },
+    ],
   },
 };
 

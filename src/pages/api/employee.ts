@@ -1,14 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { authOptions } from './auth/[...nextauth]';
 import { hash } from 'bcrypt';
+import { AuthOptions } from 'next-auth';
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res, authOptions as AuthOptions);
 
     // Check if user is logged in
     if (!session) {
@@ -42,7 +44,7 @@ async function getEmployees(req: NextApiRequest, res: NextApiResponse) {
         //Build search condition
         const whereCondition = searchQuery
         ?{
-            name:{contains : searchQuery, mode:'insensitive'},
+            name:{contains : searchQuery, mode: Prisma.QueryMode.insensitive},
         }
         :{};
         const employees = await prisma.user.findMany({
@@ -182,7 +184,7 @@ async function createEmployee(req: NextApiRequest, res: NextApiResponse) {
             
             return user;
         });
-        // Return new user without password
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = newUser;
         return res.status(201).json(userWithoutPassword);
     } catch (error) {
@@ -299,8 +301,8 @@ async function updateEmployee(req: NextApiRequest, res: NextApiResponse) {
             
             return user;
         });
-
-        // Return updated user without password
+        
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = updatedUser;
         return res.status(200).json(userWithoutPassword);
     } catch (error) {

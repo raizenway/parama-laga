@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronDown, ChevronFirst, LogOut, MoreHorizontal, MoreVertical } from "lucide-react";
+import { ChevronDown, LogOut} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 
 export default function SidebarFunction({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     
     const handleLogout = async () => {
         await signOut({ redirect: false });
@@ -18,10 +18,12 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
         <aside className="h-screen w-full">
             <nav className="h-full flex flex-col bg-white border-r shadow-sm">
                 <div className="p-4 pb-2 flex justify-between items-center">
-                    <img
-                        src="parama.png"    
+                    <Image
+                        src="/parama.png"    
                         className="w-lg p-2 rounded-md shadow-md"
                         alt=""
+                        width={300}
+                        height={73}
                     />
                 </div>
 
@@ -29,10 +31,12 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
                     {children}
                 </ul>
                 <div className="border-t flex p-3">
-                    <img
-                        src={session?.user?.photoUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
+                    <Image
+                        src={session?.user?.image || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
                         alt="User Avatar"
                         className="w-10 h-10 rounded-md object-cover"
+                        width={25}
+                        height={25}
                     />
                     <div className={`
                         flex justify-between items-center
@@ -56,8 +60,8 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
     )
 }
 
-export function SidebarItem({ icon, text, active, alert, more, isOpen, onClick, children,
-  }: { icon: React.ReactNode; text: string; active?: boolean; alert?: boolean; more?: boolean; isOpen?: boolean, onClick?: () => void; children?: React.ReactNode;
+export function SidebarItem({ icon, text, active, alert, more, isOpen, onClick,
+  }: { icon: React.ReactNode; text: string; active?: boolean; alert?: boolean; more?: boolean; isOpen?: boolean, onClick?: () => void;
   })
   {
     return (
