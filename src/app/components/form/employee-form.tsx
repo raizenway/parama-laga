@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import StatusDropdown from "../status-dropdown";
-import ProjectAssigning from "../dropdown-multiple-selection";
+import ProjectAssigning from "@/app/components/dropdown-multiple-selection";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -40,26 +40,15 @@ export default function EmployeeForm({
     password: ""
   });
 
-  // Update project positions when projects change
-  useEffect(() => {
-    const newPositions = { ...projectPositions };
-    
-    // Add positions for new projects
-    multipleProjects.forEach(project => {
-      if (!newPositions[project]) {
-        newPositions[project] = defaultRole; // Use default role as initial position
-      }
-    });
-    
-    // Remove positions for removed projects
-    Object.keys(newPositions).forEach(project => {
-      if (!multipleProjects.includes(project)) {
-        delete newPositions[project];
-      }
-    });
-    
-    setProjectPositions(newPositions);
-  }, [multipleProjects, defaultRole, projectPositions]);
+   useEffect(() => {
+       // Build a fresh map from the selected projects
+       const next: Record<string,string> = {};
+       multipleProjects.forEach(proj => {
+         // preserve existing position or fallback to defaultRole
+         next[proj] = projectPositions[proj] ?? defaultRole;
+       });
+       setProjectPositions(next);
+     }, [multipleProjects, defaultRole]);
 
   // Fetch projects from the database
   useEffect(() => {

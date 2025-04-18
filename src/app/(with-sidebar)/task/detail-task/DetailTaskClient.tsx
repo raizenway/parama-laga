@@ -1,5 +1,6 @@
 "use client";
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
+// import { Suspense } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter} from "next/navigation";
 import { ChevronLeft, Loader2 } from "lucide-react";
@@ -10,7 +11,6 @@ import SingleSelection from "@/app/components/dropdown-single-selection";
 import CheckListTable from "@/app/components/table/check-list";
 import TaskUpdateConfirmation from "@/app/components/modal/task-update-confirmation";
 import { Input } from "@/components/ui/input";
-import { Suspense } from "react";
 
 type Task = {
   id: number;
@@ -359,14 +359,6 @@ export default function DetailTaskClient({ taskId }: DetailTaskClientProps) {
   }
 
   return (
-    <Suspense
-    fallback={
-      <div className="p-8 flex items-center justify-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-12 w-12 animate-spin mr-2" />
-        <span className="text-xl">Loading...</span>
-      </div>
-    }
-  >
     <div className="p-8">
       <div className="space-y-5 p-7 py-8 rounded-lg bg-zinc-50 shadow-[0px_0px_13px_2px_rgba(0,_0,_0,_0.15)]">
         <button onClick={() => router.back()} className=" flex gap-2">
@@ -472,6 +464,5 @@ export default function DetailTaskClient({ taskId }: DetailTaskClientProps) {
           </>
         }
       />
-    </div>
-    </Suspense>);
+    </div>);
 }

@@ -74,7 +74,7 @@ const Sidebar = () => {
                     },
                     {
                       icon: <Activity size={16} />,
-                      text: "Activiy",
+                      text: "Activity",
                       active: activeSubItem === "Activity",
                       onClick: () => handleSubItemClick("Activity", "/activity"),
                     }

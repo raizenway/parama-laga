@@ -1,5 +1,4 @@
 "use client"
-  
 import { useState, useCallback, useEffect } from "react";
 import AddButton from "@/app/components/button/button-custom";
 import TaskTable from "@/app/components/table/task-table";

@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/",
-        destination: "/authentication", // Replace with your desired path
-        permanent: true, // true for 308 status code, false for 307
+        destination: "/authentication",
+        permanent: true,
       },
     ];
   },
@@ -15,8 +15,17 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
   },
   images: {
-    domains: ['randomuser.me'],
-  }
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com', 
+      },
+    ],
+  },
 };
 
 export default nextConfig;
