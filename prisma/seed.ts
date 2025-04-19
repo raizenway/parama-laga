@@ -327,6 +327,98 @@ async function main() {
     },
   });
 
+  // ===== Buat Task Templates =====
+  console.log('Membuat task templates...');
+  const standardTemplate = await prisma.taskTemplate.upsert({
+    where: { templateName: 'Standard Document Template' },
+    update: {},
+    create: {
+      templateName: 'Standard Document Template',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+  const outgoingTemplate = await prisma.taskTemplate.upsert({
+    where: { templateName: 'Outgoing Document Template' },
+    update: {},
+    create: {
+      templateName: 'Outgoing Document Template',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // ===== Buat Tasks =====
+  console.log('Membuat tasks...');
+  const task1 = await prisma.task.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      taskName: 'Review Surat Masuk',
+      documentTypeId: incomingLetter.id,
+      templateId: standardTemplate.id,
+      projectId: project1.id,
+      userId: employee1.id,
+      dateAdded: new Date(),
+      taskStatus: 'ToDo',
+    },
+  });
+  const task2 = await prisma.task.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      taskName: 'Approve Surat Keluar',
+      documentTypeId: outgoingLetter.id,
+      templateId: outgoingTemplate.id,
+      projectId: project1.id,
+      userId: employee2.id,
+      dateAdded: new Date(),
+      taskStatus: 'ToDo',
+    },
+  });
+
+  // ===== Buat Checklists =====
+  console.log('Membuat checklists...');
+  const checklist1 = await prisma.checklist.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      criteria: 'Buat draft surat masuk',
+      hint: 'Pastikan format sesuai template',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+  const checklist2 = await prisma.checklist.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      criteria: 'Verifikasi tanda tangan',
+      hint: 'Cek tanda tangan manager',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // ===== Buat Template Checklists =====
+  console.log('Membuat template checklists...');
+  await prisma.templateChecklist.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      templateId: standardTemplate.id,
+      checklistId: checklist1.id,
+    },
+  });
+  await prisma.templateChecklist.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      templateId: outgoingTemplate.id,
+      checklistId: checklist2.id,
+    },
+  });
+
   console.log('Seed berhasil!');
 }
 
