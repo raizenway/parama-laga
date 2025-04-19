@@ -192,6 +192,22 @@ async function main() {
 
   // ===== Buat Project Users (Assignment) =====
   console.log('Membuat project assignments...');
+
+
+  const projectUser2 = await prisma.projectUser.upsert({
+    where: {
+      projectId_userId: {
+        projectId: project1.id,
+        userId: employee1.id,
+      },
+    },
+    update: {},
+    create: {
+      projectId: project1.id,
+      userId: employee1.id,
+    },
+  });
+
   const projectUser3 = await prisma.projectUser.upsert({
     where: {
       projectId_userId: {
@@ -217,20 +233,6 @@ async function main() {
     create: {
       projectId: project2.id,
       userId: projectManager.id,
-    },
-  });
-
-  const projectUser5 = await prisma.projectUser.upsert({
-    where: {
-      projectId_userId: {
-        projectId: project2.id,
-        userId: employee1.id,
-      },
-    },
-    update: {},
-    create: {
-      projectId: project2.id,
-      userId: employee1.id,
     },
   });
 
