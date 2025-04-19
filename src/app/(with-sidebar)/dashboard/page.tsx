@@ -9,8 +9,8 @@ import {
   CalendarClock,
   Clock,
   Loader2,
-  CloudMoon,
-  MonitorCheck,
+  // CloudMoon,
+  // MonitorCheck,
   LaptopMinimalCheck
 } from "lucide-react";
 import Image from "next/image";
@@ -125,7 +125,7 @@ export default function Page() {
             {/* No job */}
             <div className="flex flex-col gap-2 font-poppins font-bold text-primary text-lg items-center justify-center">
               <LaptopMinimalCheck size={92} />
-              There's nothing to do now
+              {`There's nothing to do now`}
             </div>
           </div>
         </div>
