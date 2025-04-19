@@ -43,6 +43,7 @@ export default function LoginForm({ handleSubmit, email, setEmail, password, set
               name="password"
               className="mt-2 mb-4 border-transparent bg-white rounded-sm text-black"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
