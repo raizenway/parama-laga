@@ -8,7 +8,10 @@ import {
   CalendarCheck2,
   CalendarClock,
   Clock,
-  Loader2
+  Loader2,
+  CloudMoon,
+  MonitorCheck,
+  LaptopMinimalCheck
 } from "lucide-react";
 import Image from "next/image";
 
@@ -87,30 +90,47 @@ export default function Page() {
   }
 
   return (
-    <div className="mx-8 my-8 flex flex-col items-center gap-8">
-      {/* Profile User */}
-      <div className="w-full md:w-1/2 lg:w-1/3 bg-gradient-primary rounded-2xl shadow-lg p-6 flex flex-col items-center space-y-4">
-        <h2 className="w-full text-center font-bold underline mb-2">Profile User</h2>
-        <Image
-          src={user?.image || "/person.png"}
-          alt="Profile Picture"
-          width={125}
-          height={125}
-          className="rounded-full object-cover w-32 h-32"
-        />
-        <div className="text-center space-y-1">
-          <p className="font-bold text-primary text-lg">
-            {user?.name || "User"}
-          </p>
-          <p className="text-primary">
-            <span className="font-medium">{user?.email || ""}</span>
-            <span className="font-medium"> / {user?.role || "User"}</span>
-          </p>
-          <p className="font-bold text-primary">
-            {projects.length > 0 ? projects[0].projectName : "No active project"}
-          </p>
+    <div className="mx-8 my-8 flex flex-col ">
+      <div className="flex flex-row gap-8 h-96">
+        {/* Profile */}
+        <div className="w-1/3 flex flex-col">
+          <h2 className="w-full font-bold underline mb-2">Profile User</h2>
+          <div className="w-full h-full bg-gradient-primary rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center space-y-4">
+            <Image
+              src={user?.image || "/person.png"}
+              alt="Profile Picture"
+              width={125}
+              height={125}
+              className="rounded-full object-cover w-32 h-32"
+            />
+            <div className="text-center space-y-1">
+              <p className="font-bold text-primary text-lg">
+                {user?.name || "User"}
+              </p>
+              <p className="text-primary">
+                <span className="font-medium">{user?.email || ""}</span>
+                <span className="font-medium"> / {user?.role || "User"}</span>
+              </p>
+              <p className="font-bold text-primary">
+                {projects.length > 0 ? projects[0].projectName : "No active project"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Notification */}
+        <div className="w-2/3 flex flex-col h-full">
+          <div className="font-bold underline my-2">Notification</div>
+          <div className="p-5 flex flex-1 bg-tersier rounded-2xl justify-center items-center">
+            {/* No job */}
+            <div className="flex flex-col gap-2 font-poppins font-bold text-primary text-lg items-center justify-center">
+              <LaptopMinimalCheck size={92} />
+              There's nothing to do now
+            </div>
+          </div>
         </div>
       </div>
+
 
       {/* Table Project */}
       <div className="w-full bg-white rounded-2xl shadow-lg p-6">
