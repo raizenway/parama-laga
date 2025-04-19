@@ -222,17 +222,17 @@ async function main() {
     },
   });
 
-  const projectUser4 = await prisma.projectUser.upsert({
+  const projectUser5 = await prisma.projectUser.upsert({
     where: {
       projectId_userId: {
         projectId: project2.id,
-        userId: projectManager.id,
+        userId: employee1.id,
       },
     },
     update: {},
     create: {
       projectId: project2.id,
-      userId: projectManager.id,
+      userId: employee1.id,
     },
   });
 
