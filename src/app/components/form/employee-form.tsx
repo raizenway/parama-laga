@@ -331,30 +331,32 @@ export default function EmployeeForm({
                 disabled={mode === "view"}
                 className={mode === "view" ? "bg-gray-50" : ""}
               />
-
-              {mode === "add" && (
+              {mode != "view" && (
                 <div className="relative">
-  <Input 
-    name="password"
-    type={showPassword ? "text" : "password"}
-    placeholder="Password" 
-    value={formData.password}
-    onChange={handleChange}
-    required
-    className="bg-gray-50 pr-10" // ruang untuk tombol eye
-  />
-  <button
-    type="button"
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
-    onClick={() => setShowPassword(!showPassword)}
-  >
-    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
-  </button>
-</div>
+                <Input 
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required={mode === "add"}
+                  minLength={formData.password ? 8 : undefined}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+                </button>
+              </div>
               )}
-                            
-
-
+              {(mode === "add" || mode === "edit") && (
+                <p className="text-xs text-gray-500 mt-1">
+                  * Password minimal 8 karakter.
+                  {mode === "edit" && " Kosongkan jika tidak ingin mengubah password."}
+                </p>
+              )}
               <h1 className="my-1 mt-3 text-base font-medium">Project Assignment</h1>
 
               {/* EMPLOYEE PROJECTS */}
