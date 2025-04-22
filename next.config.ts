@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
   },
   images: {
-    unoptimized: true,
     domains: ["res.cloudinary.com"],
     remotePatterns: [
       {

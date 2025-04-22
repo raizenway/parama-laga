@@ -41,7 +41,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // artinya: panggil middleware untuk semua route kecuali api/_next/static dsb.
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
-  ]
-}
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
