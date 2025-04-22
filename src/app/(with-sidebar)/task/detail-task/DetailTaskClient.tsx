@@ -80,7 +80,7 @@ type DetailTaskClientProps = {
 
 
 export default function DetailTaskClient({ taskId }: DetailTaskClientProps) {
-  const router = useRouter();
+  const router = useRouter(); 
   // guard against null
   // const taskId = searchParams?.get('id');
   const { data: session } = useSession();

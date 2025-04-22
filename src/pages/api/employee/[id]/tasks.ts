@@ -66,7 +66,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: whereCondition,
       include: {
         documentType: true,
-        template: true,
         project: true,
         user: {
           select: {

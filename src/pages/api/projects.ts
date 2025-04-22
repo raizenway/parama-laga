@@ -403,9 +403,11 @@ async function deleteProject(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ message: 'Project ID is required' });
     }
     
+    const projectId = parseInt(id);
+    
     // Check if project exists
     const project = await prisma.project.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: projectId }
     });
 
     if (!project) {
@@ -414,37 +416,66 @@ async function deleteProject(req: NextApiRequest, res: NextApiResponse) {
 
     // Use transaction to ensure all related records are deleted atomically
     await prisma.$transaction(async (tx) => {
-      // Find tasks related to this project
-      const tasks = await tx.task.findMany({
-        where: { projectId: parseInt(id) }
+      // 1. Hapus activity results terlebih dahulu
+      await tx.$executeRaw`
+        DELETE FROM "activity_results" 
+        WHERE "item_id" IN (
+          SELECT ai.id FROM "activity_items" ai
+          JOIN "activity_categories" ac ON ai."category_id" = ac.id
+          WHERE ac."project_id" = ${projectId}
+        )
+      `;
+      
+      // 2. Hapus activity items
+      await tx.$executeRaw`
+        DELETE FROM "activity_items" 
+        WHERE "category_id" IN (
+          SELECT id FROM "activity_categories" 
+          WHERE "project_id" = ${projectId}
+        )
+      `;
+      
+      // 3. Hapus activity categories
+      await tx.activityCategory.deleteMany({
+        where: { projectId }
       });
       
-      // For each task, delete associated task progress entries
-      for (const task of tasks) {
-        await tx.taskProgress.deleteMany({
-          where: { taskId: task.id }
-        });
-      }
+      // 4. Hapus activity weeks
+      await tx.activityWeek.deleteMany({
+        where: { projectId }
+      });
+
+      // 5. Hapus task progress
+      await tx.taskProgress.deleteMany({
+        where: {
+          task: {
+            projectId
+          }
+        }
+      });
       
-      // Delete tasks related to this project
+      // 6. Hapus tasks
       await tx.task.deleteMany({
-        where: { projectId: parseInt(id) }
+        where: { projectId }
       });
       
-      // Delete project-user relations
+      // 7. Hapus project users
       await tx.projectUser.deleteMany({
-        where: { projectId: parseInt(id) }
+        where: { projectId }
       });
       
-      // Then delete the project
+      // 8. Terakhir, hapus project
       await tx.project.delete({
-        where: { id: parseInt(id) }
+        where: { id: projectId }
       });
     });
 
     return res.status(200).json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Error deleting project:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
+    return res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
   }
 }

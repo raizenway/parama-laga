@@ -26,6 +26,7 @@ type Template = {
 type Employee = {
   id: number;
   name: string;
+  projects: string[]; // Tambahkan atribut projects agar bisa filter berdasarkan project
 };
 
 export default function TaskForm({onClose, onSuccess} : {onClose: () => void, onSuccess?: () => void}) {
@@ -34,7 +35,6 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
   const userId = (session?.user as any)?.id;
   const userName = (session?.user as any)?.name;
   const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
-
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -49,7 +49,8 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]); // Semua karyawan
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]); // Karyawan terfilter berdasarkan project
   
   // UI states
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +95,8 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           const employeeRes = await fetch('/api/employee');
           if (employeeRes.ok) {
             const employees = await employeeRes.json();
-            setEmployees(employees);
+            setAllEmployees(employees);
+            setFilteredEmployees(employees); // Awalnya, tampilkan semua karyawan
           }
         }
       } catch (error) {
@@ -114,29 +116,52 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  // Effect to update formData when dropdown selections change
+  // Filter employees when project is selected
+  useEffect(() => {
+    if (selectedProject) {
+      // Reset selected employee when project changes
+      setSelectedEmployee(null);
+      
+      // Filter employees that belong to the selected project
+      const project = projects.find(p => p.projectName === selectedProject);
+      if (project) {
+        setFormData(prev => ({ ...prev, projectId: project.id.toString(), userId: "" }));
+        
+        // Filter employees based on selected project
+        const projectName = selectedProject;
+        const employeesInProject = allEmployees.filter(emp => 
+          emp.projects && emp.projects.includes(projectName)
+        );
+        
+        setFilteredEmployees(employeesInProject);
+      }
+    } else {
+      // No project selected, show all employees
+      setFilteredEmployees(allEmployees);
+    }
+  }, [selectedProject, projects, allEmployees]);
+  
+  // Update formData when dropdown selections change for documentType and template
   useEffect(() => {
     if (selectedDocType) {
       const docType = documentTypes.find(dt => dt.name === selectedDocType);
       if (docType) setFormData(prev => ({ ...prev, documentTypeId: docType.id.toString() }));
     }
     
-    if (selectedProject) {
-      const project = projects.find(p => p.projectName === selectedProject);
-      if (project) setFormData(prev => ({ ...prev, projectId: project.id.toString() }));
-    }
-    
     if (selectedTemplate) {
       const template = templates.find(t => t.templateName === selectedTemplate);
       if (template) setFormData(prev => ({ ...prev, templateId: template.id.toString() }));
     }
-    
-    // If user is not employee, update selected employee as usual
+  }, [selectedDocType, selectedTemplate, documentTypes, templates]);
+  
+  // Update formData when employee selection changes
+  useEffect(() => {
+    // If user is not employee, update selected employee
     if (!isEmployee && selectedEmployee) {
-      const employee = employees.find(e => e.name === selectedEmployee);
+      const employee = filteredEmployees.find(e => e.name === selectedEmployee);
       if (employee) setFormData(prev => ({ ...prev, userId: employee.id.toString() }));
     }
-  }, [selectedDocType, selectedProject, selectedTemplate, selectedEmployee, documentTypes, projects, templates, employees, isEmployee]);
+  }, [selectedEmployee, filteredEmployees, isEmployee]);
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,6 +185,11 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
     
     if (!formData.projectId) {
       toast.error("Project is required");
+      return;
+    }
+    
+    if (!formData.userId) {
+      toast.error("Employee assignment is required");
       return;
     }
     
@@ -252,11 +282,17 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           <div className="space-y-2">
             <label className="block text-sm font-medium">Assign to Employee</label>
             <SingleSelection 
-              options={employees.map(e => e.name)}
+              options={filteredEmployees.map(e => e.name)}
               selectedItem={selectedEmployee}
               setSelectedItem={setSelectedEmployee}
-              placeholder="Select employee"
+              placeholder={selectedProject ? "Select employee from this project" : "Select a project first"}
+              isDisabled={!selectedProject}
             />
+            {selectedProject && filteredEmployees.length === 0 && (
+              <p className="text-amber-500 text-sm mt-1">
+                No employees assigned to this project. Please assign employees to this project first.
+              </p>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -269,12 +305,15 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           </div>
         )}
 
-        
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading} className="text-white bg-primary hover:bg-primary-dark">
+          <Button
+            type="submit"
+            disabled={isLoading || (!!selectedProject && filteredEmployees.length === 0)}
+            className="text-white bg-primary hover:bg-primary-dark"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

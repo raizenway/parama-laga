@@ -50,7 +50,6 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
         where: { id: parseInt(id as string) },
         include: {
           documentType: true,
-          template: true,
           project: true,
           user: {
             select: {
@@ -105,7 +104,6 @@ async function getTasks(req: NextApiRequest, res: NextApiResponse) {
       where: whereCondition,
       include: {
         documentType: true,
-        template: true,
         project: true,
         user: {
           select: {
@@ -162,53 +160,58 @@ async function createTask(req: NextApiRequest, res: NextApiResponse) {
       }
     }
 
-    // Create the task with proper type checking
+      // ‑‑‑ clone template & snapshot
+    const tpl = await prisma.taskTemplate.findUnique({
+      where: { id: parseInt(templateId.toString()) },
+      include: { templateChecklists: true }
+    });
+    if (!tpl) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // buat task, simpan snapshot templateName
     const task = await prisma.task.create({
       data: {
         taskName,
         documentTypeId: parseInt(documentTypeId.toString()),
-        templateId: parseInt(templateId.toString()),
+        templateSnapshot: tpl.templateName,
         projectId: parseInt(projectId.toString()),
         userId: assigneeId,
         dateAdded: new Date(),
         taskStatus: "NotStarted"
-      },
-      include: {
-        documentType: true,
-        template: {
-          include: {
-            templateChecklists: {
-              include: {
-                checklist: true
-              }
-            }
-          }
-        }
       }
     });
 
-    // Create task progress items for each checklist in the template
-    const checklistItems = task.template.templateChecklists.map(tc => {
-      return {
-        taskId: task.id,
-        checklistId: tc.checklistId,
-        checked: false,
-        updatedAt: new Date()
-      };
-    });
+    // clone checklist ke TaskProgress
+    const checklistItems = tpl.templateChecklists.map(tc => ({
+      taskId: task.id,
+      checklistId: tc.checklistId,
+      checked: false,
+      updatedAt: new Date()
+    }));
 
-    if (checklistItems.length > 0) {
-      await prisma.taskProgress.createMany({
-        data: checklistItems
+      if (checklistItems.length > 0) {
+        await prisma.taskProgress.createMany({
+          data: checklistItems
+        });
+      }
+
+      // kembalikan record lengkap
+      const full = await prisma.task.findUnique({
+        where: { id: task.id },
+        include: {
+          documentType: true,
+          project: true,
+          user: { select: { id: true, name: true } },
+          progresses: { include: { checklist: true } }
+        }
       });
+    return res.status(201).json(full);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      return res.status(500).json({ message: 'Internal server error', error });
     }
-
-    return res.status(201).json(task);
-  } catch (error) {
-    console.error('Error creating task:', error);
-    return res.status(500).json({ message: 'Internal server error', error });
   }
-}
 
 // Function to update an existing task
 async function updateTask(req: NextApiRequest, res: NextApiResponse) {
@@ -295,7 +298,6 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
       data: updateData,
       include: {
         documentType: true,
-        template: true,
         project: true,
         user: {
           select: {
