@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
   },
   images: {
+    unoptimized: true,
     domains: ["res.cloudinary.com"],
     remotePatterns: [
       {
@@ -26,7 +27,6 @@ const nextConfig: NextConfig = {
         hostname: "ui-avatars.com",
       },
     ],
-    unoptimized: true,   
   },
 };
 

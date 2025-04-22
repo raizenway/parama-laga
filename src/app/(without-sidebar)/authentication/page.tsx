@@ -58,7 +58,7 @@ export default function Authentication() {
         {/* Form */}
         <div className='flex items-center justify-center'>
           <div className="w-full max-w-sm text-white flex flex-col items-center">
-            <Image src="/parama.png" width={300} height={73} alt="Parama" className="" />
+            <Image src="/parama.png" width={300} height={73} alt="Parama" unoptimized />
 
             {isRecovering? (
               <PasswordRecovery 
@@ -92,7 +92,7 @@ export default function Authentication() {
 
         {/* Background */}
         <div className="relative hidden md:block">
-          <Image className="object-cover" fill src="/bg.jpg" alt="bg-image" />
+          <Image className="object-cover" unoptimized fill src="/bg.jpg" alt="bg-image" />
         </div>
       </div>
     </main>
