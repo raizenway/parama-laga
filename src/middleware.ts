@@ -53,6 +53,14 @@ export async function middleware(request: NextRequest) {
 //  Matcher untuk menghindari pemrosesan terhadap static & API (bisa diperluas)
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(png|jpg|jpeg|webp|svg|ico|gif|css|js)).*)',
+    /*
+      Match semua path KECUALI:
+      - /api
+      - /_next/static
+      - /_next/image
+      - /favicon.ico
+      - file-file gambar & asset static (tanpa regex)
+    */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }
