@@ -15,8 +15,11 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
   },
   images: {
-    domains: ["res.cloudinary.com"],
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
       {
         protocol: "https",
         hostname: "randomuser.me",
