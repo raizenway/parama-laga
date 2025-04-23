@@ -28,6 +28,7 @@ type Project = {
   };
 };
 type UserWithRole = {
+  id?: string;
   name?: string | null;
   email?: string | null;
   image?: string | null;
@@ -39,8 +40,23 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+
 
   const user = session?.user as UserWithRole;
+  useEffect(() => {
+    // Fetch user photo dari database
+    if (user?.id) {
+      fetch(`/api/employee/${user.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.photoUrl) {
+            setUserPhotoUrl(data.photoUrl);
+          }
+        })
+        .catch(err => console.error("Error fetching user photo:", err));
+    }
+  }, [user?.id]);
   useEffect(() => {
     // Hanya ambil data jika session sudah loaded
     if (status === "authenticated") {
@@ -66,6 +82,8 @@ export default function Page() {
       fetchProjects();
     }
   }, [status]);
+
+  const avatarSrc = userPhotoUrl || user?.image || "/person.png";
 
   if (status === "loading") {
     return (
@@ -97,7 +115,7 @@ export default function Page() {
           <h2 className="w-full font-bold underline mb-2">Profile User</h2>
           <div className="w-full h-full bg-gradient-primary rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center space-y-4">
             <Image
-              src={user?.image || "/person.png"}
+              src={avatarSrc || "/person.png"}
               alt="Profile Picture"
               width={125}
               height={125}

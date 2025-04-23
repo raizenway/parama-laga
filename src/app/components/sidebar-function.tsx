@@ -4,16 +4,36 @@ import { ChevronDown, LogOut} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function SidebarFunction({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { data: session } = useSession();
+    const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
     
+    useEffect(() => {
+        // If user is logged in, fetch their current data to get the latest photo
+        const userId = (session?.user as any)?.id;
+        if (userId) {
+            fetch(`/api/employee/${userId}`)
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                    if (data && data.photoUrl) {
+                        setUserPhotoUrl(data.photoUrl);
+                    }
+                })
+                .catch(err => console.error("Error fetching user photo:", err));
+        }
+    }, [session?.user]);
+
     const handleLogout = async () => {
         await signOut({ redirect: false });
         router.push("/authentication");
     };
-    
+    const avatarSrc = userPhotoUrl || 
+    (session?.user as any)?.photoUrl || 
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.user?.name || "User")}&background=c7d2fe&color=3730a3&bold=true`;
+
     return (
         <aside className="h-screen w-full">
             <nav className="h-full flex flex-col bg-white border-r shadow-sm">
@@ -32,7 +52,7 @@ export default function SidebarFunction({ children }: { children: React.ReactNod
                 </ul>
                 <div className="border-t flex p-3">
                     <Image
-                        src={session?.user?.image || "https://ui-avatars.com/api/?name=" + encodeURIComponent(session?.user?.name || "User") + "&background=c7d2fe&color=3730a3&bold=true"}
+                        src={avatarSrc}
                         alt="User Avatar"
                         className="w-10 h-10 rounded-md object-cover"
                         width={25}
