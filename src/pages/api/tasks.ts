@@ -338,6 +338,14 @@ async function updateTask(req: NextApiRequest, res: NextApiResponse) {
 
 // Function to delete a task
 async function deleteTask(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerSession(req, res, authOptions as AuthOptions);
+  const userRole = (session?.user as any)?.role;
+
+  // Check if the user has the required role
+  if (userRole !== 'admin' && userRole !== 'project_manager') {
+    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
+  }
+
   try {
     const { id } = req.query;
 

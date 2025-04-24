@@ -10,7 +10,7 @@ import Pagination from "../pagination";
 import TableFilter from "@/app/components/function/filter-table";
 import { Task } from "@/app/types/task";
 import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOptions } from "@/app/utils/filter-utils";
-
+import { useSession } from "next-auth/react";
 type TaskTableProps = {
   searchTerm?: string;
   onEdit?: (task: Task) => void;
@@ -30,6 +30,8 @@ export default function TaskTable({
   projectId = null,
   hideAssignedColumn = false
 }: TaskTableProps) {
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +40,8 @@ export default function TaskTable({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  
+  const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
+
   // State untuk filter
   const [filters, setFilters] = useState({
     taskName: "",
@@ -338,9 +341,11 @@ export default function TaskTable({
                   </span>
                 </td>
                 <td className="px-4 py-3 flex gap-3 justify-center">
-                  <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                    <Trash2 className="text-red-500 hover:text-red-700"/>
-                  </button>
+                  {!isEmployee && 
+                    <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                      <Trash2 className="text-red-500 hover:text-red-700" />
+                    </button>
+                  }
                   <button onClick={() => handleView(task)} title="View task details">
                     <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
                   </button>

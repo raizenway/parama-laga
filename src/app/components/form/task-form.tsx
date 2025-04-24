@@ -120,26 +120,25 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
   useEffect(() => {
     if (selectedProject) {
       // Reset selected employee when project changes
+      // console.log("Selected project:", selectedProject);
       setSelectedEmployee(null);
-      
       // Filter employees that belong to the selected project
       const project = projects.find(p => p.projectName === selectedProject);
       if (project) {
-        setFormData(prev => ({ ...prev, projectId: project.id.toString(), userId: "" }));
+        setFormData(prev => ({ ...prev, projectId: project.id.toString(), userId: isEmployee ? prev.userId : "" }));
         
-        // Filter employees based on selected project
-        const projectName = selectedProject;
-        const employeesInProject = allEmployees.filter(emp => 
-          emp.projects && emp.projects.includes(projectName)
-        );
-        
+        if (!isEmployee) {
+          const employeesInProject = allEmployees.filter(emp =>
+            emp.projects?.includes(selectedProject)
+          );
         setFilteredEmployees(employeesInProject);
+      }
       }
     } else {
       // No project selected, show all employees
       setFilteredEmployees(allEmployees);
     }
-  }, [selectedProject, projects, allEmployees]);
+  }, [selectedProject, projects, allEmployees,isEmployee]);
   
   // Update formData when dropdown selections change for documentType and template
   useEffect(() => {
@@ -159,7 +158,9 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
     // If user is not employee, update selected employee
     if (!isEmployee && selectedEmployee) {
       const employee = filteredEmployees.find(e => e.name === selectedEmployee);
-      if (employee) setFormData(prev => ({ ...prev, userId: employee.id.toString() }));
+    if (employee) 
+      setFormData(prev => ({ ...prev, userId: employee.id.toString() })  );
+      setFilteredEmployees(userName);
     }
   }, [selectedEmployee, filteredEmployees, isEmployee]);
   
@@ -300,7 +301,7 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
             <Input 
               value={userName || "You"}
               className="bg-gray-50"
-              readOnly
+              disabled
             />
           </div>
         )}
@@ -309,20 +310,20 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
+            <Button
             type="submit"
-            disabled={isLoading || (!!selectedProject && filteredEmployees.length === 0)}
+            disabled={isLoading || !formData.taskName || !selectedDocType || !selectedTemplate || !selectedProject || (!isEmployee && filteredEmployees.length === 0)}
             className="text-white bg-primary hover:bg-primary-dark"
-          >
+            >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
               </>
             ) : (
               'Create Task'
             )}
-          </Button>
+            </Button>
         </div>
       </form>
     </div>
