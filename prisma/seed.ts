@@ -356,7 +356,7 @@ async function main() {
     create: {
       taskName: 'Review Surat Masuk',
       documentTypeId: incomingLetter.id,
-      templateId: standardTemplate.id,
+      templateSnapshot: standardTemplate.templateName,
       projectId: project1.id,
       userId: employee1.id,
       dateAdded: new Date(),
@@ -369,7 +369,7 @@ async function main() {
     create: {
       taskName: 'Approve Surat Keluar',
       documentTypeId: outgoingLetter.id,
-      templateId: outgoingTemplate.id,
+      templateSnapshot: outgoingTemplate.templateName,
       projectId: project1.id,
       userId: employee2.id,
       dateAdded: new Date(),

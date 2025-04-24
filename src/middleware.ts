@@ -1,58 +1,66 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  // console.log('[Middleware] Path:', path);
-  
-  // Definisikan rute yang dilindungi dan role yang diizinkan
-  const protectedRoutes = [
-    { path: '/employees', roles: ['admin','project_manager'] },
-    { path: '/projects', roles: ['admin', 'project_manager'] },
-    { path: '/template-maker', roles : ['admin', 'project_manager']},
-    { path: '/template-maker', roles : ['admin', 'project_manager']},
-  ];
-  
-  // Cek apakah path saat ini adalah rute yang dilindungi
-  const matchedRoute = protectedRoutes.find(route => 
-    path === route.path || path.startsWith(`${route.path}/`)
-  );
-  
-  if (matchedRoute) {
-    // console.log('[Middleware] Matched protected route:', matchedRoute.path);
-    
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET
-    });
-    
-    // console.log('[Middleware] Token exists:', !!token);
-    
-    // Jika tidak ada token, redirect ke login
-    if (!token) {
-      // console.log('[Middleware] No token - redirecting to login');
-      const url = new URL('/authentication', request.url);
-      url.searchParams.set('callbackUrl', encodeURI(path));
-      return NextResponse.redirect(url);
-    }
-    
-    // Cek apakah user memiliki role yang sesuai
-    const userRole = token.role as string;
-    // console.log('[Middleware] User role:', userRole);
-    
-    if (!matchedRoute.roles.includes(userRole)) {
-      // console.log('[Middleware] Unauthorized role - redirecting');
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-    
-    // console.log('[Middleware] Access granted');
+  const { pathname } = request.nextUrl
+
+  //  1. Bypass untuk static files & images
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.match(/\.(png|jpg|jpeg|webp|svg|ico|gif|css|js)$/i)
+  ) {
+    return NextResponse.next()
   }
-  
-  return NextResponse.next();
+
+  // 2. Path-path publik (nggak butuh login)
+  const publicPaths = [
+    '/authentication',
+    '/api/auth', // auth API route
+  ]
+  const isPublic = publicPaths.some(path => pathname.startsWith(path))
+
+  // 3. Cek token (login)
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
+  if (!token && !isPublic) {
+    const url = new URL('/authentication', request.url)
+    url.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // 4. Role-based guard
+  const protectedRoutes = [
+    { path: '/dashboard', roles: ['admin', 'project_manager', 'employee'] },
+    { path: '/employees', roles: ['admin', 'project_manager'] },
+    { path: '/projects', roles: ['admin', 'project_manager'] },
+    { path: '/template-maker', roles: ['admin', 'project_manager'] },
+  ]
+
+  const matched = protectedRoutes.find(r =>
+    pathname === r.path || pathname.startsWith(`${r.path}/`)
+  )
+
+  if (matched && token && !matched.roles.includes(token.role as string)) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url))
+  }
+
+  //  5. Lolos semua pengecekan → lanjutkan
+  return NextResponse.next()
 }
 
-// Konfigurasi agar middleware hanya dijalankan pada rute tertentu
+//  Matcher untuk menghindari pemrosesan terhadap static & API (bisa diperluas)
 export const config = {
-  matcher: ['/dashboard/:path*', '/employees/:path*', '/projects/:path*']
-};
+  matcher: [
+    /*
+      Match semua path KECUALI:
+      - /api
+      - /_next/static
+      - /_next/image
+      - /favicon.ico
+      - file-file gambar & asset static (tanpa regex)
+    */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+}

@@ -118,7 +118,6 @@ model TaskTemplate {
   createdAt          DateTime?           @map("created_at")
   updatedAt          DateTime?           @map("updated_at")
   templateChecklists TemplateChecklist[]
-  tasks              Task[]
 
   @@map("task_templates")
 }
@@ -151,14 +150,13 @@ model Task {
   id          Int            @id @default(autoincrement()) @map("task_id")
   taskName    String         @map("task_name")
   documentTypeId Int            @map("document_type_id")
-  templateId  Int            @map("template_id")
   projectId   Int            @map("project_id")
   userId      Int            @map("user_id")
   dateAdded   DateTime       @map("date_added")
   completedDate DateTime?      @map("completed_date")
   documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
   taskStatus        TaskStatus        
-  template    TaskTemplate   @relation(fields: [templateId], references: [id])
+  templateSnapshot String?       @map("template_snapshot")
   project     Project        @relation(fields: [projectId], references: [id])
   user        User           @relation(fields: [userId], references: [id])
   progresses  TaskProgress[]
@@ -215,7 +213,7 @@ model ActivityItem {
   name        String
   createdAt   DateTime?         @map("created_at")
   updatedAt   DateTime?         @map("updated_at")
-  category    ActivityCategory  @relation(fields: [categoryId], references: [id])
+  category    ActivityCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   results     ActivityResult[]
 
   @@map("activity_items")
@@ -228,7 +226,7 @@ model ActivityResult {
   comment    String?
   createdAt  DateTime?     @map("created_at")
   updatedAt  DateTime?     @map("updated_at")
-  item       ActivityItem  @relation(fields: [itemId], references: [id])
+  item       ActivityItem  @relation(fields: [itemId], references: [id],onDelete: Cascade)
 
   @@map("activity_results")
 }

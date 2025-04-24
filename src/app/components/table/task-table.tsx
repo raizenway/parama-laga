@@ -11,7 +11,7 @@ import TableFilter from "@/app/components/function/filter-table";
 import { Task } from "@/app/types/task";
 import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOptions } from "@/app/utils/filter-utils";
 import { MonthYearFilter } from "@/app/components/function/month-year-filter";
-
+import { useSession } from "next-auth/react";
 type TaskTableProps = {
   tasks: Task[]
   searchTerm?: string;
@@ -32,6 +32,8 @@ export default function TaskTable({
   projectId = null,
   hideAssignedColumn = false
 }: TaskTableProps) {
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +42,8 @@ export default function TaskTable({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  
+  const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
+
   const [filters, setFilters] = useState({
     taskName: "",
     documentType: "",
@@ -387,15 +390,15 @@ export default function TaskTable({
                     {task.taskStatus}
                   </span>
                 </td>
-                <td>
-                  <div className="px-4 py-3 flex gap-3 justify-center">
+                <td className="px-4 py-3 flex gap-3 justify-center">
+                  {!isEmployee && 
                     <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                      <Trash2 className="text-red-500 hover:text-red-700"/>
+                      <Trash2 className="text-red-500 hover:text-red-700" />
                     </button>
-                    <button onClick={() => handleView(task)} title="View task details">
-                      <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
-                    </button>
-                  </div>
+                  }
+                  <button onClick={() => handleView(task)} title="View task details">
+                    <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
+                  </button>
                 </td>
               </tr>
             ))

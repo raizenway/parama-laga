@@ -76,7 +76,8 @@ export const authOptions = {
   // Konfigurasi session menggunakan JWT
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 60,    // sesi 30 menit
+    updateAge: 5 * 60,  // perbarui token tiap 5 menit
   },
   pages: {
     signIn: '/authentication',

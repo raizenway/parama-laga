@@ -39,7 +39,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               personnelId: true
             }
           },
-          template: true,
           progresses: {
             include: {
               checklist: true
@@ -90,7 +89,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           documentType: true,
           project: true,
           user: true,
-          template: true,
           progresses: {
             include: {
               checklist: true

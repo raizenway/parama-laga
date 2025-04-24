@@ -16,7 +16,6 @@ export default async function handler(
   }
   
   // Check if user is admin or project manager - you can customize this according to your needs
-  if (session.user && ((session.user as any).role === 'admin' || (session.user as any).role === 'project_manager')) {
     const { id } = req.query;
     
     if (!id || typeof id !== 'string') {
@@ -70,7 +69,4 @@ export default async function handler(
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
-  } else {
-    return res.status(403).json({ message: 'Forbidden: Admin or Project Manager access required' });
-  }
 }

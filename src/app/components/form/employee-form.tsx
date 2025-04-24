@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import StatusDropdown from "../status-dropdown";
 import ProjectAssigning from "@/app/components/dropdown-multiple-selection";
@@ -23,12 +23,12 @@ export default function EmployeeForm({
   onSuccess?: () => void; // Add type for the new prop
 }){  
   // Project-specific positions
+  const [isUploading, setIsUploading] = useState(false);
   const [projectPositions, setProjectPositions] = useState<Record<string, string>>({});
   // This will be stored in User.role field
   const [defaultRole, setDefaultRole] = useState("");
   const [status, setEmployeeStatus] = useState<UserStatus>("active");
-  const [image, setImage] = useState("/person.png");
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [image, setImage] =  useState<string | null>(null);
   const [multipleProjects, setMultipleProjects] = useState<string[]>([]);
   const [availableProjects, setAvailableProjects] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +39,36 @@ export default function EmployeeForm({
     personnelId: "",
     password: ""
   });
+
+// Update fungsi uploadToCloudinary
+const uploadToCloudinary = async (file: File) => {
+  setIsUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+    
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+    if (data.secure_url) {
+      setImage(data.secure_url);
+      toast.success('Photo uploaded successfully');
+    }
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    toast.error('Failed to upload image');
+    setImage('/person.png'); // Reset to default if upload fails
+  } finally {
+    setIsUploading(false);
+  }
+};
 
    useEffect(() => {
        // Build a fresh map from the selected projects
@@ -234,14 +264,6 @@ export default function EmployeeForm({
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setImage(imageUrl);
-    }
-  };
-
   const userStatusOptions: Array<{ value: UserStatus; label: string; color: string }> = [
     { value: "active", label: "Active", color: "text-emerald-500 hover:text-emerald-600 border-green-300" },
     { value: "inactive", label: "Inactive", color: "text-red-500 hover:text-red-600 border-red-300" }
@@ -257,30 +279,59 @@ export default function EmployeeForm({
       ) : (
         <form onSubmit={handleSubmit} className="">
           <div className="flex grow gap-8">
-            {/* Image Upload */}
-            <div
-              className="relative cursor-pointer group shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-            >
+            {/* Image Preview */}
+            <div className="flex flex-col items-center gap-2">
+            {image && image.startsWith("http") ? (
               <Image
-                src={image}
-                alt="Employee"
-                className="rounded-full h-32 w-32 border border-gray-300"
-                width={125}
-                height={125}
+              src={image!}
+              alt="Employee photo"
+              width={125}
+              height={125}
+              className="rounded-full border border-gray-300 object-cover shadow-md"
               />
-              <div className="absolute inset-0 h-32 w-32 bg-opacity-50 rounded-full hidden group-hover:flex items-center justify-center hover:bg-black hover:bg-opacity-50 hover:transition">
-                <span className="text-white text-xs">Change Photo</span>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleImageChange}
+            ) : (
+              <Image
+              src="/person.png"
+              alt="Employee photo"
+              width={125}
+              height={125}
+              className="rounded-full border border-gray-300 shadow-md"
               />
-            </div>
+            )}
 
+            {/* Upload Button */}
+            <div className="relative mt-2">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id="photo-upload"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  // Langsung upload ke Cloudinary tanpa preview local
+                  uploadToCloudinary(file);
+                }
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              className="bg-primary text-white hover:bg-indigo-900"
+              onClick={() => document.getElementById('photo-upload')?.click()}
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Upload Photo'
+              )}
+            </Button>
+          </div>
+            </div>
             <div className="flex flex-col grow gap-2 max-h-[70vh] overflow-y-auto pr-2">
               {/* EMPLOYEE IDENTITY */}
               <h1 className="my-1 text-base font-medium">Employee Identity</h1>
@@ -331,30 +382,32 @@ export default function EmployeeForm({
                 disabled={mode === "view"}
                 className={mode === "view" ? "bg-gray-50" : ""}
               />
-
-              {mode === "add" && (
+              {mode != "view" && (
                 <div className="relative">
-  <Input 
-    name="password"
-    type={showPassword ? "text" : "password"}
-    placeholder="Password" 
-    value={formData.password}
-    onChange={handleChange}
-    required
-    className="bg-gray-50 pr-10" // ruang untuk tombol eye
-  />
-  <button
-    type="button"
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
-    onClick={() => setShowPassword(!showPassword)}
-  >
-    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
-  </button>
-</div>
+                <Input 
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required={mode === "add"}
+                  minLength={formData.password ? 8 : undefined}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+                </button>
+              </div>
               )}
-                            
-
-
+              {(mode === "add" || mode === "edit") && (
+                <p className="text-xs text-gray-500 mt-1">
+                  * Password minimal 8 karakter.
+                  {mode === "edit" && " Kosongkan jika tidak ingin mengubah password."}
+                </p>
+              )}
               <h1 className="my-1 mt-3 text-base font-medium">Project Assignment</h1>
 
               {/* EMPLOYEE PROJECTS */}
