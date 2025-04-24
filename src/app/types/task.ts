@@ -11,7 +11,7 @@ export type Task = {
   };
   dateAdded: string;
   completedDate?: string | null;
-  taskStatus: string; // Gunakan taskStatus dari database
+  taskStatus: string;
   user: {
     id: number;
     name: string;

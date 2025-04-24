@@ -10,8 +10,10 @@ import Pagination from "../pagination";
 import TableFilter from "@/app/components/function/filter-table";
 import { Task } from "@/app/types/task";
 import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOptions } from "@/app/utils/filter-utils";
+import { MonthYearFilter } from "@/app/components/function/month-year-filter";
 
 type TaskTableProps = {
+  tasks: Task[]
   searchTerm?: string;
   onEdit?: (task: Task) => void;
   refreshTrigger?: number;
@@ -39,13 +41,14 @@ export default function TaskTable({
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   
-  // State untuk filter
   const [filters, setFilters] = useState({
     taskName: "",
     documentType: "",
     project: "",
     assignedTo: "",
-    status: ""
+    status: "",
+    startDate: "",
+    completedDate: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -103,6 +106,33 @@ export default function TaskTable({
         (filters.assignedTo === "unassigned" && !task.user) || 
         (task.user && task.user.id.toString() === filters.assignedTo);
       
+
+         // Start Date Filter
+         if (filters.startDate) {
+          const [filterYear, filterMonth] = filters.startDate.split('-').map(Number)
+          const taskStart = new Date(task.dateAdded)
+          const taskStartYear = taskStart.getFullYear()
+          const taskStartMonth = taskStart.getMonth() + 1 // Month is 0-indexed
+  
+          if (taskStartYear < filterYear || 
+              (taskStartYear === filterYear && taskStartMonth < filterMonth)) {
+            return false
+          }
+        }
+  
+        // Completed Date Filter
+        if (filters.completedDate) {
+          const [filterYear, filterMonth] = filters.completedDate.split('-').map(Number)
+          const taskCompleted = new Date(task.completedDate)
+          const taskCompletedYear = taskCompleted.getFullYear()
+          const taskCompletedMonth = taskCompleted.getMonth() + 1
+  
+          if (taskCompletedYear > filterYear || 
+              (taskCompletedYear === filterYear && taskCompletedMonth > filterMonth)) {
+            return false
+          }
+        }
+
       // Filter berdasarkan status
       const matchesStatus = filters.status === "" || 
         task.taskStatus === filters.status;
@@ -241,6 +271,26 @@ export default function TaskTable({
           />
         </div>
 
+        {/* Start Date Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
+          <MonthYearFilter
+            value={filters.startDate}
+            onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
+            placeholder="Select start month"
+          />
+        </div>
+        
+        {/* Completed Date Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Completed Month</label>
+          <MonthYearFilter
+            value={filters.completedDate}
+            onChange={(value) => setFilters(prev => ({ ...prev, completedDate: value }))}
+            placeholder="Select Completed month"
+          />
+        </div>
+
         {/* Assignee Filter */}
         {!hideAssignedColumn && (
           <div>
@@ -337,13 +387,15 @@ export default function TaskTable({
                     {task.taskStatus}
                   </span>
                 </td>
-                <td className="px-4 py-3 flex gap-3 justify-center">
-                  <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                    <Trash2 className="text-red-500 hover:text-red-700"/>
-                  </button>
-                  <button onClick={() => handleView(task)} title="View task details">
-                    <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
-                  </button>
+                <td>
+                  <div className="px-4 py-3 flex gap-3 justify-center">
+                    <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                      <Trash2 className="text-red-500 hover:text-red-700"/>
+                    </button>
+                    <button onClick={() => handleView(task)} title="View task details">
+                      <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))
