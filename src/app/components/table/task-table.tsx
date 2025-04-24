@@ -1,7 +1,7 @@
 "use client"
 import { CalendarCheck2, FileCheck2, TrafficCone, Trash2, Zap, ListCheck, CircleArrowRight, Hourglass, CalendarDays, User } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,8 +10,12 @@ import Pagination from "../pagination";
 import TableFilter from "@/app/components/function/filter-table";
 import { Task } from "@/app/types/task";
 import { getDocumentTypeOptions, getProjectOptions, getAssigneeOptions, statusOptions } from "@/app/utils/filter-utils";
-import { MonthYearFilter } from "@/app/components/function/month-year-filter";
+import AddButton from "@/app/components/button/button-custom";
 import { useSession } from "next-auth/react";
+import { DateMonthYearFilter } from "../function/date-month-year-filter";
+import TaskModal from "../modal/task-modal";
+
+
 type TaskTableProps = {
   tasks: Task[]
   searchTerm?: string;
@@ -36,6 +40,7 @@ export default function TaskTable({
   const userRole = (session?.user as any)?.role;
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchTerm, 500);
@@ -43,6 +48,8 @@ export default function TaskTable({
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
 
   const [filters, setFilters] = useState({
     taskName: "",
@@ -193,6 +200,16 @@ export default function TaskTable({
     setFilters(prev => ({ ...prev, [column]: value }));
     setCurrentPage(1); // Reset ke halaman pertama saat filter berubah
   };
+
+  // Function to trigger a refresh of the TaskTable
+  const refreshTasks = useCallback(() => {
+    setRefreshCounter(prev => prev + 1);
+  }, []);
+
+  const handleTaskSaved = () => {
+    setIsDetailOpen(false);
+    refreshTasks();
+  };
   
   const handleDeleteTask = (task: Task) => {
     setSelectedTask(task);
@@ -240,6 +257,11 @@ export default function TaskTable({
     <>
     <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${hideAssignedColumn ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
+        <AddButton 
+          text="+ Add Task" 
+          onClick={() => setIsDetailOpen(true)}
+        />
+        
         {/* Task Name Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1 ">Task Name</label>
@@ -276,8 +298,8 @@ export default function TaskTable({
 
         {/* Start Date Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
-          <MonthYearFilter
+          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <DateMonthYearFilter
             value={filters.startDate}
             onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
             placeholder="Select start month"
@@ -287,10 +309,10 @@ export default function TaskTable({
         {/* Completed Date Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Completed Month</label>
-          <MonthYearFilter
+          <DateMonthYearFilter
             value={filters.completedDate}
             onChange={(value) => setFilters(prev => ({ ...prev, completedDate: value }))}
-            placeholder="Select Completed month"
+            placeholder="Select completed date"
           />
         </div>
 
@@ -432,6 +454,12 @@ export default function TaskTable({
         onPageChange={setCurrentPage}
         itemsPerPage={itemsPerPage}
         totalItems={filteredTasks.length}
+      />
+
+      <TaskModal 
+        open={isDetailOpen} 
+        onClose={() => setIsDetailOpen(false)} 
+        onTaskSaved={handleTaskSaved}
       />
     </>
   );

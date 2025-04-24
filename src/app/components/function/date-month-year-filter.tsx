@@ -2,8 +2,8 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
-type MonthYearFilterProps = {
-  value: string // Format "YYYY-MM" atau ""
+type DateMonthYearFilterProps = {
+  value: string
   onChange: (value: string) => void
   placeholder?: string
   className?: string
@@ -24,33 +24,39 @@ const months = [
   { value: "12", label: "December" }
 ]
 
-export const MonthYearFilter = ({
+const getDaysInMonth = (year: number, month: number) => new Date(year, month, 0).getDate()
+
+export const DateMonthYearFilter = ({
   value,
   onChange,
-  placeholder = "Select month & year",
+  placeholder = "Select date",
   className = ""
-}: MonthYearFilterProps) => {
+}: DateMonthYearFilterProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState("")
   const [selectedMonth, setSelectedMonth] = useState("")
   const [selectedYear, setSelectedYear] = useState("")
   const dropdownRef = useRef<HTMLDivElement>(null)
+
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 5 }, (_, i) => currentYear + i - 2) // 2 tahun sebelum dan sesudah tahun ini
+  const years = Array.from({ length: 5 }, (_, i) => currentYear + i - 2)
 
   useEffect(() => {
     if (value) {
-      const [year, month] = value.split('-')
+      const [year, month, day] = value.split('-')
       setSelectedYear(year)
       setSelectedMonth(month)
+      setSelectedDay(day)
     } else {
       setSelectedYear("")
       setSelectedMonth("")
+      setSelectedDay("")
     }
   }, [value])
 
   const handleApply = () => {
-    if (selectedMonth && selectedYear) {
-      onChange(`${selectedYear}-${selectedMonth}`)
+    if (selectedDay && selectedMonth && selectedYear) {
+      onChange(`${selectedYear}-${selectedMonth}-${selectedDay}`)
     } else {
       onChange("")
     }
@@ -61,6 +67,12 @@ export const MonthYearFilter = ({
     onChange("")
     setIsOpen(false)
   }
+
+  const daysInMonth = selectedYear && selectedMonth
+    ? getDaysInMonth(Number(selectedYear), Number(selectedMonth))
+    : 31
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => String(i + 1).padStart(2, '0'))
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -79,12 +91,9 @@ export const MonthYearFilter = ({
         className="flex items-center justify-between cursor-pointer text-sm hover:bg-gray-100 px-2 py-1 rounded border"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={`whitespace-nowrap ${!value ? "text-gray-400" : "" }`}>
-          {value 
-            ? new Date(`${value}-01`).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long' 
-              })
+        <span className={`whitespace-nowrap ${!value ? "text-gray-400" : ""}`}>
+          {value
+            ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
             : placeholder}
         </span>
         {value ? (
@@ -102,22 +111,34 @@ export const MonthYearFilter = ({
           <ChevronDown size={16} />
         )}
       </div>
-      
+
       {isOpen && (
         <div className="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 p-3">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Month Selection */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* Day */}
+            <div>
+              <h3 className="font-medium text-sm mb-2">Day</h3>
+              <div className="grid max-h-40 overflow-auto gap-1">
+                {days.map(day => (
+                  <button
+                    key={day}
+                    className={`text-left px-2 py-1 text-sm rounded ${selectedDay === day ? "bg-blue-100 text-blue-800" : "hover:bg-gray-100"}`}
+                    onClick={() => setSelectedDay(day)}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Month */}
             <div>
               <h3 className="font-medium text-sm mb-2">Month</h3>
-              <div className="grid gap-1 overflow-auto">
+              <div className="grid max-h-40 overflow-auto gap-1">
                 {months.map(month => (
                   <button
                     key={month.value}
-                    className={`text-left px-2 py-1 text-sm rounded ${
-                      selectedMonth === month.value
-                        ? "bg-blue-100 text-blue-800"
-                        : "hover:bg-gray-100"
-                    }`}
+                    className={`text-left px-2 py-1 text-sm rounded ${selectedMonth === month.value ? "bg-blue-100 text-blue-800" : "hover:bg-gray-100"}`}
                     onClick={() => setSelectedMonth(month.value)}
                   >
                     {month.label}
@@ -126,18 +147,14 @@ export const MonthYearFilter = ({
               </div>
             </div>
 
-            {/* Year Selection */}
+            {/* Year */}
             <div>
               <h3 className="font-medium text-sm mb-2">Year</h3>
-              <div className="grid grid-cols-1 gap-1 max-h-40 overflow-auto">
+              <div className="grid max-h-40 overflow-auto gap-1">
                 {years.map(year => (
                   <button
                     key={year}
-                    className={`text-left px-2 py-1 text-sm rounded ${
-                      selectedYear === year.toString()
-                        ? "bg-blue-100 text-blue-800"
-                        : "hover:bg-gray-100"
-                    }`}
+                    className={`text-left px-2 py-1 text-sm rounded ${selectedYear === year.toString() ? "bg-blue-100 text-blue-800" : "hover:bg-gray-100"}`}
                     onClick={() => setSelectedYear(year.toString())}
                   >
                     {year}
@@ -147,13 +164,12 @@ export const MonthYearFilter = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-between mt-3 pt-2 border-t">
             <button
               onClick={handleApply}
-              disabled={!selectedMonth || !selectedYear}
+              disabled={!selectedDay || !selectedMonth || !selectedYear}
               className={`text-sm px-3 py-1 rounded ${
-                selectedMonth && selectedYear
+                selectedDay && selectedMonth && selectedYear
                   ? "bg-blue-500 text-white hover:bg-blue-600"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               }`}

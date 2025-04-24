@@ -6,6 +6,7 @@ import { Project } from "@/app/types/project";
 import TableFilter from "../function/filter-table";
 import { getProjectStatusOptions } from "@/app/utils/filter-utils";
 import { MonthYearFilter } from "../function/month-year-filter";
+import { DateMonthYearFilter } from "../function/date-month-year-filter";
 
 type ProjectTableProps = {
   projects: Project[];
@@ -116,7 +117,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
             />
           </div>
 
-           {/* Start Date Filter */}
+           {/* Start Month Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
             <MonthYearFilter
