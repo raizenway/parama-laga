@@ -2,8 +2,6 @@
 import { useDebounce } from "@/hooks/useDebounce";
 import { useState, useEffect } from "react";
 import ProjectTable from "@/app/components/table/project-table";
-// import AddButton from "@/app/components/button/add-button";
-import AddButton from "@/app/components/button/button-custom";
 import ProjectModal from "@/app/components/modal/project-modal";
 import { Loader2 } from "lucide-react";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
@@ -58,12 +56,6 @@ export default function Page() {
   useEffect(() => {
     fetchProjects(debouncedSearchQuery);
   }, [debouncedSearchQuery]);
-
-  const handleAddProject = () => {
-    setSelectedProject(null);
-    setModalMode("add");
-    setIsModalOpen(true);
-  };
 
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
@@ -148,6 +140,7 @@ export default function Page() {
                 onEdit={handleEditProject}
                 onDelete={handleDeleteProject}
                 onView={handleViewProject}
+                onProjectChange={fetchProjects}
               />
             )}
           </div>

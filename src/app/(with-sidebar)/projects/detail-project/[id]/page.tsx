@@ -203,7 +203,7 @@ export default function ProjectDetailPage() {
         {/* Task Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="p-6">
-            <TaskTable projectId={project.id} />
+            <TaskTable projectId={project.id} tasks={[]} />
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ import DocumentModal from "@/app/components/modal/task-modal";
           </div>
                 <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
                   <div className= "max-h-full w-full ">
-                      <DocumentTable />
+                      <DocumentTable tasks={[]} />
                   </div>
                 </div>
         </div>
