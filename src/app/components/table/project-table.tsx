@@ -120,7 +120,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
            {/* Start Month Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
-            <MonthYearFilter
+            <DateMonthYearFilter
               value={filters.startDate}
               onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
               placeholder="Select start month"
@@ -130,7 +130,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
           {/* End Date Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">End Month</label>
-            <MonthYearFilter
+            <DateMonthYearFilter
               value={filters.endDate}
               onChange={(value) => setFilters(prev => ({ ...prev, endDate: value }))}
               placeholder="Select end month"

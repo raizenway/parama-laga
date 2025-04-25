@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 import DeleteConfirmation from "@/app/components/modal/delete-confirmation";
 import Pagination from "../pagination";
 import TableFilter from "@/app/components/function/filter-table";
@@ -14,6 +15,7 @@ import AddButton from "@/app/components/button/button-custom";
 import { useSession } from "next-auth/react";
 import { DateMonthYearFilter } from "../function/date-month-year-filter";
 import TaskModal from "../modal/task-modal";
+
 
 
 type TaskTableProps = {
@@ -36,6 +38,7 @@ export default function TaskTable({
   projectId = null,
   hideAssignedColumn = false
 }: TaskTableProps) {
+  const pathname = usePathname();
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role;
   const router = useRouter();
@@ -49,6 +52,7 @@ export default function TaskTable({
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const isDetailEmployeePage = pathname?.startsWith("/employees/detail-employee/");
 
 
   const [filters, setFilters] = useState({
@@ -116,32 +120,27 @@ export default function TaskTable({
         (filters.assignedTo === "unassigned" && !task.user) || 
         (task.user && task.user.id.toString() === filters.assignedTo);
       
+      function normalizeDate(date: Date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      }
 
-         // Start Date Filter
-         if (filters.startDate) {
-          const [filterYear, filterMonth] = filters.startDate.split('-').map(Number)
-          const taskStart = new Date(task.dateAdded)
-          const taskStartYear = taskStart.getFullYear()
-          const taskStartMonth = taskStart.getMonth() + 1 // Month is 0-indexed
-  
-          if (taskStartYear < filterYear || 
-              (taskStartYear === filterYear && taskStartMonth < filterMonth)) {
-            return false
-          }
+      if (filters.startDate) {
+        const filterStartDate = normalizeDate(new Date(filters.startDate))
+        const taskStartDate = normalizeDate(new Date(task.dateAdded))
+      
+        if (taskStartDate < filterStartDate) {
+          return false
         }
-  
-        // Completed Date Filter
-        if (filters.completedDate) {
-          const [filterYear, filterMonth] = filters.completedDate.split('-').map(Number)
-          const taskCompleted = new Date(task.completedDate)
-          const taskCompletedYear = taskCompleted.getFullYear()
-          const taskCompletedMonth = taskCompleted.getMonth() + 1
-  
-          if (taskCompletedYear > filterYear || 
-              (taskCompletedYear === filterYear && taskCompletedMonth > filterMonth)) {
-            return false
-          }
+      }
+
+      if (filters.completedDate) {
+        const filterCompletedDate = normalizeDate(new Date(filters.completedDate))
+        const taskCompletedDate = normalizeDate(new Date(task.completedDate))
+      
+        if (taskCompletedDate > filterCompletedDate) {
+          return false
         }
+      }
 
       // Filter berdasarkan status
       const matchesStatus = filters.status === "" || 
@@ -255,25 +254,24 @@ export default function TaskTable({
 
   return (
     <>
-    <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${hideAssignedColumn ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
-        <AddButton 
-          text="+ Add Task" 
-          onClick={() => setIsDetailOpen(true)}
+    <div className="flex justify-end items-center space-x-2">
+      {/* Task Name Filter */}
+      <div>
+        <input
+          type="text"
+          placeholder="Search by name..."
+          className="px-2 py-2 border rounded-md text-sm w-full"
+          value={filters.taskName}
+          onChange={(e) => handleFilterChange("taskName", e.target.value)}
         />
-        
-        {/* Task Name Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 ">Task Name</label>
-          <input
-            type="text"
-            placeholder="Filter by name..."
-            className="px-2 py-1 border rounded-md text-sm w-full"
-            value={filters.taskName}
-            onChange={(e) => handleFilterChange("taskName", e.target.value)}
-          />
-        </div>
-
+      </div>
+      <AddButton 
+        text="+ Add Task" 
+        onClick={() => setIsDetailOpen(true)}
+      />
+    </div>
+    <div className="bg-white py-6 px-4 rounded-lg shadow-sm border mb-2">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isEmployee ? 'lg:grid-cols-5' : 'lg:grid-cols-6'} gap-4`}>
         {/* Document Type Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
@@ -302,7 +300,7 @@ export default function TaskTable({
           <DateMonthYearFilter
             value={filters.startDate}
             onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
-            placeholder="Select start month"
+            
           />
         </div>
         
@@ -312,12 +310,11 @@ export default function TaskTable({
           <DateMonthYearFilter
             value={filters.completedDate}
             onChange={(value) => setFilters(prev => ({ ...prev, completedDate: value }))}
-            placeholder="Select completed date"
           />
         </div>
 
         {/* Assignee Filter */}
-        {!hideAssignedColumn && (
+        {!isEmployee && !isDetailEmployeePage && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
             <TableFilter
@@ -365,7 +362,7 @@ export default function TaskTable({
               <TrafficCone /> Project
             </div>
           </th>
-          {!hideAssignedColumn && (
+          {!isEmployee && (
             <th className="px-4 py-2 w-[15%] text-left">
               <div className="flex items-center gap-1">
                 <User /> Assigned To
@@ -404,7 +401,7 @@ export default function TaskTable({
                 <td className="px-4 py-3">{task.taskName}</td>
                 <td className="px-4 py-3">{task.documentType.name}</td>
                 <td className="px-4 py-3">{task.project.projectName}</td>
-                {!hideAssignedColumn && (<td className="px-4 py-3">{task.user?.name || 'Unassigned'}</td>)}
+                {!isEmployee && (<td className="px-4 py-3">{task.user?.name || 'Unassigned'}</td>)}
                 <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
                 <td className="px-4 py-3">{task.completedDate ? new Date(task.completedDate).toLocaleDateString() : '-'}</td>
                 <td className="px-4 py-3">

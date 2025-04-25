@@ -55,10 +55,10 @@ export default function Page() {
             value={searchQuery}
             onChange={handleSearchChange}
           /> */}
-            <AddButton 
+            {/* <AddButton 
               text="+ Add Task" 
               onClick={() => setIsDetailOpen(true)}
-            />
+            /> */}
         </div>
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
           <div className="max-h-full w-full">

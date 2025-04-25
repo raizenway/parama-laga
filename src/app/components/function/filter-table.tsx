@@ -50,7 +50,7 @@ const TableFilter = ({
   return (
     <div className="relative inline-block text-left w-full rounded border" ref={dropdownRef}>
       <div
-        className="flex items-center cursor-pointer justify-between hover:bg-gray-100 text-sm px-2 py-1 rounded w-full"
+        className="flex items-center cursor-pointer justify-between hover:bg-gray-100 text-sm px-2 h-8 rounded w-full"
         onClick={() => setIsOpen(!isOpen)}
       >
         {icon}
@@ -76,7 +76,7 @@ const TableFilter = ({
       </div>
       {isOpen && (
         <div className="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-          <div className="py-1 max-h-60 overflow-auto">
+          <div className="max-h-60 overflow-auto">
             {options.map((option) => (
               <div
                 key={option.value}
