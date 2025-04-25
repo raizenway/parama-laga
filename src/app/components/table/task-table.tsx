@@ -193,7 +193,7 @@ export default function TaskTable({
       mounted = false
       controller.abort()
     }
-  }, [debouncedSearchQuery, refreshTrigger, projectId, employeeId])
+  }, [debouncedSearchQuery, refreshCounter, projectId, employeeId])
 
   const handleFilterChange = (column: string, value: string) => {
     setFilters(prev => ({ ...prev, [column]: value }));
@@ -222,7 +222,7 @@ export default function TaskTable({
       const res = await fetch(`/api/tasks/${selectedTask.id}`, { method: "DELETE" })
       if (!res.ok) throw new Error("Delete failed")
       toast.success("Task deleted")
-      onTaskDeleted?.()     // trigger parent refreshTrigger
+      refreshTasks?.()     // trigger parent refreshTrigger
     } catch (err: any) {
       toast.error("Delete error", { description: err.message })
     } finally {
