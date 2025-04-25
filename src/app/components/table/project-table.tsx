@@ -108,20 +108,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
             />
           </div>
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
-        <div className="grid grid-cols-5 gap-4">
-    
-          {/* Company Type Filter */}
-          <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 ">Company Name</label>
-            <input
-              type="text"
-              placeholder="Filter by name..."
-              className="px-2 py-1 border rounded-md text-sm w-full"
-              value={filters.companyName}
-              onChange={(e) => handleFilterChange("companyName", e.target.value)}
-            />
-          </div>
-  
+        <div className="grid grid-cols-3 gap-4">
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
