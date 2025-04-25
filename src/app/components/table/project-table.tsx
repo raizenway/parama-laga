@@ -104,7 +104,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
             </div>
             <AddButton 
               text="+ Add Project" 
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleAddProject}
             />
           </div>
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
