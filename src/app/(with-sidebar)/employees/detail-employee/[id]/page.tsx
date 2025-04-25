@@ -197,7 +197,7 @@ export default function EmployeeDetailPage() {
         {/* Alternative to Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="p-6">
-            <TaskTable employeeId={employee.id} hideAssignedColumn={true}/>
+            <TaskTable employeeId={employee.id} hideAssignedColumn={true} tasks={[]}/>
           </div>
         </div>
       </div>

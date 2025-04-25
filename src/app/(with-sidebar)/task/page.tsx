@@ -1,6 +1,5 @@
 "use client"
 import { useState, useCallback, useEffect } from "react";
-import AddButton from "@/app/components/button/button-custom";
 import TaskTable from "@/app/components/table/task-table";
 import TaskModal from "@/app/components/modal/task-modal";
 import { useSession } from "next-auth/react";
@@ -63,6 +62,7 @@ export default function Page() {
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
           <div className="max-h-full w-full">
             <TaskTable 
+              tasks={[]} // Provide an empty array or fetch tasks dynamically
               searchTerm={searchQuery}
               refreshTrigger={refreshCounter}
               onTaskDeleted={refreshTasks}

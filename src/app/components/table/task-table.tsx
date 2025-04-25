@@ -31,12 +31,10 @@ type TaskTableProps = {
 };
 
 export default function TaskTable({ 
+  tasks: passedTasks = [], // use passed tasks if available
   searchTerm = "",
-  refreshTrigger = 0,
-  onTaskDeleted,
   employeeId = null,
   projectId = null,
-  hideAssignedColumn = false
 }: TaskTableProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -44,7 +42,7 @@ export default function TaskTable({
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(passedTasks.length ? false : true);
   const [error, setError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchTerm, 500);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -134,12 +132,11 @@ export default function TaskTable({
       }
 
       if (filters.completedDate) {
-        const filterCompletedDate = normalizeDate(new Date(filters.completedDate))
-        const taskCompletedDate = normalizeDate(new Date(task.completedDate))
-      
-        if (taskCompletedDate > filterCompletedDate) {
-          return false
-        }
+        // If task.completedDate does not exist, skip this task.
+        if (!task.completedDate) return false;
+        const filterCompletedDate = normalizeDate(new Date(filters.completedDate));
+        const taskCompletedDate = normalizeDate(new Date(task.completedDate));
+        if (taskCompletedDate > filterCompletedDate) return false;
       }
 
       // Filter berdasarkan status
@@ -156,44 +153,57 @@ export default function TaskTable({
     currentPage * itemsPerPage
   );
 
+    // In case the parent passes new tasks via props
+    useEffect(() => {
+      if (passedTasks.length > 0) {
+        setTasks(passedTasks);
+        setIsLoading(false);
+      }
+    }, [passedTasks]);
+
   useEffect(() => {
-    let mounted = true
-    const controller = new AbortController()
+    if (passedTasks.length) return;
+
+    let mounted = true;
+    const controller = new AbortController();
 
     async function load() {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const qs = debouncedSearchQuery ? `?search=${encodeURIComponent(debouncedSearchQuery)}` : ""
-        const url = projectId
-          ? `/api/projects/${projectId}/tasks${qs}`
-          : employeeId
-            ? `/api/employee/${employeeId}/tasks${qs}`
-            : `/api/tasks${qs}`
+        const qs = debouncedSearchQuery
+          ? `?search=${encodeURIComponent(debouncedSearchQuery)}`
+          : "";
+        const url =
+          projectId
+            ? `/api/projects/${projectId}/tasks${qs}`
+            : employeeId
+              ? `/api/employee/${employeeId}/tasks${qs}`
+              : `/api/tasks${qs}`;
 
-        const res = await fetch(url, { signal: controller.signal })
-        if (!res.ok) throw new Error("Failed to fetch tasks")
-        const data = await res.json()
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error("Failed to fetch tasks");
+        const data = await res.json();
         if (mounted) {
-          setTasks(data)
-          setError(null)
+          setTasks(data);
+          setError(null);
         }
       } catch (e: any) {
         if (mounted) {
-          console.error(e)
-          setError(e.message)
-          toast.error("Error loading tasks", { description: e.message })
+          console.error(e);
+          setError(e.message);
+          toast.error("Error loading tasks", { description: e.message });
         }
       } finally {
-        if (mounted) setIsLoading(false)
+        if (mounted) setIsLoading(false);
       }
     }
-
-    load()
+    load();
     return () => {
-      mounted = false
-      controller.abort()
-    }
-  }, [debouncedSearchQuery, refreshCounter, projectId, employeeId])
+      mounted = false;
+      controller.abort();
+    };
+  }, [debouncedSearchQuery, refreshCounter, projectId, employeeId, passedTasks]);
+
 
   const handleFilterChange = (column: string, value: string) => {
     setFilters(prev => ({ ...prev, [column]: value }));

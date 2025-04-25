@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Pagination from "../pagination";
-import TableFilter from "../function/filter-table";
+// import TableFilter from "../function/filter-table";
 import { DateMonthYearFilter } from "../function/date-month-year-filter";
 
 type Template = {
@@ -76,23 +76,23 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
     fetchTemplates(debouncedSearchQuery);
   }, [debouncedSearchQuery]);
   
-  const dateAddedOptions = useMemo(() => {
-    const now = new Date();
-    const thisMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  // const dateAddedOptions = useMemo(() => {
+  //   const now = new Date();
+  //   const thisMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
     
-    const lastMonth = new Date(now);
-    lastMonth.setMonth(now.getMonth() - 1);
-    const lastMonthStr = `${lastMonth.getFullYear()}-${(lastMonth.getMonth() + 1).toString().padStart(2, '0')}`;
+  //   const lastMonth = new Date(now);
+  //   lastMonth.setMonth(now.getMonth() - 1);
+  //   const lastMonthStr = `${lastMonth.getFullYear()}-${(lastMonth.getMonth() + 1).toString().padStart(2, '0')}`;
     
-    const thisYear = now.getFullYear().toString();
+  //   const thisYear = now.getFullYear().toString();
     
-    return [
-      { value: "", label: "All time" },
-      { value: thisMonth, label: "This month" },
-      { value: lastMonthStr, label: "Last month" },
-      { value: thisYear, label: "This year" }
-    ];
-  }, []);
+  //   return [
+  //     { value: "", label: "All time" },
+  //     { value: thisMonth, label: "This month" },
+  //     { value: lastMonthStr, label: "Last month" },
+  //     { value: thisYear, label: "This year" }
+  //   ];
+  // }, []);
 
   // Filter templates based on criteria
   const filteredTemplates = useMemo(() => {

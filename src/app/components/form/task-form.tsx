@@ -160,7 +160,6 @@ export default function TaskForm({onClose, onSuccess} : {onClose: () => void, on
       const employee = filteredEmployees.find(e => e.name === selectedEmployee);
     if (employee) 
       setFormData(prev => ({ ...prev, userId: employee.id.toString() })  );
-      setFilteredEmployees(userName);
     }
   }, [selectedEmployee, filteredEmployees, isEmployee]);
   

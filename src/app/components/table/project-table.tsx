@@ -14,9 +14,10 @@ type ProjectTableProps = {
   onEdit: (project: Project) => void;
   onDelete: (project: Project) => void;
   onView: (project: Project) => void; // Add onView prop
+  onProjectChange: () => void; // Tambahkan properti ini
 };
 
-export default function ProjectTable({ projects, onEdit, onDelete, onView }: ProjectTableProps) {
+export default function ProjectTable({ projects, onEdit, onDelete, onView, onProjectChange}: ProjectTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -227,6 +228,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
         onClose={() => setIsModalOpen(false)} 
         project={selectedProject}
         mode={modalMode}
+        onProjectChange={onProjectChange}
       />
     </div>
   );
