@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import Pagination from "../pagination";
 import TableFilter from "../function/filter-table";
+import { DateMonthYearFilter } from "../function/date-month-year-filter";
 
 type Template = {
   id: number;
@@ -42,7 +43,7 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
   
   // State untuk filter
   const [filters, setFilters] = useState({
-    checklistCount: "",
+    templateName: "",
     dateAdded: "",
   });
   
@@ -74,17 +75,6 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
   useEffect(() => {
     fetchTemplates(debouncedSearchQuery);
   }, [debouncedSearchQuery]);
-
-  // Generate filter options
-  const checklistCountOptions = useMemo(() => {
-    return [
-      { value: "", label: "All" },
-      { value: "0", label: "No checklists" },
-      { value: "1-5", label: "1-5 checklists" },
-      { value: "6-10", label: "6-10 checklists" },
-      { value: "10+", label: "10+ checklists" }
-    ];
-  }, []);
   
   const dateAddedOptions = useMemo(() => {
     const now = new Date();
@@ -106,40 +96,24 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
 
   // Filter templates based on criteria
   const filteredTemplates = useMemo(() => {
+    function normalizeDate(date: Date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+  
     return templates.filter(template => {
-      // Filter by checklist count
-      let matchesChecklistCount = true;
-      const count = template.templateChecklists.length;
-      
-      if (filters.checklistCount === "0") {
-        matchesChecklistCount = count === 0;
-      } else if (filters.checklistCount === "1-5") {
-        matchesChecklistCount = count >= 1 && count <= 5;
-      } else if (filters.checklistCount === "6-10") {
-        matchesChecklistCount = count >= 6 && count <= 10;
-      } else if (filters.checklistCount === "10+") {
-        matchesChecklistCount = count > 10;
-      }
-      
-      // Filter by date added
-      let matchesDate = true;
-      if (filters.dateAdded) {
-        const templateDate = new Date(template.createdAt);
-        
-        if (filters.dateAdded.includes('-')) {
-          // Month filter (YYYY-MM)
-          const [year, month] = filters.dateAdded.split('-').map(Number);
-          matchesDate = templateDate.getFullYear() === year && 
-                        templateDate.getMonth() + 1 === month;
-        } else {
-          // Year filter (YYYY)
-          matchesDate = templateDate.getFullYear() === parseInt(filters.dateAdded);
-        }
-      }
-      
-      return matchesChecklistCount && matchesDate;
+      const matchesProjectName =
+        filters.templateName === "" ||
+        template.templateName.toLowerCase().includes(filters.templateName.toLowerCase());
+  
+      const matchesDateAdded =
+        filters.dateAdded === "" ||
+        normalizeDate(new Date(template.createdAt)).getTime() ===
+        normalizeDate(new Date(filters.dateAdded)).getTime();
+  
+      return matchesProjectName && matchesDateAdded;
     });
   }, [templates, filters]);
+  
 
   const handleFilterChange = (column: string, value: string) => {
     setFilters(prev => ({ ...prev, [column]: value }));
@@ -172,27 +146,25 @@ export default function TemplateTable({ onEdit, onDelete, onView, searchTerm = "
     <div>
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Checklist Count Filter */}
+          {/* Project Name Filter */}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Checklist Count</label>
-            <TableFilter
-              column="checklistCount"
-              options={checklistCountOptions}
-              selectedValue={filters.checklistCount}
-              onFilterChange={handleFilterChange}
-              placeholder="Filter by checklist count"
+            <label className="block text-sm font-medium text-gray-700 mb-1 ">Template Name</label>
+            <input
+              type="text"
+              placeholder="Search by name..."
+              className="px-2 py-2 border rounded-md text-sm w-full"
+              value={filters.templateName}
+              onChange={(e) => handleFilterChange("templateName", e.target.value)}
             />
           </div>
 
           {/* Date Added Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date Added</label>
-            <TableFilter
-              column="dateAdded"
-              options={dateAddedOptions}
-              selectedValue={filters.dateAdded}
-              onFilterChange={handleFilterChange}
-              placeholder="Filter by date"
+            <DateMonthYearFilter
+              value={filters.dateAdded}
+              onChange={(value) => setFilters(prev => ({ ...prev, dateAdded: value }))}
             />
           </div>
         </div>

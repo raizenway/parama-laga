@@ -38,6 +38,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
       const matchesProjectName = filters.projectName === "" || 
       project.projectName.toLowerCase().includes(filters.projectName.toLowerCase());
 
+      // Filter berdasarkan nama PO
       const matchesCompanyName = filters.companyName === "" || 
       project.projectOwner.toLowerCase().includes(filters.companyName.toLowerCase());
       
@@ -91,7 +92,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
   return (
     <div>
           <div className="flex justify-end items-center space-x-2">
-            {/* Task Name Filter */}
+            {/* Project Name Filter */}
             <div>
               <input
                 type="text"
