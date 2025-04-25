@@ -400,7 +400,7 @@ export default function TaskTable({
                 </td>
                 <td className="px-4 py-3">{task.taskName}</td>
                 <td className="px-4 py-3">{task.documentType.name}</td>
-                <td className="px-4 py-3">{task.project.projectName}</td>
+                <td className="px-4 py-3">{task.project.projectCode}</td>
                 {!isEmployee && (<td className="px-4 py-3">{task.user?.name || 'Unassigned'}</td>)}
                 <td className="px-4 py-3">{new Date(task.dateAdded).toLocaleDateString()}</td>
                 <td className="px-4 py-3">{task.completedDate ? new Date(task.completedDate).toLocaleDateString() : '-'}</td>
