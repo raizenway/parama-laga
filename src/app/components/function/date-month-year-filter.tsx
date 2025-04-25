@@ -46,14 +46,14 @@ export function DateMonthYearFilter({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
-        className="flex cursor-pointer text-sm hover:bg-gray-100 rounded border h-8"
+        className="flex cursor-pointer text-sm hover:bg-gray-100 items-center rounded border h-8"
         onClick={() => setIsOpen(!isOpen)}
       >
         <input
           type="date"
           value={selectedDate}
           onChange={handleDateChange}
-          className={`w-full hover:bg-gray-100 px-2 rounded ${!selectedDate ? "text-gray-400":""}`}
+          className={`w-full h-full hover:bg-gray-100 px-2 rounded ${!selectedDate ? "text-gray-400":""}`}
         />
 
         {selectedDate && (

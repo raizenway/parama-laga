@@ -409,15 +409,17 @@ export default function TaskTable({
                     {task.taskStatus}
                   </span>
                 </td>
-                <td className="px-4 py-3 flex gap-3 justify-center">
-                  {!isEmployee && 
-                    <button onClick={() => handleDeleteTask(task)} title="Delete task">
-                      <Trash2 className="text-red-500 hover:text-red-700" />
+                <td>
+                  <div className="px-4 py-3 flex gap-3 justify-center">
+                    {!isEmployee && 
+                      <button onClick={() => handleDeleteTask(task)} title="Delete task">
+                        <Trash2 className="text-red-500 hover:text-red-700" />
+                      </button>
+                    }
+                    <button onClick={() => handleView(task)} title="View task details">
+                      <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
                     </button>
-                  }
-                  <button onClick={() => handleView(task)} title="View task details">
-                    <CircleArrowRight className="text-blue-500 hover:text-blue-700"/>
-                  </button>
+                  </div>
                 </td>
               </tr>
             ))

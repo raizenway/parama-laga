@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Project } from "@/app/types/project";
 import TableFilter from "../function/filter-table";
 import { getProjectStatusOptions } from "@/app/utils/filter-utils";
-import { MonthYearFilter } from "../function/month-year-filter";
 import { DateMonthYearFilter } from "../function/date-month-year-filter";
+import AddButton from "../button/button-custom";
+import ProjectModal from "../modal/project-modal";
 
 type ProjectTableProps = {
   projects: Project[];
@@ -16,6 +17,9 @@ type ProjectTableProps = {
 };
 
 export default function ProjectTable({ projects, onEdit, onDelete, onView }: ProjectTableProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const router = useRouter();
@@ -76,23 +80,34 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
     setCurrentPage(1);
   };
 
+  const handleAddProject = () => {
+    setSelectedProject(null);
+    setModalMode("add");
+    setIsModalOpen(true);
+  };
+  
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div>
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
-        <div className="grid grid-cols-5 gap-4">
-          {/* Project Name Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 ">Project Name</label>
-            <input
-              type="text"
-              placeholder="Filter by name..."
-              className="px-2 py-1 border rounded-md text-sm w-full"
-              value={filters.projectName}
-              onChange={(e) => handleFilterChange("projectName", e.target.value)}
+          <div className="flex justify-end items-center space-x-2">
+            {/* Task Name Filter */}
+            <div>
+              <input
+                type="text"
+                placeholder="Search by name..."
+                className="px-2 py-2 border rounded-md text-sm w-full"
+                value={filters.projectName}
+                onChange={(e) => handleFilterChange("projectName", e.target.value)}
+              />
+            </div>
+            <AddButton 
+              text="+ Add Project" 
+              onClick={() => setIsModalOpen(true)}
             />
           </div>
+      <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
+        <div className="grid grid-cols-5 gap-4">
     
           {/* Company Type Filter */}
           <div>
@@ -119,21 +134,19 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
 
            {/* Start Month Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Month</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
             <DateMonthYearFilter
               value={filters.startDate}
               onChange={(value) => setFilters(prev => ({ ...prev, startDate: value }))}
-              placeholder="Select start month"
             />
           </div>
 
           {/* End Date Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Month</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
             <DateMonthYearFilter
               value={filters.endDate}
               onChange={(value) => setFilters(prev => ({ ...prev, endDate: value }))}
-              placeholder="Select end month"
             />
           </div>
         </div>
@@ -220,7 +233,13 @@ export default function ProjectTable({ projects, onEdit, onDelete, onView }: Pro
       itemsPerPage={itemsPerPage}
       totalItems={filteredProjects.length}
       />
-
+      
+      <ProjectModal 
+        open={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        project={selectedProject}
+        mode={modalMode}
+      />
     </div>
   );
 }
