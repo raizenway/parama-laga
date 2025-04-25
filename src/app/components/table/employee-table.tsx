@@ -7,6 +7,8 @@ import Pagination from "../pagination";
 import { useRouter } from "next/navigation";
 import TableFilter from "@/app/components/function/filter-table";
 import Image from "next/image";
+import AddButton from "../button/button-custom";
+import EmployeeModal from "../modal/employee-modal";
 
 type Employee = {
   id: string;
@@ -33,6 +35,9 @@ type EmployeeTableProps = {
 
 export default function EmployeeTable({ employees, isLoading, error, onEdit, onDelete, onView }: EmployeeTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const itemsPerPage = 10;
   const router = useRouter();
   
@@ -40,7 +45,8 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
   const [filters, setFilters] = useState({
     role: "",
     status: "",
-    project: ""
+    project: "",
+    name: ""
   });
 
   // Generate role options for filter
@@ -58,6 +64,19 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
       { value: "inactive", label: "Inactive" }
     ];
   }, []);
+
+  // Handle add button click
+  const handleAdd = () => {
+    setSelectedEmployee(null);
+    setModalMode("add");
+    setIsDetailOpen(true);
+  };
+
+  const closeEmployeeModal = () => {
+    setIsDetailOpen(false);
+    // Reset the selectedEmployee when closing the modal
+    setSelectedEmployee(null);
+  };
 
   // Generate project options for filter
   const projectOptions = useMemo(() => {
@@ -81,6 +100,10 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
   // Filter employees based on filters
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
+      // Filter berdasarkan nama project
+      const matchesEmployeeName = filters.name === "" || 
+      employee.name.toLowerCase().includes(filters.name.toLowerCase());
+      
       // Filter by role
       const matchesRole = filters.role === "" || 
         employee.role === filters.role;
@@ -93,7 +116,7 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
       const matchesProject = filters.project === "" || 
         (employee.projects && employee.projects.some(project => project === filters.project));
       
-      return matchesRole && matchesStatus && matchesProject;
+      return matchesEmployeeName && matchesRole && matchesStatus && matchesProject;
     });
   }, [employees, filters]);
 
@@ -122,6 +145,22 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
 
   return (
     <div className="overflow-x-auto">
+      <div className="flex justify-end items-center space-x-2">
+        {/* Employee Name Filter */}
+        <div>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            className="px-2 py-2 border rounded-md text-sm w-full"
+            value={filters.name}
+            onChange={(e) => handleFilterChange("name", e.target.value)}
+          />
+        </div>
+        <AddButton 
+          text="+ Add Employee" 
+          onClick={handleAdd}
+        />
+      </div>
       {/* Filter section */}
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-2">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -271,6 +310,14 @@ export default function EmployeeTable({ employees, isLoading, error, onEdit, onD
         onPageChange={setCurrentPage}
         totalItems={filteredEmployees.length}
       />
+
+      <EmployeeModal
+        open={isDetailOpen} 
+        onClose={closeEmployeeModal} 
+        employee={selectedEmployee}
+        mode={modalMode}
+      />
+
     </div>
   );
 } 

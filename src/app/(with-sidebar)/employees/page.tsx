@@ -183,10 +183,6 @@ export default function Page() {
     <div className="mx-8 h-screen flex-wrap space-y-5">
       <div className="mt-12 grow">
         <div className=" font-bold text-2xl">Employees</div>
-        <div className="flex justify-end items-center gap-3">
-          <AddButton text="+ Add Employee" onClick={handleAdd} />
-        </div>
-
         <div className="grow h-96 bg-white rounded-2xl flex justify-center items-start p-4">
           <div className="max-h-full w-full">
             <EmployeeTable 
