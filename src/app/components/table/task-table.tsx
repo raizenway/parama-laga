@@ -410,7 +410,7 @@ export default function TaskTable({
                   </span>
                 </td>
                 <td>
-                  <div className="px-4 py-3 flex gap-3 justify-center">
+                  <div className="px-4 py-3 flex gap-3 justify-center items-center">
                     {!isEmployee && 
                       <button onClick={() => handleDeleteTask(task)} title="Delete task">
                         <Trash2 className="text-red-500 hover:text-red-700" />
