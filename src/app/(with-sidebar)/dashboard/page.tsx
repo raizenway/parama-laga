@@ -9,11 +9,11 @@ import {
   CalendarClock,
   Clock,
   Loader2,
-  // CloudMoon,
-  // MonitorCheck,
   LaptopMinimalCheck
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation"
+import { Task } from "@/app/types/task";
 
 // Tipe data untuk projects
 type Project = {
@@ -27,6 +27,7 @@ type Project = {
     statusName: string;
   };
 };
+
 type UserWithRole = {
   id?: string;
   name?: string | null;
@@ -38,9 +39,11 @@ type UserWithRole = {
 export default function Page() {
   const { data: session, status } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [task, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+  const router = useRouter();
 
 
   const user = session?.user as UserWithRole;
@@ -79,7 +82,26 @@ export default function Page() {
         }
       };
 
+      const fetchTasks = async () => {
+        try {
+          const response = await fetch("/api/tasks");
+
+          if (!response.ok){
+            throw new Error("Failed to fetch task");
+          }
+
+          const data = await response.json();
+          setTasks(data);
+        } catch (err) {
+          console.error("Error fetching tasks:", err);
+          setError("Gagal mengambil data task");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
       fetchProjects();
+      fetchTasks();
     }
   }, [status]);
 
@@ -107,47 +129,143 @@ export default function Page() {
     );
   }
 
-  return (
-    <div className="mx-8 my-8 flex flex-col ">
-      <div className="flex flex-row gap-8 h-96">
-        {/* Profile */}
-        <div className="w-1/3 flex flex-col">
-          <h2 className="w-full font-bold underline mb-2">Profile User</h2>
-          <div className="w-full h-full bg-gradient-primary rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center space-y-4">
-            <Image
-              src={avatarSrc || "/person.png"}
-              alt="Profile Picture"
-              width={125}
-              height={125}
-              className="rounded-full object-cover w-32 h-32"
-            />
-            <div className="text-center space-y-1">
-              <p className="font-bold text-primary text-lg">
-                {user?.name || "User"}
-              </p>
-              <p className="text-primary">
-                <span className="font-medium">{user?.email || ""}</span>
-                <span className="font-medium"> / {user?.role || "User"}</span>
-              </p>
-              <p className="font-bold text-primary">
-                {projects.length > 0 ? projects[0].projectName : "No active project"}
-              </p>
-            </div>
-          </div>
-        </div>
+  const getTaskStatusStyles = (status: string) => {
+    switch(status) {
+      case "Done": 
+        return "bg-green-100 text-green-800";
+      case "OnGoing": 
+        return "bg-blue-100 text-blue-800";
+      case "ToDo": 
+        return "bg-yellow-100 text-yellow-800";
+      case "NotStarted":
+        return "bg-red-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
-        {/* Notification */}
-        <div className="w-2/3 flex flex-col h-full">
-          <div className="font-bold underline my-2">Notification</div>
-          <div className="p-5 flex flex-1 bg-tersier rounded-2xl justify-center items-center">
-            {/* No job */}
-            <div className="flex flex-col gap-2 font-poppins font-bold text-primary text-lg items-center justify-center">
-              <LaptopMinimalCheck size={92} />
-              {`There's nothing to do now`}
-            </div>
-          </div>
-        </div>
+  const handleView = (task: Task) => {
+    router.push(`/task/detail-task/${task.id}`);
+  };
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-EN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  return (
+    <div className="mx-8 my-8 flex flex-col">
+      <div className="flex flex-row gap-8 h-96">
+  {/* Profile */}
+  <div className="w-1/3 flex flex-col">
+    <h2 className="w-full font-bold underline mb-2">Profile User</h2>
+    <div className="w-full h-full bg-gradient-primary rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center space-y-4">
+      <Image
+        src={avatarSrc || "/person.png"}
+        alt="Profile Picture"
+        width={125}
+        height={125}
+        className="rounded-full object-cover w-32 h-32"
+      />
+      <div className="text-center space-y-1">
+        <p className="font-bold text-primary text-lg">
+          {user?.name || "User"}
+        </p>
+        <p className="text-primary">
+          <span className="font-medium">{user?.email || ""}</span>
+          <span className="font-medium"> / {user?.role || "User"}</span>
+        </p>
+        <p className="font-bold text-primary">
+          {projects.length > 0 ? projects[0].projectName : "No active project"}
+        </p>
       </div>
+      </div>
+  </div>
+
+  {/* Notification */}
+  <div className="w-2/3 flex flex-col h-full">
+    <div className="w-full font-bold underline mb-2 flex-shrink-0">Notification</div>
+    <div className="p-5 flex flex-1 h-full bg-tersier rounded-2xl gap-4">
+      {/* Show Task */}
+      <div className="flex flex-col w-3/4 h-full">
+        <h2 className="font-bold underline mb-4">Tasks</h2>
+        {task.filter((t) => t.taskStatus !== "Done").length > 0 ? (
+          <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
+            <ul>
+            {task
+              .filter((t) => t.taskStatus !== "Done")
+              .map((t, index) => (
+                <li key={t.id} className="flex gap-3 items-center">
+                  <div
+                    className="flex w-full select-none gap-1 py-3 px-4 my-2 outline outline-1 outline-slate-300 justify-between items-center rounded-full bg-slate-50 hover:bg-tersier/45 hover:outline-primary/40 transition-colors duration-200 shadow-md"
+                    onClick={() => handleView(t)} title="View task details"
+                  >
+                    {/* Kiri */}
+                    <div className="flex gap-2 items-center flex-1 min-w-0">
+                      <div className="flex justify-center items-center rounded-full outline outline-1 w-8 h-8">
+                        <span className="text-sm">{index + 1}</span>
+                      </div>
+                      <span className="text-base break-words">{t.taskName}</span>
+                    </div>
+
+                    {/* Kanan */}
+                    <div className="flex gap-1 flex-shrink-0">
+                      <span className="text-base text-primary">({t.project.projectCode})</span>
+                      <span className="px-2 py-1 rounded-full text-sm bg-green-200 whitespace-nowrap">
+                        {formatDate(t.dateAdded)}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-sm whitespace-nowrap ${getTaskStatusStyles(t.taskStatus)}`}>
+                        {t.taskStatus.replace(/([a-z])([A-Z])/g, '$1 $2')}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
+            <LaptopMinimalCheck size={92} />
+            <p>There's no task left</p>
+          </div>
+        )}
+      </div>
+
+      {/* Show Activity */}
+      <div className="flex flex-col w-1/4 h-full">
+        <h2 className="font-bold underline mb-4">Activity</h2>
+        {task.filter((t) => t.taskStatus !== "Done").length > 0 ? (
+          <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
+            <ul className="">
+              {task
+                .filter((t) => t.taskStatus !== "Done")
+                .map((t) => (
+                  <li key={t.id} className="flex p-5 my-2 outline outline-1 outline-slate-300 justify-between rounded-md bg-slate-50 shadow-md">
+                    <div>
+                      {t.taskName}
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-sm ${getTaskStatusStyles(t.taskStatus)}`}>
+                      {t.taskStatus}
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
+            <LaptopMinimalCheck size={92} />
+            <p>There's no activity left</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
       {/* Table Project */}

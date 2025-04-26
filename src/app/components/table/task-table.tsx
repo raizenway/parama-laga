@@ -51,8 +51,6 @@ export default function TaskTable({
   const isEmployee = userRole !== 'admin' && userRole !== 'project_manager';
   const [refreshCounter, setRefreshCounter] = useState(0);
   const isDetailEmployeePage = pathname?.startsWith("/employees/detail-employee/");
-
-
   const [filters, setFilters] = useState({
     taskName: "",
     documentType: "",
@@ -91,7 +89,7 @@ export default function TaskTable({
       case "ToDo": 
         return "bg-yellow-100 text-yellow-800";
       case "NotStarted":
-        return "bg-gray-100 text-gray-800";
+        return "bg-red-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -416,7 +414,7 @@ export default function TaskTable({
                 <td className="px-4 py-3">{task.completedDate ? new Date(task.completedDate).toLocaleDateString() : '-'}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded-full text-sm ${getTaskStatusStyles(task.taskStatus)}`}>
-                    {task.taskStatus}
+                    {task.taskStatus.replace(/([a-z])([A-Z])/g, '$1 $2')}
                   </span>
                 </td>
                 <td>
