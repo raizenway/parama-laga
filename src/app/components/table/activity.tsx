@@ -70,7 +70,6 @@ export default function ActivityTable({
   } | null>(null);
 
   const fetchActivities = async () => {
-    // ... existing fetch implementation ...
     setIsLoading(true);
     setError(null);
     setCategories([])      

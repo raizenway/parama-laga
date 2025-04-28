@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation"
 import { Task } from "@/app/types/task";
+import { set } from "date-fns";
 
 // Tipe data untuk projects
 type Project = {
@@ -36,6 +37,50 @@ type UserWithRole = {
   role?: string;
 };
 
+type ActivityResult = {
+  id: number;
+  itemId: number;
+  result?: string;
+  comment?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+type ActivityItem = {
+  id: number;
+  categoryId: number;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  results: ActivityResult[];
+};
+
+type ActivityCategory = {
+  id: number;
+  userId: number;
+  projectId: number;
+  weekId: number;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  items: ActivityItem[];
+};
+
+type ActivityWeek = {
+  id: number;
+  projectId: number;
+  weekNum: number;
+  startDate: Date;
+  endDate: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  project:Project;
+  categories: ActivityCategory[];
+};
+
+type EmployeeActivity = ActivityWeek[];
+
+
 export default function Page() {
   const { data: session, status } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -43,10 +88,11 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+  const [activity, setActivity] = useState<EmployeeActivity[]>([]);
   const router = useRouter();
 
-
   const user = session?.user as UserWithRole;
+  const employeeId = Number(user?.id);
   useEffect(() => {
     // Fetch user photo dari database
     if (user?.id) {
@@ -60,6 +106,7 @@ export default function Page() {
         .catch(err => console.error("Error fetching user photo:", err));
     }
   }, [user?.id]);
+
   useEffect(() => {
     // Hanya ambil data jika session sudah loaded
     if (status === "authenticated") {
@@ -100,10 +147,33 @@ export default function Page() {
         }
       }
 
+      const fetchActivity = async () => {
+        try{
+          const response = await fetch(`/api/activities?employeeId=${employeeId}`, {
+            cache: "no-store"
+          });
+          if (!response.ok)
+          {
+            throw new Error("Failed to fetch activity");
+          }
+          const data = await response.json();
+          setActivity(data);
+        }catch (err) {
+          console.error("Error fetching activity:", err);
+          setError("Gagal mengambil data activity");
+        } finally { 
+          setIsLoading(false);
+        }
+      }
+      fetchActivity();
       fetchProjects();
       fetchTasks();
     }
-  }, [status]);
+  }, [status, employeeId]);
+
+  useEffect(() => {
+    console.log("Activity telah diperbarui", activity);
+  }, [activity]);
 
   const avatarSrc = userPhotoUrl || user?.image || "/person.png";
 
@@ -156,6 +226,16 @@ export default function Page() {
       year: 'numeric'
     });
   }
+
+  function checkDoneWeekActivityWeek(week: ActivityWeek) {
+    return week.categories.every(category => category.items.every(item => item.results.length > 0));
+  }
+
+  function checkDoneWeekActivity(weeks: ActivityWeek[]) { 
+    return weeks.every(week => checkDoneWeekActivityWeek(week));
+  }
+
+  const unfinishedWeeks = activity.filter(week => !checkDoneWeekActivityWeek(week));
 
   return (
     <div className="mx-8 my-8 flex flex-col">
@@ -230,7 +310,7 @@ export default function Page() {
         ) : (
           <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
             <LaptopMinimalCheck size={92} />
-            <p>There's no task left</p>
+            <p>There&apos;s no task left</p>
           </div>
         )}
       </div>
@@ -238,29 +318,29 @@ export default function Page() {
       {/* Show Activity */}
       <div className="flex flex-col w-1/4 h-full">
         <h2 className="font-bold underline mb-4">Activity</h2>
-        {task.filter((t) => t.taskStatus !== "Done").length > 0 ? (
-          <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
-            <ul className="">
-              {task
-                .filter((t) => t.taskStatus !== "Done")
-                .map((t) => (
-                  <li key={t.id} className="flex p-5 my-2 outline outline-1 outline-slate-300 justify-between rounded-md bg-slate-50 shadow-md">
-                    <div>
-                      {t.taskName}
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-sm ${getTaskStatusStyles(t.taskStatus)}`}>
-                      {t.taskStatus}
-                    </div>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
-            <LaptopMinimalCheck size={92} />
-            <p>There's no activity left</p>
-          </div>
-        )}
+        <div>
+    {unfinishedWeeks.length > 0 ? (
+      unfinishedWeeks.map(week => (
+        <div key={week.id}>
+          <h3>Week {week.weekNum} - {week.project.projectName}</h3>
+          <ul>
+            {week.categories.map(category => (
+              <li key={category.id}>
+                <strong>{category.name}</strong>
+                <ul>
+                  {category.items.filter(item => item.results.length === 0).map(item => (
+                    <li key={item.id}>{item.name} belum selesai</li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    ) : (
+      <p>Tidak ada activity yang belum selesai</p>
+    )}
+  </div>
       </div>
     </div>
   </div>
