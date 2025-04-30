@@ -11,7 +11,9 @@ import {
   Loader2,
   LaptopMinimalCheck,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  CircleCheckBig,
+  Activity
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation"
@@ -280,7 +282,9 @@ export default function Page() {
 
             {/* Show Task */}
             <div className="flex flex-col w-3/4 h-full">
-              <h2 className="font-bold p-1 px-3 rounded-full outline outline-2 outline-[#BCB1DB] mb-4 bg-white w-fit">Tasks</h2>
+              <h2 className="flex gap-2 font-bold p-1 px-3 rounded-full mb-4 bg-white w-fit select-none">
+                <CircleCheckBig className="text-sky-500"/> Tasks
+              </h2>
               {task.filter((t) => t.taskStatus !== "Done").length > 0 ? (
                 <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
                   <ul>
@@ -332,7 +336,9 @@ export default function Page() {
             
             {/* Show Activity */}
             <div className="flex flex-col w-1/4 h-full">
-              <h2 className="font-bold p-1 px-3 rounded-full outline outline-2 outline-[#BCB1DB] mb-4 bg-white w-fit">Notifikasi</h2>
+              <h2 className="font-bold flex gap-2 p-1 px-3 rounded-full mb-4 bg-white w-fit select-none">
+                <Activity className="text-emerald-500"/>Activity
+              </h2>
               {unfinishedWeeks.length > 0 ? (
                 <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
                   <ul>
