@@ -9,7 +9,9 @@ import {
   CalendarClock,
   Clock,
   Loader2,
-  LaptopMinimalCheck
+  LaptopMinimalCheck,
+  AlertTriangle,
+  AlertCircle
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation"
@@ -218,6 +220,10 @@ export default function Page() {
     router.push(`/task/detail-task/${task.id}`);
   };
 
+  const handleWeek = () => {
+    router.push(`/activity`);
+  };
+
   function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-EN', {
@@ -330,13 +336,19 @@ export default function Page() {
               {unfinishedWeeks.length > 0 ? (
                 <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
                   <ul>
-                    {unfinishedWeeks.map((week) => (
+                    {unfinishedWeeks.map((week, index) => (
                       <li key={week.id} className="flex gap-3 items-center">
-                        <div className="flex w-full select-none gap-1 py-3 px-4 my-2 outline outline-1 outline-slate-300 justify-between items-center rounded-md bg-slate-50 shadow-md">
+                        <div className="flex w-full select-none gap-1 py-3 px-4 my-2 outline outline-1 outline-slate-300 justify-between items-center rounded-md bg-slate-50 shadow-md hover:bg-tersier/45 hover:outline-primary/40 transition-colors duration-200"
+                        onClick={() => handleWeek()}
+                        >
                           <div className="flex flex-col gap-2 flex-1 min-w-0">
-                            <span className="text-base break-words w-fit p-1 px-3 bg-yellow-100 rounded-full text-center">
-                              Week {week.weekNum}
-                            </span>
+                              <div className="flex gap-1 items-center">
+                                <span className="text-orange-800 break-words w-full p-1 px-3 bg-yellow-100 rounded-full text-center">
+                                  Week {week.weekNum}
+                                </span>
+                                <AlertCircle className="text-orange-500"/>
+
+                              </div>
                             <span>{week.project.projectName}</span>
                           </div>
                         </div>
