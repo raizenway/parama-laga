@@ -343,21 +343,19 @@ export default function Page() {
                 <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
                   <ul>
                     {unfinishedWeeks.map((week, index) => (
-                      <li key={week.id} className="flex gap-3 items-center">
-                        <div className="flex w-full select-none gap-1 py-3 px-4 my-2 outline outline-1 outline-slate-300 justify-between items-center rounded-md bg-slate-50 shadow-md hover:bg-tersier/45 hover:outline-primary/40 transition-colors duration-200"
-                        onClick={() => handleWeek()}
-                        >
-                          <div className="flex flex-col gap-2 flex-1 min-w-0">
-                              <div className="flex gap-1 items-center">
-                                <span className="text-orange-800 break-words w-full p-1 px-3 bg-yellow-100 rounded-full text-center">
+                      <li key={week.id} className="flex mt-2 gap-3 items-center">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
+                              <div className="flex gap-1 items-center text-orange-800 break-words w-full p-1 py-2 px-3 bg-yellow-100 hover:bg-yellow-200 rounded-full text-center"
+                                    onClick={() =>handleWeek()}
+                              >
+                                <span className="select-none">
                                   Week {week.weekNum}
                                 </span>
-                                <AlertCircle className="text-orange-500"/>
-
+                                <span className="select-none">
+                                  ({week.project.projectCode})
+                                </span>
                               </div>
-                            <span>{week.project.projectName}</span>
                           </div>
-                        </div>
                       </li>
                     ))}
                   </ul>
