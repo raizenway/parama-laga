@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'Unauthorized' });
   }
   
-  const { id } = req.query;
+  const { projectId:id } = req.query;
   
   if (!id || typeof id !== 'string') {
     return res.status(400).json({ message: 'Project ID is required' });

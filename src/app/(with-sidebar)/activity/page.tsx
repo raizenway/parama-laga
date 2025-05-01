@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, Calendar, Copy, X } from "lucide-react";
+import { Plus, Calendar, Copy, X, Settings, ArrowLeft, Trash2} from "lucide-react";
 import DropdownSingleSelection from "@/app/components/dropdown-single-selection";
 import { toast } from "sonner";
 import ActivityTable from "@/app/components/table/activity";
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+
 
 type Project = {
   id: number;
@@ -48,11 +49,16 @@ export default function ActivitiesPage() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
-  const [refreshTrigger] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // New week creation states
   const [isNewWeekModalOpen, setIsNewWeekModalOpen] = useState(false);
   const [copyPreviousWeek, setCopyPreviousWeek] = useState(true);
+  const [isCustomWeekModalOpen, setIsCustomWeekModalOpen] = useState(false);
+
+  const [inputStartDate, setInputStartDate] = useState<Date | null>(null);
+  const [inputWeek, setInputWeek] = useState<number | null>(null);
+  const [inputEndDate, setInputEndDate] = useState<Date | null>(null);
 
   // Fetch projects
   useEffect(() => {
@@ -71,7 +77,7 @@ export default function ActivitiesPage() {
       
       fetchProjects();
     }
-  }, [status]);
+  }, [status, refreshTrigger]);
   
   // Fetch weeks when project is selected
   useEffect(() => {
@@ -97,7 +103,7 @@ export default function ActivitiesPage() {
       setWeeks([]);
       setSelectedWeek(null);
     }
-  }, [selectedProject]);
+  }, [selectedProject, refreshTrigger]);
   
   // Fetch employees if user is manager/admin and project is selected
   useEffect(() => {
@@ -119,7 +125,7 @@ export default function ActivitiesPage() {
       setEmployees([]);
       setSelectedEmployee(null);
     }
-  }, [isManagerOrAdmin, selectedProject]);
+  }, [isManagerOrAdmin, selectedProject, refreshTrigger ]);
   
   // Create a new activity week
   const createNewWeek = async () => {
@@ -137,6 +143,7 @@ export default function ActivitiesPage() {
           startDate: new Date().toISOString(),
           endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           copyFromPreviousWeek: copyPreviousWeek,
+          fromCustomWeek: false,
         })
       });
       
@@ -146,6 +153,8 @@ export default function ActivitiesPage() {
       setWeeks(prev => [newWeek, ...prev]);
       setSelectedWeek(newWeek.id);
       toast.success('New week created successfully');
+      setRefreshTrigger(prev => prev + 1);
+      setCopyPreviousWeek(true);
       setIsNewWeekModalOpen(false);
     } catch (error) {
       console.error('Error creating week:', error);
@@ -153,10 +162,85 @@ export default function ActivitiesPage() {
     }
   };
 
+  const createCustomWeek = async () => {
+    if (!selectedProject) {
+      toast.error('Please select a project first');
+      return;
+    }
+    
+    try {
+      console.log('Creating custom week with:', {
+        projectId: selectedProject,
+        startDate: inputStartDate?.toISOString(),
+        endDate: inputEndDate?.toISOString(),
+        weekNum: inputWeek,
+        fromCustomWeek: true,
+      });
+
+      const response = await fetch(`/api/projects/${selectedProject}/weeks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: selectedProject,
+          startDate: inputStartDate?.toISOString(),
+          endDate: inputEndDate?.toISOString(),
+          weekNum: inputWeek,
+        })
+      });
+      if (!response.ok) throw new Error('Failed to create custom week');
+      toast.success('Custom week created successfully');
+      setIsCustomWeekModalOpen(false);
+      setInputStartDate(null);
+      setInputEndDate(null);
+      setInputWeek(null);
+      setRefreshTrigger(prev => prev + 1);
+    }catch (error) {
+      console.error('Error creating custom week:', error);
+      toast.error('Failed to create custom week');
+    }
+  }
+
+  const handleDeleteWeek = async () => {
+    if (!selectedProject || !selectedWeek) {
+      toast.error('Please select a project and week first');
+      return;
+    }
+    try {
+      const response = await fetch(`/api/projects/${selectedProject}/weeks/${selectedWeek}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete week');
+      
+      setWeeks(prev => prev.filter(week => week.id !== selectedWeek));
+      setSelectedWeek(null);
+      toast.success('Week deleted successfully');
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('Error deleting week:', error);
+      toast.error('Failed to delete week');
+    }
+  }
+
   const handleAddWeek = () => {
+    setIsCustomWeekModalOpen(false);
     setIsNewWeekModalOpen(true);
   };
+
+  const handleCustomWeek = () => {
+    setIsNewWeekModalOpen(false);
+    setIsCustomWeekModalOpen(true);
+  }
   
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === 'startDate') {
+      setInputStartDate(new Date(value));
+      setInputEndDate(new Date(new Date(value).getTime() + 7 * 24 * 60 * 60 * 1000));
+    } else if (name === 'week') {
+      setInputWeek(Number(value));
+    }
+  }
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-2xl font-bold">Weekly Activity Management</h1>
@@ -194,6 +278,7 @@ export default function ActivitiesPage() {
             </div>
             
             {selectedProject && (
+                <>
                 <Button
                   variant="outline"
                   className="rounded-full 2-12 h"
@@ -202,6 +287,15 @@ export default function ActivitiesPage() {
                 >
                   <Plus />
                 </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full 2-12 h red"
+                  onClick={handleDeleteWeek}
+                  title="Create new week"
+                >
+                  <Trash2/>
+                </Button>
+                </>
               )}
           </div>
         </div>
@@ -250,8 +344,7 @@ export default function ActivitiesPage() {
             <DialogDescription>
               Set up a new activity week for the selected project.
             </DialogDescription>
-          </DialogHeader>
-
+          </DialogHeader> 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="copy-previous">Copy activities from previous week</Label>
@@ -272,6 +365,10 @@ export default function ActivitiesPage() {
           </div>
 
           <DialogFooter>
+            <Button className="bg-gray-200 text-gray-700 hover:bg-gray-300" onClick={handleCustomWeek}>
+              <Settings className="h-4 w-4" />
+              Custom Week
+            </Button>
             <Button variant="outline" onClick={() => setIsNewWeekModalOpen(false)}>
               <X className="mr-2 h-4 w-4" />
               Cancel
@@ -283,6 +380,71 @@ export default function ActivitiesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isCustomWeekModalOpen} onOpenChange={setIsCustomWeekModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Custom Week</DialogTitle>
+            <DialogDescription>
+              Set up a custom week for activity.
+            </DialogDescription>
+          </DialogHeader> 
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="start-date">Start Date</Label>
+              <input
+              type="date"
+              id="start-date"
+              name="startDate"
+              className="border rounded p-2"
+              value={inputStartDate ? inputStartDate.toISOString().split("T")[0] : ""}
+              onChange={handleChange}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="end-date">End Date</Label>
+              <input
+              type="date"
+              id="end-date"
+              name="endDate"
+              className="border rounded p-2"
+              disabled
+              value={inputEndDate ? inputEndDate.toISOString().split("T")[0] : ""}
+              onChange={handleChange}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="week">Week</Label>
+              <input
+              type="number"
+              id="week"
+              name="week"
+              className="border rounded p-2"
+              value={inputWeek || ""}
+              onChange={handleChange}
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+            Please select a start date for the custom week; the end date will be automatically set to 7 days later.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button className="bg-gray-200 text-gray-700 hover:bg-gray-300"  onClick={handleAddWeek}>
+              <ArrowLeft className="h-4 w-4"/>
+              Back
+            </Button>
+            <Button variant="outline" onClick={() => setIsCustomWeekModalOpen(false)}>
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <Button onClick={createCustomWeek} className="bg-primary text-white hover:bg-primary/90">
+              <Copy className="mr-2 h-4 w-4" />
+              Create Week
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
     </div>
   );
 }
