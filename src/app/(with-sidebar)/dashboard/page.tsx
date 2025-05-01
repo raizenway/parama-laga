@@ -10,15 +10,12 @@ import {
   Clock,
   Loader2,
   LaptopMinimalCheck,
-  AlertTriangle,
-  AlertCircle,
   CircleCheckBig,
   Activity
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation"
 import { Task } from "@/app/types/task";
-import { set } from "date-fns";
 
 // Tipe data untuk projects
 type Project = {
@@ -92,7 +89,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
-  const [activity, setActivity] = useState<EmployeeActivity[]>([]);
+  const [activity, setActivity] = useState<EmployeeActivity>([]);
   const router = useRouter();
 
   const user = session?.user as UserWithRole;
@@ -226,7 +223,7 @@ export default function Page() {
     router.push(`/activity`);
   };
 
-  function formatDate(dateString) {
+  function formatDate(dateString: string) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-EN', {
       day: 'numeric',
@@ -239,9 +236,9 @@ export default function Page() {
     return week.categories.every(category => category.items.every(item => item.results.length > 0));
   }
 
-  function checkDoneWeekActivity(weeks: ActivityWeek[]) { 
-    return weeks.every(week => checkDoneWeekActivityWeek(week));
-  }
+  // function checkDoneWeekActivity(weeks: ActivityWeek[]) { 
+  //   return weeks.every(week => checkDoneWeekActivityWeek(week));
+  // }
 
   const unfinishedWeeks = activity.filter(week => !checkDoneWeekActivityWeek(week));
 
@@ -329,7 +326,7 @@ export default function Page() {
               ) : (
                 <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
                   <LaptopMinimalCheck size={92} />
-                  <p>There's no task left</p>
+                  <p>There`s no task left</p>
                 </div>
               )}
             </div>
@@ -342,7 +339,7 @@ export default function Page() {
               {unfinishedWeeks.length > 0 ? (
                 <div className="flex-1 overflow-y-auto rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)]">
                   <ul>
-                    {unfinishedWeeks.map((week, index) => (
+                    {unfinishedWeeks.map((week) => (
                       <li key={week.id} className="flex mt-2 gap-3 items-center">
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <div className="bg-amber-400 rounded-lg">
@@ -365,7 +362,7 @@ export default function Page() {
               ) : (
                 <div className="flex-1 flex flex-col rounded-lg outline outline-2 outline-[#BCB1DB] bg-white p-1 px-3 shadow-[inset_0_-2px_4px_rgba(211,205,232,0.5)] items-center justify-center text-center">
                   <LaptopMinimalCheck size={92} />
-                  <p>There's no activity</p>
+                  <p>There&apos;s no activity</p>
                 </div>
               )}
             </div>
