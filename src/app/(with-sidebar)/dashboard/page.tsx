@@ -345,7 +345,8 @@ export default function Page() {
                     {unfinishedWeeks.map((week, index) => (
                       <li key={week.id} className="flex mt-2 gap-3 items-center">
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <div className="flex gap-1 items-center text-orange-800 break-words w-full p-1 py-2 px-3 bg-yellow-100 hover:bg-yellow-200 rounded-full text-center"
+                            <div className="bg-amber-400 rounded-lg">
+                              <div className="flex gap-1 items-center text-orange-800 break-words w-full p-1 py-3 px-3 ml-2 bg-yellow-100 hover:bg-amber-100 rounded-r-lg text-center"
                                     onClick={() =>handleWeek()}
                               >
                                 <span className="select-none">
@@ -355,6 +356,7 @@ export default function Page() {
                                   ({week.project.projectCode})
                                 </span>
                               </div>
+                            </div>
                           </div>
                       </li>
                     ))}
