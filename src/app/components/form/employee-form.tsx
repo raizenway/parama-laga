@@ -287,7 +287,7 @@ const uploadToCloudinary = async (file: File) => {
               alt="Employee photo"
               width={125}
               height={125}
-              className="rounded-full border border-gray-300 object-cover shadow-md"
+              className="rounded-full border border-gray-300 object-cover shadow-md aspect-square"
               />
             ) : (
               <Image
